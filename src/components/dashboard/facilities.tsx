@@ -37,10 +37,9 @@ type Props = {
   onSelect: (id: number) => void;
   t: (key: string) => string;
   sectionAverages: DashboardData["sectionAverages"];
-  isDark: boolean;
 };
 
-export function FacilitiesView({ facilities, currentFacility, onSelect, t, sectionAverages, isDark }: Props) {
+export function FacilitiesView({ facilities, currentFacility, onSelect, t, sectionAverages }: Props) {
   if (!currentFacility) return null;
 
   const benchmarkData = currentFacility.sectionScores.map((s) => ({
@@ -131,9 +130,9 @@ export function FacilitiesView({ facilities, currentFacility, onSelect, t, secti
             <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
             <ResponsiveContainer width={chartWidth} height={288}>
               <BarChart data={currentFacility.sectionScores} barSize={24}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis dataKey="section" tick={{ fontSize: 10, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="section" tick={{ fontSize: 10, fill: "#475569" }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
                 <Tooltip formatter={(value) => [`${value}/100`, "Score"]} />
                 <Bar dataKey="score" radius={[4, 4, 0, 0]}>
                   {currentFacility.sectionScores.map((entry) => (
@@ -183,9 +182,9 @@ export function FacilitiesView({ facilities, currentFacility, onSelect, t, secti
             <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
             <ResponsiveContainer width={chartWidth} height={288}>
               <BarChart data={benchmarkData} barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis dataKey="section" tick={{ fontSize: 10, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="section" tick={{ fontSize: 10, fill: "#475569" }} tickLine={false} axisLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
                 <Tooltip />
                 <Bar dataKey="average" stackId="a" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="facility" stackId="a" fill="#2563eb" radius={[4, 4, 0, 0]} />

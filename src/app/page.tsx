@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, BarChart3, Building2, Clock, Database, Languages, Loader2, Moon, RefreshCw, Shield, Sun } from "lucide-react";
+import { Activity, BarChart3, Building2, Clock, Database, Languages, Loader2, RefreshCw, Shield } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +25,6 @@ const DEFAULT_UID = "atWJrmvMK43Gtr6zny6vs7";
 export default function Home() {
   const [uid, setUid] = useState(DEFAULT_UID);
   const [locale, setLocale] = useState<Locale>("en");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [data, setData] = useState<DashboardData | null>(null);
   const [state, setState] = useState<ApiState>({ status: "idle" });
   const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
@@ -66,27 +65,11 @@ export default function Home() {
       }
     }, 80);
     return () => clearTimeout(timer);
-  }, [data, selectedFacility, theme, activeTab]);
-
-  // theme handling
-  useEffect(() => {
-    const stored = typeof window !== "undefined" ? (localStorage.getItem("theme") as "light" | "dark" | null) : null;
-    const prefersDark = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = stored ?? (prefersDark ? "dark" : "light");
-    setTheme(initial);
-    document.documentElement.classList.toggle("dark", initial === "dark");
-  }, []);
-
-  // const toggleTheme = () => {
-  //   const next = theme === "light" ? "dark" : "light";
-  //   setTheme(next);
-  //   document.documentElement.classList.toggle("dark", next === "dark");
-  //   localStorage.setItem("theme", next);
-  // };
+  }, [data, selectedFacility, activeTab]);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-4">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500">
@@ -169,7 +152,7 @@ export default function Home() {
 
         {data && (
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
-            <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 rounded-lg bg-slate-100 p-1 sm:justify-center dark:bg-slate-800">
+             <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 rounded-lg bg-slate-100 p-1 sm:justify-center">
               <TabsTrigger value="overview" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 {t("tabs.overview")}
@@ -186,7 +169,7 @@ export default function Home() {
 
             <TabsContent value="overview">
               {activeTab === "overview" && (
-                <Overview data={data} t={t} submissionData={data.submissionsOverTime} isDark={theme === "dark"} />
+                <Overview data={data} t={t} submissionData={data.submissionsOverTime} />
               )}
             </TabsContent>
 
@@ -198,14 +181,13 @@ export default function Home() {
                   onSelect={setSelectedFacility}
                   t={t}
                   sectionAverages={data.sectionAverages}
-                  isDark={theme === "dark"}
                 />
               )}
             </TabsContent>
 
             <TabsContent value="comparative">
               {activeTab === "comparative" && (
-                <ComparativeView data={data} t={t} onSelectFacility={setSelectedFacility} isDark={theme === "dark"} />
+                <ComparativeView data={data} t={t} onSelectFacility={setSelectedFacility} />
               )}
             </TabsContent>
           </Tabs>

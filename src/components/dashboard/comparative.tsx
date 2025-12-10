@@ -21,10 +21,9 @@ type Props = {
   data: DashboardData;
   t: (key: string) => string;
   onSelectFacility: (id: number) => void;
-  isDark: boolean;
 };
 
-export function ComparativeView({ data, t, onSelectFacility, isDark }: Props) {
+export function ComparativeView({ data, t, onSelectFacility }: Props) {
   const [vw, setVw] = useState(1024);
   useEffect(() => {
     const update = () => setVw(typeof window !== "undefined" ? window.innerWidth : 1024);
@@ -41,8 +40,8 @@ export function ComparativeView({ data, t, onSelectFacility, isDark }: Props) {
     return {
       tooltip: {
         position: "top",
-        backgroundColor: isDark ? "#0f172a" : "#ffffff",
-        textStyle: { color: isDark ? "#e2e8f0" : "#0f172a" },
+        backgroundColor: "#ffffff",
+        textStyle: { color: "#0f172a" },
         formatter: (params: any) => `${params.name}: ${params.data[2] ? t("risk.high") : t("risk.low")}`,
       },
       grid: { height: "60%", top: "12%", left: "14%", right: "4%", containLabel: true },
@@ -50,13 +49,13 @@ export function ComparativeView({ data, t, onSelectFacility, isDark }: Props) {
         type: "category",
         data: facilities.map((f) => f.slice(0, 14)),
         splitArea: { show: true },
-        axisLabel: { rotate: 45, fontSize: 10, color: isDark ? "#e2e8f0" : "#475569" },
+        axisLabel: { rotate: 45, fontSize: 10, color: "#475569" },
       },
       yAxis: {
         type: "category",
         data: factors.map((f) => f.slice(0, 26)),
         splitArea: { show: true },
-        axisLabel: { fontSize: 10, color: isDark ? "#e2e8f0" : "#475569" },
+        axisLabel: { fontSize: 10, color: "#475569" },
       },
       visualMap: { min: 0, max: 1, show: false, inRange: { color: ["#dcfce7", "#fecaca"] } },
       series: [
@@ -73,9 +72,9 @@ export function ComparativeView({ data, t, onSelectFacility, isDark }: Props) {
   const renderBar = (chartData: { name: string; avgScore: number; count: number }[], color: string) => (
     <ResponsiveContainer width={chartWidth} height={260}>
       <BarChart data={chartData} barSize={28}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-        <XAxis dataKey="name" tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+        <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
+        <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
         <Tooltip formatter={(value, name, props) => [`${value}/100 (${props.payload.count} inst.)`, "Score"]} />
         <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} />
       </BarChart>

@@ -43,10 +43,9 @@ type Props = {
   data: DashboardData;
   t: (key: string) => string;
   submissionData: { date: string; count: number }[];
-  isDark: boolean;
 };
 
-export function Overview({ data, t, submissionData, isDark }: Props) {
+export function Overview({ data, t, submissionData }: Props) {
   const [vw, setVw] = useState(1024);
   useEffect(() => {
     const update = () => setVw(typeof window !== "undefined" ? window.innerWidth : 1024);
@@ -58,17 +57,17 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
   const radarOption = {
     tooltip: {
       trigger: "item",
-      backgroundColor: isDark ? "#0f172a" : "#ffffff",
-      textStyle: { color: isDark ? "#e2e8f0" : "#0f172a" },
+      backgroundColor: "#ffffff",
+      textStyle: { color: "#0f172a" },
     },
     radar: {
       indicator: data.sectionAverages.map((s) => ({ name: s.section, max: 100 })),
       shape: "polygon",
       splitNumber: 4,
-      axisName: { color: isDark ? "#cbd5e1" : "#64748b", fontSize: 11 },
-      splitLine: { lineStyle: { color: isDark ? "#1f2937" : "#e2e8f0" } },
-      splitArea: { areaStyle: { color: isDark ? ["#0f172a", "#111827"] : ["#f8fafc", "#eef2ff"] } },
-      axisLine: { lineStyle: { color: isDark ? "#1f2937" : "#e2e8f0" } },
+      axisName: { color: "#64748b", fontSize: 11 },
+      splitLine: { lineStyle: { color: "#e2e8f0" } },
+      splitArea: { areaStyle: { color: ["#f8fafc", "#eef2ff"] } },
+      axisLine: { lineStyle: { color: "#e2e8f0" } },
     },
     series: [
       {
@@ -77,7 +76,7 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
           {
             value: data.sectionAverages.map((s) => s.score),
             name: "Score",
-            areaStyle: { color: isDark ? "rgba(96,165,250,0.18)" : "rgba(37,99,235,0.15)" },
+            areaStyle: { color: "rgba(37,99,235,0.15)" },
             lineStyle: { color: "#2563eb", width: 2 },
             itemStyle: { color: "#2563eb" },
           },
@@ -202,11 +201,11 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
         </CardHeader>
           <CardContent className="h-72 min-w-0">
             <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
-              <ResponsiveContainer width={chartWidth} height={288}>
+            <ResponsiveContainer width={chartWidth} height={288}>
               <BarChart data={data.distribution} barSize={42}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis dataKey="bucket" tick={{ fontSize: 12, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="bucket" tick={{ fontSize: 12, fill: "#475569" }} tickLine={false} axisLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#475569" }} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }} />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                   {data.distribution.map((_, idx) => (
@@ -271,9 +270,9 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
             <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
             <ResponsiveContainer width={chartWidth} height={320}>
               <BarChart data={data.sectionAverages} layout="vertical" barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="section" tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} tickLine={false} axisLine={false} width={90} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
+                <YAxis type="category" dataKey="section" tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} width={90} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: "none" }} formatter={(value) => [`${value}/100`, "Score"]} />
                 <Bar dataKey="score" radius={[0, 4, 4, 0]}>
                   {data.sectionAverages.map((entry) => (
@@ -303,9 +302,9 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: isDark ? "#cbd5e1" : "#475569" }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: isDark ? "#cbd5e1" : "#475569" }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#475569" }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: "#475569" }} />
                 <Tooltip />
                 <Area type="monotone" dataKey="count" stroke="#2563eb" fillOpacity={1} fill="url(#colorSub)" />
               </AreaChart>
@@ -322,9 +321,9 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
             <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
             <ResponsiveContainer width={chartWidth} height={256}>
               <BarChart data={data.practices.waterMonitoring} layout="vertical" barSize={14}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} />
-                <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} width={120} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#475569" }} />
+                <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: "#475569" }} width={120} />
                 <Tooltip />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]} fill="#0ea5e9" />
               </BarChart>
@@ -341,9 +340,9 @@ export function Overview({ data, t, submissionData, isDark }: Props) {
             <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
             <ResponsiveContainer width={chartWidth} height={256}>
               <BarChart data={data.practices.mortalityDisposal} layout="vertical" barSize={14}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDark ? "#1f2937" : "#e2e8f0"} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} />
-                <YAxis type="category" dataKey="method" tick={{ fontSize: 11, fill: isDark ? "#cbd5e1" : "#475569" }} width={150} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#475569" }} />
+                <YAxis type="category" dataKey="method" tick={{ fontSize: 11, fill: "#475569" }} width={150} />
                 <Tooltip />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]} fill="#f97316" />
               </BarChart>
