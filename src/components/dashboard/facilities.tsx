@@ -1,33 +1,13 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Flame,
-  FlaskConical,
-  MapPin,
-  Shield,
-  Syringe,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardList, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { DashboardData, FacilitySummary, RuleStatus } from "@/lib/kobo";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 
@@ -37,42 +17,70 @@ type Props = {
   onSelect: (id: number) => void;
   t: (key: string) => string;
   sectionAverages: DashboardData["sectionAverages"];
+  readOnlySelection?: boolean;
 };
 
-export function FacilitiesView({ facilities, currentFacility, onSelect, t, sectionAverages }: Props) {
-  if (!currentFacility) return null;
+const FACILITY_COLORS = {
+  external: "#16a34a",
+  internal: "#2563eb",
+};
 
-  const benchmarkData = currentFacility.sectionScores.map((s) => ({
-    section: s.section,
-    facility: s.score,
-    average: sectionAverages.find((a) => a.section === s.section)?.score ?? 0,
-  }));
+const AVERAGE_COLORS = {
+  external: "#86efac",
+  internal: "#93c5fd",
+};
 
+export function FacilitiesView({
+  facilities,
+  currentFacility,
+  onSelect,
+  t,
+  sectionAverages,
+  readOnlySelection = false,
+}: Props) {
   const [vw, setVw] = useState(1024);
+
   useEffect(() => {
     const update = () => setVw(typeof window !== "undefined" ? window.innerWidth : 1024);
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
-  const chartWidth = Math.max(320, Math.min(vw - 48, 960));
+
+  const chartWidth = Math.max(280, Math.min(vw - 80, 760));
+
+  if (!currentFacility) return null;
+
+  const benchmarkData = currentFacility.sectionScores.map((section) => {
+    const average = sectionAverages.find((item) => item.section === section.section)?.score ?? 0;
+    return {
+      section: section.section,
+      side: section.side,
+      facility: section.score,
+      average,
+    };
+  });
 
   return (
     <div className="space-y-6 min-w-0">
-      <Card className="border-0 shadow-sm overflow-hidden min-w-0">
+      <Card className="border-0 shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold">{t("tabs.facilities.select")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <Select value={String(currentFacility.id)} onValueChange={(value) => onSelect(Number(value))}>
-              <SelectTrigger className="w-full sm:w-80">
+            <Select
+              value={String(currentFacility.id)}
+              onValueChange={(value) => onSelect(Number(value))}
+              disabled={readOnlySelection}
+            >
+              <SelectTrigger className="w-full sm:w-96">
                 <SelectValue placeholder={t("tabs.facilities.select")} />
               </SelectTrigger>
               <SelectContent>
-                {facilities.map((f) => (
-                  <SelectItem key={f.id} value={String(f.id)}>
-                    {f.name} - {f.score}/100
+                {facilities.map((facility) => (
+                  <SelectItem key={facility.id} value={String(facility.id)}>
+                    {facility.name} - {facility.score}/100
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -82,10 +90,13 @@ export function FacilitiesView({ facilities, currentFacility, onSelect, t, secti
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm overflow-hidden min-w-0">
-        <CardContent className="p-6">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <InfoTitle title={t("facilities.information")} info={t("info.facilityDiagnostics")} />
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-xl font-semibold text-slate-900">{currentFacility.name}</h2>
                 <RiskBadge level={currentFacility.riskLevel} label={t(`risk.${currentFacility.riskLevel.toLowerCase()}`)} />
@@ -93,24 +104,25 @@ export function FacilitiesView({ facilities, currentFacility, onSelect, t, secti
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
-                  {currentFacility.location ?? t("facilities.noData")}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  {currentFacility.respondent ?? "N/A"}
+                  {currentFacility.basedOn ?? currentFacility.location ?? t("facilities.noData")}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Badge variant="secondary">{currentFacility.species ?? "N/A"}</Badge>
-                <Badge variant="outline">{currentFacility.productionSystem ?? "N/A"}</Badge>
-                <Badge variant="outline">{currentFacility.market ?? "N/A"}</Badge>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">{currentFacility.species ?? t("facilities.noData")}</Badge>
+                <Badge variant="outline">{currentFacility.productionSystem ?? t("facilities.noData")}</Badge>
+                <Badge variant="outline">{currentFacility.productionType ?? t("facilities.noData")}</Badge>
               </div>
             </div>
+
             <div className="flex flex-col items-center rounded-xl bg-slate-50 px-5 py-4">
-              <span className="text-sm text-slate-500">Score</span>
+              <span className="text-sm text-slate-500">{t("table.score")}</span>
               <span
                 className={`text-4xl font-bold ${
-                  currentFacility.score >= 70 ? "text-emerald-600" : currentFacility.score >= 50 ? "text-amber-600" : "text-rose-600"
+                  currentFacility.score >= 70
+                    ? "text-emerald-600"
+                    : currentFacility.score >= 50
+                    ? "text-amber-600"
+                    : "text-rose-600"
                 }`}
               >
                 {currentFacility.score}
@@ -121,135 +133,205 @@ export function FacilitiesView({ facilities, currentFacility, onSelect, t, secti
         </CardContent>
       </Card>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-3">
-        <Card className="border-0 shadow-sm lg:col-span-2 overflow-hidden min-w-0">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("facilities.scoreBySection")} info={t("info.sectionDetail")} />
-        </CardHeader>
-          <CardContent className="h-72 min-w-0">
-            <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
-            <ResponsiveContainer width={chartWidth} height={288}>
-              <BarChart data={currentFacility.sectionScores} barSize={24}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="section" tick={{ fontSize: 10, fill: "#475569" }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={60} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(value) => [`${value}/100`, "Score"]} />
-                <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="border-0 shadow-sm lg:col-span-2">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("facilities.scoreBySection")} info={t("info.sectionDetail")} />
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width={chartWidth} height="100%">
+              <BarChart data={currentFacility.sectionScores} layout="vertical" margin={{ left: 8, right: 16 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} />
+                <YAxis type="category" dataKey="section" width={130} tick={{ fontSize: 11, fill: "#475569" }} />
+                <Tooltip formatter={(value) => [`${value}/100`, t("table.score")]} />
+                <Bar dataKey="score" radius={[0, 4, 4, 0]}>
                   {currentFacility.sectionScores.map((entry) => (
-                    <Cell key={entry.section} fill={entry.score >= 70 ? "#22c55e" : entry.score >= 50 ? "#f59e0b" : "#ef4444"} />
+                    <Cell key={entry.section} fill={entry.side === "external" ? FACILITY_COLORS.external : FACILITY_COLORS.internal} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm overflow-hidden min-w-0">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("facilities.quickInfo")} info={t("info.facilityDiagnostics")} />
-        </CardHeader>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("facilities.quickInfo")} info={t("info.facilityDiagnostics")} />
+          </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-600">{t("facilities.education")}</span>
-              <span className="font-medium">{currentFacility.respondentEducation ?? t("facilities.noData")}</span>
-            </div>
+            <InfoRow label={t("facilities.yearsOperation")} value={currentFacility.yearsOperation ?? t("facilities.noData")} />
             <Separator />
-            <div className="flex justify-between">
-              <span className="text-slate-600">{t("facilities.waterSource")}</span>
-              <span className="font-medium">{currentFacility.waterSource ?? t("facilities.noData")}</span>
-            </div>
+            <InfoRow label={t("facilities.species")} value={currentFacility.species ?? t("facilities.noData")} />
             <Separator />
-            <div className="flex justify-between">
-              <span className="text-slate-600">{t("facilities.feed")}</span>
-              <span className="font-medium">{currentFacility.feedType ?? t("facilities.noData")}</span>
-            </div>
+            <InfoRow label={t("facilities.waterSource")} value={currentFacility.waterSource ?? t("facilities.noData")} />
             <Separator />
-            <div className="flex justify-between">
-              <span className="text-slate-600">{t("facilities.waterMonitoring")}</span>
-              <span className="font-medium">{currentFacility.waterMonitoringFrequency ?? t("facilities.noData")}</span>
-            </div>
+            <InfoRow label={t("facilities.waterMonitoring")} value={currentFacility.waterMonitoringFrequency ?? t("facilities.noData")} />
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-3">
-        <Card className="border-0 shadow-sm lg:col-span-2 overflow-hidden min-w-0">
+      <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
           <InfoTitle title={t("facilities.benchmark")} info={t("info.facilityBenchmark")} />
         </CardHeader>
-          <CardContent className="h-72 min-w-0">
-            <div className="w-full h-full min-w-0" style={{ minWidth: 280 }}>
-            <ResponsiveContainer width={chartWidth} height={288}>
-              <BarChart data={benchmarkData} barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="section" tick={{ fontSize: 10, fill: "#475569" }} tickLine={false} axisLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} tickLine={false} axisLine={false} />
-                <Tooltip />
-                <Bar dataKey="average" stackId="a" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="facility" stackId="a" fill="#2563eb" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            </div>
+        <CardContent className="h-96">
+          <ResponsiveContainer width={chartWidth} height="100%">
+            <BarChart data={benchmarkData} layout="vertical" margin={{ left: 8, right: 16 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} />
+              <YAxis type="category" dataKey="section" width={130} tick={{ fontSize: 11, fill: "#475569" }} />
+              <Tooltip formatter={(value) => [`${value}/100`, t("table.score")]} />
+              <Bar dataKey="average" name={t("facilities.networkAverage")} radius={[0, 4, 4, 0]}>
+                {benchmarkData.map((entry) => (
+                  <Cell key={`${entry.section}-average`} fill={entry.side === "external" ? AVERAGE_COLORS.external : AVERAGE_COLORS.internal} />
+                ))}
+              </Bar>
+              <Bar dataKey="facility" name={t("table.facility")} radius={[0, 4, 4, 0]}>
+                {benchmarkData.map((entry) => (
+                  <Cell key={`${entry.section}-facility`} fill={entry.side === "external" ? FACILITY_COLORS.external : FACILITY_COLORS.internal} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("facilities.keyPractices")} info={t("info.practiceCoverage")} />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {currentFacility.keyPractices.map((practice) => (
+              <RuleRow key={practice.id} rule={practice} t={t} />
+            ))}
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm overflow-hidden min-w-0">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("facilities.diagnostics")} info={t("info.facilityDiagnostics")} />
-        </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <RowItem icon={<Shield className="h-4 w-4 text-blue-500" />} label={t("facilities.quarantine")} value={currentFacility.quarantine} t={t} />
-            <RowItem icon={<Flame className="h-4 w-4 text-amber-500" />} label={t("facilities.waterTreatment")} value={currentFacility.waterTreatment} t={t} />
-            <RowItem icon={<Syringe className="h-4 w-4 text-orange-500" />} label={t("facilities.antibiotics")} value={!!currentFacility.antibiotics} t={t} />
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2 text-slate-700">
-                <FlaskConical className="h-4 w-4 text-emerald-500" />
-                <span>{t("facilities.diagnostics")}</span>
-              </div>
-              <span className="text-right text-sm text-slate-700">
-                {(currentFacility.diagnosticTypes ?? []).join(", ") || t("facilities.noData")}
-              </span>
-            </div>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("facilities.animalHealthMonitoring")} info={t("info.animalHealthMonitoring")} />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {currentFacility.animalHealthMonitoring.map((rule) => (
+              <RuleRow key={rule.id} rule={rule} t={t} />
+            ))}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         <RiskCard
           color="rose"
-          icon={<Trash2 className="h-4 w-4 text-rose-500" />}
-          title={t("facilities.risks.critical")}
-          items={currentFacility.riskFactors.critical}
+          icon={<AlertTriangle className="h-4 w-4 text-rose-500" />}
+          title={t("facilities.risks.high")}
+          items={currentFacility.highRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="amber"
           icon={<AlertCircle className="h-4 w-4 text-amber-500" />}
           title={t("facilities.risks.medium")}
-          items={currentFacility.riskFactors.medium}
+          items={currentFacility.moderateRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="emerald"
           icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />}
           title={t("facilities.risks.positive")}
-          items={currentFacility.riskFactors.positive}
+          items={currentFacility.positivePractices}
           emptyLabel={t("facilities.noData")}
         />
       </div>
+
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-slate-600" />
+            <InfoTitle title={t("facilities.subcategoryChecklist")} info={t("info.subcategoryChecklist")} />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {currentFacility.subcategoryChecklist.map((subcategory) => (
+            <div key={subcategory.section} className="rounded-lg border border-slate-200">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2">
+                <h4 className="text-sm font-semibold text-slate-800">{subcategory.section}</h4>
+                <Badge variant="outline" className={subcategory.side === "external" ? "text-emerald-700" : "text-blue-700"}>
+                  {subcategory.side === "external" ? t("overview.external") : t("overview.internal")}
+                </Badge>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead>{t("table.question")}</TableHead>
+                      <TableHead>{t("table.answer")}</TableHead>
+                      <TableHead className="w-[130px]">{t("table.status")}</TableHead>
+                      <TableHead>{t("table.recommendation")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {subcategory.items.map((item) => (
+                      <TableRow key={`${subcategory.section}-${item.id}`}>
+                        <TableCell className="font-medium">{item.label}</TableCell>
+                        <TableCell>{item.answer}</TableCell>
+                        <TableCell>
+                          {!item.applicable ? (
+                            <Badge variant="secondary">{t("status.notApplicable")}</Badge>
+                          ) : item.compliant ? (
+                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                              {t("status.compliant")}
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-rose-100 text-rose-700">
+                              {t("status.nonCompliant")}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{item.recommendation}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-function RowItem({ icon, label, value, t }: { icon: ReactNode; label: string; value?: boolean; t: (k: string) => string }) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-slate-700">
-        {icon}
-        <span>{label}</span>
+    <div className="flex justify-between gap-3">
+      <span className="text-slate-600">{label}</span>
+      <span className="text-right font-medium">{value}</span>
+    </div>
+  );
+}
+
+function RuleRow({ rule, t }: { rule: RuleStatus; t: (key: string) => string }) {
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-md border border-slate-100 px-3 py-2">
+      <div className="space-y-1">
+        <p className="text-sm text-slate-700">{rule.label}</p>
+        <p className="text-xs text-slate-500">
+          {t("table.answer")}: {rule.answer}
+        </p>
       </div>
-      <Badge variant="outline">{value ? t("status.yes") : t("status.no")}</Badge>
+      {!rule.applicable ? (
+        <Badge variant="secondary">{t("status.notApplicable")}</Badge>
+      ) : rule.matched ? (
+        <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+          {t("status.yes")}
+        </Badge>
+      ) : (
+        <Badge variant="secondary" className="bg-rose-100 text-rose-700">
+          {t("status.no")}
+        </Badge>
+      )}
     </div>
   );
 }
@@ -275,7 +357,7 @@ function RiskCard({
   const IconBullet = color === "rose" ? AlertTriangle : color === "amber" ? AlertCircle : CheckCircle2;
   const iconColor = color === "rose" ? "text-rose-500" : color === "amber" ? "text-amber-500" : "text-emerald-500";
   return (
-    <Card className={`border-0 shadow-sm ${border} overflow-hidden`}>
+    <Card className={`border-0 shadow-sm ${border}`}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           {icon}
@@ -285,10 +367,10 @@ function RiskCard({
       <CardContent>
         {items.length > 0 ? (
           <ul className="space-y-2">
-            {items.map((r) => (
-              <li key={r} className="flex items-start gap-2 text-sm text-slate-700">
+            {items.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-sm text-slate-700">
                 <IconBullet className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
-                {r}
+                {item}
               </li>
             ))}
           </ul>

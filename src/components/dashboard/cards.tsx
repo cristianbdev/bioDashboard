@@ -1,11 +1,12 @@
 import { AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 type MetricCardProps = {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon: any;
+  icon: LucideIcon;
   color?: "sky" | "emerald" | "rose" | "amber" | "violet";
 };
 
@@ -49,8 +50,9 @@ export function ComplianceBar({ label, value, color }: { label: string; value: n
   );
 }
 
-export function RiskBadge({ level, label }: { level: "LOW" | "MEDIUM" | "HIGH"; label: string }) {
+export function RiskBadge({ level, label }: { level: "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH"; label: string }) {
   const config = {
+    NEGLIGIBLE: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", Icon: CheckCircle2 },
     LOW: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", Icon: CheckCircle2 },
     MEDIUM: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", Icon: AlertCircle },
     HIGH: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200", Icon: AlertTriangle },
@@ -72,7 +74,7 @@ export function CoveragePill({
 }: {
   label: string;
   value: number;
-  icon: any;
+  icon: LucideIcon;
   color: string;
 }) {
   return (

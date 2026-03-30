@@ -170,3 +170,21 @@
 .recharts-responsive-container {
   min-width: 0 !important;
 }
+
+/* MapLibre Popup Styling */
+.maplibregl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.maplibregl-popup-tip {
+  display: none !important;
+}
+
+.maplibregl-popup-close-button {
+  display: none !important;
+}

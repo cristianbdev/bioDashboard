@@ -1,0 +1,3451 @@
+{
+  "source": "Risk_Quantification.csv",
+  "version": "2026-03-28",
+  "sideWeights": {
+    "external": 0.5,
+    "internal": 0.5
+  },
+  "sidePoints": {
+    "external": 50,
+    "internal": 50
+  },
+  "questionRules": {
+    "Facility_Name": {
+      "id": "Facility_Name",
+      "subcategory": "Facility General information",
+      "question": "Facility name",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Location": {
+      "id": "Location",
+      "subcategory": "Facility General information",
+      "question": "Location (Country and municipality)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Latitude_and_Longitude": {
+      "id": "Latitude_and_Longitude",
+      "subcategory": "Facility General information",
+      "question": "Latitude and Longitude",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Respondent_name": {
+      "id": "Respondent_name",
+      "subcategory": "Facility General information",
+      "question": "Name of respondent",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Email": {
+      "id": "Email",
+      "subcategory": "Facility General information",
+      "question": "Email adress",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "respondent_role": {
+      "id": "respondent_role",
+      "subcategory": "Facility General information",
+      "question": "What is the respondent’s role on the facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Respondent_s_Gender": {
+      "id": "Respondent_s_Gender",
+      "subcategory": "Facility General information",
+      "question": "Respondent's Gender",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Respondent_education": {
+      "id": "Respondent_education",
+      "subcategory": "Facility General information",
+      "question": "Respondent education level",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Respondent_experience": {
+      "id": "Respondent_experience",
+      "subcategory": "Facility General information",
+      "question": "Respondent year of experience in aquaculture",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Years_operation": {
+      "id": "Years_operation",
+      "subcategory": "Facility General information",
+      "question": "How long has the facility been in operation?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Type_production": {
+      "id": "Type_production",
+      "subcategory": "Facility General information",
+      "question": "What is the type of production in the facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Production_system": {
+      "id": "Production_system",
+      "subcategory": "Facility General information",
+      "question": "What the production system does the facility use? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Based": {
+      "id": "Based",
+      "subcategory": "Facility General information",
+      "question": "Where is the facility located? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Operated_outdoor": {
+      "id": "Operated_outdoor",
+      "subcategory": "Facility General information",
+      "question": "If on land, does the facility have any part of its production conducted outdoors?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Which_species_are_cultured_in_": {
+      "id": "Which_species_are_cultured_in_",
+      "subcategory": "Facility General information",
+      "question": "Which species are cultured in this facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Please_list_any_other_species_": {
+      "id": "Please_list_any_other_species_",
+      "subcategory": "Facility General information",
+      "question": "Please list any other species cultured in the facility that are not mentioned in previous question",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Market": {
+      "id": "Market",
+      "subcategory": "Facility General information",
+      "question": "What is the main market of the Aquatic Animals?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "Type_retails": {
+      "id": "Type_retails",
+      "subcategory": "Facility General information",
+      "question": "Type of retail (s) (Select all the possible options)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_1_1": {
+      "id": "_1_1",
+      "subcategory": "1. Risk Factors related to environment and surrounding areas / External",
+      "question": "Are there any active aquatic animal production facilities within a 10 km radius of this facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Cages: assess the feasibility of increasing the distance between sites. Alternatively, coordinate production and hasvest cycles by implementing all-in/all-out system and synchronized fallowing period.\nLand facilities: Assess the potential disease transmision patways and implement mitigation measures, speciffically addressing the identyed risk pathways such as common routes and water sources"
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Do not know",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Identify all existing aquatic animal production sites within 10 km radious the facility. If any are present, assess the potencial pathways to intruction of diseases and implement measures as restrictions to avoid free acces of persons, animals and vehicles, water source identification, monitoring and treatment."
+        }
+      ]
+    },
+    "_1_2": {
+      "id": "_1_2",
+      "subcategory": "1. Risk Factors related to environment and surrounding areas / External",
+      "question": "If yes, how Many",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_1_3": {
+      "id": "_1_3",
+      "subcategory": "1. Risk Factors related to environment and surrounding areas / External",
+      "question": "Are the facilities boundaries clearly marked with signs?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "To have clear bounderies that visibly mark the facility's perimeter. For cage production, use buoys, demarcation lines or navigation markers to vizually identiy the production area and enrure it remains withion approved zones. For land-based facilities, boundaries should be defined using fences, walls, trenches or any other physical markers to clearly separate the property from the surrounding area"
+        }
+      ]
+    },
+    "_1_4": {
+      "id": "_1_4",
+      "subcategory": "1. Risk Factors related to environment and surrounding areas / External",
+      "question": "Are the different production areas clearly marked with signs?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Clearly label each production area with its name and specific acces restictions or entrance protocols. Additionally, implement a directional flow of people moving from lower-risk to higher-risk areas (e.g.,  from the hatchery to firgerlings units, and finally to grow-out ponds)."
+        }
+      ]
+    },
+    "_1_5": {
+      "id": "_1_5",
+      "subcategory": "1. Risk Factors related to environment and surrounding areas / External",
+      "question": "Does the facility have a sanitaty system including handwashing and disinfection footwear at the entrance?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Install footbaths and hand-washing stations at all facility entry points. these stations must allow personnel and visitors to properly clean and disinfect their hands and footwear. They should be constructed from non- porous materials resistant to corrosive desinfectants, such as plastic, concrete or alumnium. These units may be custom-built or artisanal, as long as they facilitate effective disfection protocols adapated to the volume of people at the property\n When necessary and feasible, providing site-specific boots or shoe covers for exclusive use whitin the facility can further decrease the risk of patogen entry."
+        }
+      ]
+    },
+    "_2_1": {
+      "id": "_2_1",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Does the facility introduce aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Minimize the intrroduction of live animals at all stages as much as possible. when introductions are necessary implement mitigation measures such as diagnostic testing and mandatory quaratine.  Animals must only be sourced from verified and trsuted origins qith a proven health status."
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_2_2": {
+      "id": "_2_2",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "How many times have aquatic animals (eggs, larvae, fry, or adults) been received in the past 12 months?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_2_3": {
+      "id": "_2_3",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "What aquatic animals are introduced into the facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_2_4": {
+      "id": "_2_4",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Are all required official permits, licenses, and registrations obtained prior acquiring eggs, fry, or adult aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes;",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No;",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "All necesary permits, registrations, and licences requrired by national or international regulations must be verified prior to acquiring live aquatic animals at any stage. This documentation must be maintained archived and accessible to ensure traceability during sanitary inspections"
+        }
+      ]
+    },
+    "_2_5": {
+      "id": "_2_5",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Is health status documentation required prior to purchasing eggs, fry, or adult aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Health status documentation such as sanitary movement permits, diagnostic test results,  Specific Pathogen-Free (SPF) or disease-free certifications must be required for all incoming animals and their farm of origin. This documentation must be Maintained in the facility records and integrated with the traceability system to guarantee the origen and health status of each batch"
+        }
+      ]
+    },
+    "_2_6": {
+      "id": "_2_6",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Does the documentation of the health status cover the following agents? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_2_7": {
+      "id": "_2_7",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Is quarantine applied when receiving aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "All new aquatic animals must be isolated from the existing stock for a minimum of 15 days. During this period, animals should be observed tfor abnormal behaviour and clinical signs of disease before being introduced to the main production area. For cage systems, quarantine must be conducted in land-based facilties or at the farm of origin.  In these cases, the batch mustbe be kept isolated for at least 15 days, and the sanitary status must be verified through inspections and supporting documentation."
+        }
+      ]
+    },
+    "_2_8": {
+      "id": "_2_8",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Are the quarantine facilities cleaned and disinfected before the arrival of aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement cleaning and disinfection routinesin the quarantine area after each use and before new animals arrive at the facility to avoid cross-contamination beetween incoming batches"
+        }
+      ]
+    },
+    "_2_9": {
+      "id": "_2_9",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Is the quarantine zone separated from other production areas?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The quarantine area must be physically isolated from the rest of the production facility, with sufficient distance to prevent cross contamination. Furthermore,  wastewater discharged from quarantine thanks or ponds, must not be reused for cleaning or disfection, nor should it come intp contact with the general production stock."
+        }
+      ]
+    },
+    "_2_10": {
+      "id": "_2_10",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Are specific work clothes designated for the quarantine area, or are general work clothes cleaned and disinfected after use?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Clothing and footwear used by the personel in the quarantine area must be zone-specific. Alternatively, SOPs for their cleaning and disinfection must be implemented to prevent the trasmision of diseases via fomites from new stock to the main production area."
+        }
+      ]
+    },
+    "_2_11": {
+      "id": "_2_11",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Which of the following actions are taken during quarantine to reduce the risk of disease introduction? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Baths with salt",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Vaccination",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Eggs disinfection",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Treatment for external parasites",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Preventive antibiotic treatment",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Anbiotics should not be used as a prophilactic measure"
+        },
+        {
+          "response": "No mitigation activities are applied",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "In addition to the isolation and observation during the quaratine period, supllementary mitigation measures should be implementened to reduce the risk of disease introduction. This may include salt baths, vaccinations and parasite treatments (administratered as necessary according to the facility's health plan). Furthermore, all introduced eggs must be disinfected with iodine solutions at least twice."
+        }
+      ]
+    },
+    "_2_12": {
+      "id": "_2_12",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Are the aquatic animals screened for diseases of concern after arrival?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Based on a disseasee risk assessment identifying pathogens of concern, diagnostic screening should be conducted to prevent transmission from asymtomatic (apparently healthy) animals. Disease prioritization must include WOAH-listed diseases and nationally regulated diseases specific to the cultured species and stages."
+        }
+      ]
+    },
+    "_2_13": {
+      "id": "_2_13",
+      "subcategory": "2.Risk factors related to Introduction of all life stages of aquatic animals / External",
+      "question": "Is there a traceability system in place with individual or group identification for each batch, where the origin of the animals is documented?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement  a traceability systems (using either physical records or mangement sofware) to identify the location and origen of every batch or individual animal (such as broodstock) within the facility. These records must clarly document the source and current placement of every batch."
+        }
+      ]
+    },
+    "_3_1": {
+      "id": "_3_1",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "What water sources are used in the facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_3_2": {
+      "id": "_3_2",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "Is the water source shared with other facilities?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Avoid to sharing water sources with other facilities whenever possible. When this is not feasible, mitigation measures such as water treatment systems must be implemented at the intake. For cage production sites located in shared water bodies, a minimun safe distance of 10 km from neighboring facilities should be maintained."
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_3_3": {
+      "id": "_3_3",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "If yes, is there coordination between the facilities sharing the same water source for disease control?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Coordinate with neighboring facilities to implement shared biosecurity measures, such as all-in/all-out systems and synchronized fallowing Periods. Additionally, information regarding sanitary issues should be shared transparently to allow for the increasse of preventive measures when necessary."
+        }
+      ]
+    },
+    "_3_4": {
+      "id": "_3_4",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "Is the intake water treated?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement intake water treatment using physical and/or chemical processess, either alone or in combination. The specific treatment method should be selected based on the pathogens identified as risks to the facility"
+        }
+      ]
+    },
+    "_3_5": {
+      "id": "_3_5",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "If yes, what type of treatment is applied? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Mechanical filtration (sand and gravels)",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Biological filtration-Biofilter",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": "Implement intake water treatment using physical and/or chemical processess, either alone or in combination. The specific treatment method should be selected based on the pathogens identified as risks to the facility"
+        },
+        {
+          "response": "Ultraviolet (UV) light treatment",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Ozone treatment",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Chlorination",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        }
+      ]
+    },
+    "_3_6": {
+      "id": "_3_6",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "Is the  wastewater treated before disponsal?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement wastewater treatment using physical and/or chemical process, either alone or in combination. The treatment merhod should be selected in accordance with the enviromental regulations, and the specific pathogens for which the facility aims to reduce the risk of transmission"
+        }
+      ]
+    },
+    "_3_7": {
+      "id": "_3_7",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "If yes, what type of treatment is applied to the wastewater? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Mechanical filtration (sand and gravels)",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Biological filtration-Biofilter",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": "Implement wastewater treatment using physical and/or chemical process, either alone or in combination. The treatment merhod should be selected in accordance with the enviromental regulations, and the specific pathogens for which the facility aims to reduce the risk of transmission"
+        },
+        {
+          "response": "Ultraviolet (UV) light treatment",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Ozone treatment",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Chlorination",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        }
+      ]
+    },
+    "_3_8": {
+      "id": "_3_8",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "Are water parameters measured?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Key water quality parameters, including disolved oxigen, pH, temperature, and turbidity must be monitoned consistently, at least once per week, with all data formally recorded. These measurements can be conducted using on-site equipments. Additionally, it is recommended to monitor additional parameters such as ammonia, nitrate, nitrite, alkalinity, and hardness on a seminanual or anual basis to evaluate trends and implement corrective acctions when necessary."
+        }
+      ]
+    },
+    "_3_9": {
+      "id": "_3_9",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "Which of the following water parameters are measured? \n(Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Temperature",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Salinity",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "pH",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Carbon dioxide",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Oxygen",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Ammonia",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": "Key water quality parameters, including disolved oxigen, pH, temperature, and turbidity must be monitoned consistently, at least once per week, with all data formally recorded. These measurements can be conducted using on-site equipments. Additionally, it is recommended to monitor additional parameters such as ammonia, nitrate, nitrite, alkalinity, and hardness on a seminanual or anual basis to evaluate trends and implement corrective acctions when necessary."
+        },
+        {
+          "response": "Nitrite",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Nitrate",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Total alkalinity",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Total hardness",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Calcium hardness",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Chloride",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Turbidity",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        }
+      ]
+    },
+    "_3_10": {
+      "id": "_3_10",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "How often are the water parameters measured?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_3_11": {
+      "id": "_3_11",
+      "subcategory": "3. Risk factors related to source of water and its quality / External",
+      "question": "cleaning and disinfection of water supply tanks?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement routine cleaning and disinfection protocols for the water supply tanks to prevent cross-contamination amd buildup of biofilms"
+        },
+        {
+          "response": "Does not have water supply tank",
+          "rawScore": "(No-score)",
+          "score": null,
+          "recommendation": null
+        }
+      ]
+    },
+    "_4_1": {
+      "id": "_4_1",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "What type of feed is used in the facility? \n(Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Commercial feed",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "farm-made feed",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Food scraps",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Raw or live feed",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Utilize comercial, balanced feed manufactured in accordance with Feed Manufacturing Practices. All feed should be sourced from trusted suppliers who provide certification for the quality and safety of the product."
+        },
+        {
+          "response": "Mix of commercial and farm-made food",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Mix of commercial and raw or live feed",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Feces from other species",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_4_2": {
+      "id": "_4_2",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "How is the feed administrated in the facility?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_4_3": {
+      "id": "_4_3",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "How is the feed transported to the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Own vehicle",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Feed company vehicle",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Vehicles from other establishments (nearby establishments)",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Avoid sharing vehicles with other establishments. When this is not possible, establish rigorous cleaning and disinfection procedures to mitigate the risk of introduction of pathogen introduction"
+        }
+      ]
+    },
+    "_4_4": {
+      "id": "_4_4",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are the following factors verified before receiving veterinary medicinal products? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Feed quality",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "Package condition",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "Aspects of each supply (color, odour, solubility, consistency",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": "To prevent the use of contaminated veterinary medicinal products and feed, the following inputs must be inspected upon arrrival: verify packaging integrity, physical characteristics (color, odour, solubility, consistency), and expriration date. Furthermore, all products must be approved by the compentent authority."
+        },
+        {
+          "response": "Approved by competent Authority",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Expiration date",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "Contamination (different color/smell than usual)",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "No parameters are verified",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_4_5": {
+      "id": "_4_5",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are the vehicles and containers used for transporting aquatic animals appropriate for the species, size, weight, and number of animals being transported?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The vehicles and containers should be constructed from non-porous materials resistant to corrosive desinfectants, such as high-grade plastic, or alumnium. Additionally, their dimensions and design must be addequate for the species, quantity, and biomass being transported to prevent physical lessons or injury."
+        }
+      ]
+    },
+    "_4_6": {
+      "id": "_4_6",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are vehicles (trucks, boats) disinfected before entering the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement routine cleaning and disinfection protocols for all vehicles (trucks, boats) entering the facility to prevent cross-contamination and the introduction of pathogens."
+        }
+      ]
+    },
+    "_4_7": {
+      "id": "_4_7",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "How often do vehicles (trucks, boats) arrive at the facility?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_4_8": {
+      "id": "_4_8",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Is there a designated parking area for vehicles outside the production area?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Designate a specific parking area for all vehicles, including those delivering supplies. This area must be located outside the production zone and at an enough distance to prevent any contact with the stocked animals."
+        }
+      ]
+    },
+    "_4_9": {
+      "id": "_4_9",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Does the facility share equipment with other facilities?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": "Equipment should not be shared with other facilities. In exceptional cases where sharing is necessary, the equipment must be thoroughly cleaned and disinfected both before and after use within the facility."
+        }
+      ]
+    },
+    "_4_10": {
+      "id": "_4_10",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Which the following equipment and materials are shared with other facilities? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_4_11": {
+      "id": "_4_11",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are shared equipment between facilities cleaned and disinfected?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes, before and after use",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Yes, but only before it is used",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Yes, but only after it's used",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Equipment should not be shared with other facilities. In exceptional case that sharing is necessary, rigorous cleaning and disinfection routines must be implemented both before and after each use to prevent cross-contamination between facilities."
+        },
+        {
+          "response": "No clean and disinfection of shared equipment",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_4_12": {
+      "id": "_4_12",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Is there separate equipment and materials for handling quarantined aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mantain exclusive equiment and materials for handling animals in the quarantine area. These items must not be used whitin the production stock to prevent transmision of pathogens"
+        }
+      ]
+    },
+    "_4_13": {
+      "id": "_4_13",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are the boxes and bags used to transport live animals disinfected before disposal?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Before disposal, all bags and boxes used for live animal transport must be thoroughly disinfected to prevent cross-contamination"
+        },
+        {
+          "response": "Does not apply because boxes and bags are no used for animal transportation",
+          "rawScore": "(No-score)",
+          "score": null,
+          "recommendation": null
+        }
+      ]
+    },
+    "_4_14": {
+      "id": "_4_14",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are the boxes and bags used to transport live animals reused before disposal?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Boxes and bags used to transport live animals must be discarted and disposed of after each use. A single use protocol  must be implemented; to prevent reuse, ensure all nags are punctured and boxes are broken down during the disposal process."
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Does not apply because boxes and bags are no used for animal transportation",
+          "rawScore": "(No-score)",
+          "score": null,
+          "recommendation": null
+        }
+      ]
+    },
+    "_4_15": {
+      "id": "_4_15",
+      "subcategory": "4. Risk factors related to Fomites (vehicles and equiment for transport live aquatic animals, quarantine facilities, feed and supplies source and waste etc.) / External",
+      "question": "Are the containers used to transport live animals disinfected before and after use?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement strict cleanining and disinfecion routines for all  internal and contac surfaces of vehcicles where the live animals are transported. This process must be conducted both before and after each use."
+        },
+        {
+          "response": "Does not apply because containers are no used for animal transportation",
+          "rawScore": "(No-score)",
+          "score": null,
+          "recommendation": null
+        }
+      ]
+    },
+    "_5_1": {
+      "id": "_5_1",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "Does the facility have barriers (natural or constructed) or fencing to prevent the entry of potential vectors, such as animals and wildlife, that could introduce new pathogens?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "To have physical or natural barriers, such as fencing, to prevent the  entry of potential vectors, such as animals and wildlife, that could introduce pathogens into the facility."
+        }
+      ]
+    },
+    "_5_2": {
+      "id": "_5_2",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "Are inspections conducted to check for pests and predators?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Inspect the production area, storage rooms, and surrounding perimeter routinely, to identify pest or predators that could pose a risk to disease transmisio and animal welfare"
+        }
+      ]
+    },
+    "_5_3": {
+      "id": "_5_3",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "Are nets in place to prevent birds from accessing the animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Install predaror netting over all cages, ponds, and tanks to prevent avian predators access to the aquatic animals."
+        }
+      ]
+    },
+    "_5_4": {
+      "id": "_5_4",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "Are there pets (cats, dogs, etc.) on the facilities?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Restrict the presence and movement of pets within the facility. Any domectic animal on-site must be routinely dewormed and prohibited from having contact with the aquatic animals, feed, equiment or materials that como into contact with the stock."
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Restrict the presence and movement of pets within the facility. Any domectic animal on-site must be routinely dewormed and prohibited from having contact with the aquatic animals, feed, equiment or materials that como into contact with the stock."
+        },
+        {
+          "response": "Does not apply, because no pets live in the facilities",
+          "rawScore": "(No-score)",
+          "score": null,
+          "recommendation": null
+        },
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Restrict the presence and movement of pets within the facility. Any domectic animal on-site must be routinely dewormed and prohibited from having contact with the aquatic animals, feed, equiment or materials that como into contact with the stock."
+        },
+        {
+          "response": "Does not apply, because no pets live in the facilities",
+          "rawScore": "(No-score)",
+          "score": null,
+          "recommendation": null
+        }
+      ]
+    },
+    "_5_5": {
+      "id": "_5_5",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "Is aquatic animal waste (e.g., dead animals, entrails of slaughtered animals unsuitable for human consumption) kept away from predators and scavengers?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Aquatic animal waste (e.g., dead animals, entrails from slaughtered animals unsuitable for human consumption) must be stored propperly to prevent access by predators and scavenger before to final disposal."
+        }
+      ]
+    },
+    "_5_6": {
+      "id": "_5_6",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "How is organic waste (fecal matter, uneaten feed, unfertilized eggs) managed at the facility? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Buried in the ground",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "collection for final disposal outside the facility",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Siled with acids",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Used to feed other fish/animals",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Organic waste must not be used as feed, either alone or in combination."
+        },
+        {
+          "response": "Released to water source",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Organic waste must not be released to any water source. This prevents the contaminatrion of water, affecting wild populations, neighbouring aquaculture facilities and downstream human users"
+        }
+      ]
+    },
+    "_5_7": {
+      "id": "_5_7",
+      "subcategory": "5. Risk factors related to Vectors (animals and wildlife) / External",
+      "question": "Are pest control measures in place at the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement physical or chemical pest control measures selected based on the identified pest species,the level of infestation, and the specific facilty conditions. Exclusion measures must be applied to storerooms to prevent rodent entry. In particular, the use of natural predators (such as cats or snakes) is not a valid biosecuriy measure, as these animals themselves pose a risk for disease transmission."
+        }
+      ]
+    },
+    "_6_1": {
+      "id": "_6_1",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "Do the facility personnel visit other aquaculture facilities?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Personnel should be prohibited from visiting other aquaculture facilities to prevent cross contamination."
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Don’t know",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Personnel should be prohibited from visiting other aquaculture facilities to prevent cross contamination."
+        }
+      ]
+    },
+    "_6_2": {
+      "id": "_6_2",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "What procedures are required for personnel before entering the Production facility? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Use protective clothes",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Change of shoes",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Footbath with disinfectant",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Hand Disinfection",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "None",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Provide exclusive clothing and footwear for personnel working in the production area. It is also essential to use protective clothing and equipment appropiate for the assigned task to mitigate personnel safety risks. Personnel must routinely use footbaths and hand-washing stations at all facility and production area entry points."
+        }
+      ]
+    },
+    "_6_3": {
+      "id": "_6_3",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "When is handwashing required for personnel? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Before entering the facilities",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Before to begin the daily activities",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Before entering each production area",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "After handling sick, moribund or dead animals",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "After handling animals in the quarantine zone",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Had-washing routines within the facility must be established and strictly followed. It is recommended that personnel wash their hands before entering the faciltiies, before begining daily activities, and when entering to a new production area. Adittionally, hands must be washed after handling sick, moribud or dead animals, and after working in the quarantine zone."
+        },
+        {
+          "response": "Do not know",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_6_4": {
+      "id": "_6_4",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "Is the protective clothing washed and disinfected?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Protective clothing used within the facility by personel should be washed and disinfected routinely."
+        }
+      ]
+    },
+    "_6_5": {
+      "id": "_6_5",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "Are visitors allowed to the facility?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_6_6": {
+      "id": "_6_6",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "What procedures are required for visitors before entering the facility? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Use protective clothes",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Change of shoes",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Footbath with disinfectant",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "Hand Disinfection",
+          "rawScore": "0.25",
+          "score": 0.25,
+          "recommendation": null
+        },
+        {
+          "response": "None",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Biosecurity procedures must be established for visitors entering the facility, including the mandatory use of footbaths and hand-wahing stations at all facility  and production area entry points. Additionally, it is recomended to provide exclusive or disposable clothing and footwear for any visitors entering the production area."
+        }
+      ]
+    },
+    "_6_7": {
+      "id": "_6_7",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "Do visitors receive information about biosecurity procedure for visitors?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Before entering the facilities, visitors must be informed of the implemented biosecurity procedures, any site restrictions, and the required code of conduct durning their visit."
+        }
+      ]
+    },
+    "_6_8": {
+      "id": "_6_8",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "Is it prohibited for visitors to be in close contact with or handle aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Visitors must not be allowed to be in direct or close contact with the animals"
+        }
+      ]
+    },
+    "_6_9": {
+      "id": "_6_9",
+      "subcategory": "6. Risk Factors related to personnel and visitors / External",
+      "question": "Do visitors document the names of other facilities they have visited or declare no prior visits before arriving at the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Record all visits to the facility and register whether visitors have been to other facilities previously. This registry is essential for outbreak investigation and tracking the origin of diseases."
+        }
+      ]
+    },
+    "_7_1": {
+      "id": "_7_1",
+      "subcategory": "7. Risk Factors Related with production and its facilities / Internal",
+      "question": "Does the facility culture more than one species in the same production unit (i.e., polyculture)?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_7_2": {
+      "id": "_7_2",
+      "subcategory": "7. Risk Factors Related with production and its facilities / Internal",
+      "question": "Does the facility have a defined upper limit for aquatic animal density per cage, tank, or unit to be stocked?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Define an upper density limit per production unit based on the species cultured,the life stage, water quality, and enviromental conditions"
+        }
+      ]
+    },
+    "_7_3": {
+      "id": "_7_3",
+      "subcategory": "7. Risk Factors Related with production and its facilities / Internal",
+      "question": "How often is the defined upper limit of animal density exceeded?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Never",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Rarely",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Do not exceed the upper animal density limit. Furthermore, this limit should be adjusted when water and environmental conditions may cause stress to the cultured animals."
+        },
+        {
+          "response": "often",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_7_4": {
+      "id": "_7_4",
+      "subcategory": "7. Risk Factors Related with production and its facilities / Internal",
+      "question": "Does the facility have a designated area for cleaning and disinfecting equipment?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Designate a specific area where equipment can be cleaned and disinfected in an organized and safe manner, avoiding cross-contamination between clean and dirty materials"
+        }
+      ]
+    },
+    "_7_5": {
+      "id": "_7_5",
+      "subcategory": "7. Risk Factors Related with production and its facilities / Internal",
+      "question": "Does the facility have a sanitaty system including handwashing and disinfecting footwear at the entrances and exits of each production area?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Install and use footbaths and hand-washing stations at all production area entry points. \nThese units should be constructed from non-porous materials resistant to corrosive disinfectants, such as plastic, concrete, steel or alumnium. They may be custom-built or artisanal, as long as they facilitate effective disinfection protocols adapated to the volume of people entering at the property"
+        }
+      ]
+    },
+    "_8_1": {
+      "id": "_8_1",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How often is the abnormal behavior of aquatic animals monitored?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "At least once a day",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least once a week",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Daily monitoring of aquatic animal behavior is essential to quickly identify changes caused by stress factors (such as low oxygen levels) or the presence of disease. This allows for the timely implementation of corrective measures when necessary"
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_2": {
+      "id": "_8_2",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How often is feeding behavior monitored ?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "At least once a day",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least once a week",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Feeding behavior inspections should be conducted daily to quickly identify changes and implement corrective measures when necessary"
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_3": {
+      "id": "_8_3",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How often are clinical signs of diseases monitored ?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "At least once a day",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least once a week",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Clinical sings should be inspected daily in order to quickly identify the presence of disease"
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_4": {
+      "id": "_8_4",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How often are necropsies performed as part of the disease monitoring?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Routine necropsies should be conducted as part of health monitoring, as well as in the presence of clinical signs or unusual mortality"
+        },
+        {
+          "response": "when unusual mortality presented",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "When clinical signs of disease present",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "at least once a week",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_5": {
+      "id": "_8_5",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Are the aquatic animals vaccinated against diseases of concern?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "When available, vaccination against diseases of concern should be included as part of the facility's animal health program"
+        }
+      ]
+    },
+    "_8_6": {
+      "id": "_8_6",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Has there been any sudden, unusual, or elevated mortality in the facility in the last 12 months?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_7": {
+      "id": "_8_7",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Have any of the following stress factors been observed in the two weeks prior to the onset of mortality?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_8_8": {
+      "id": "_8_8",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How often is mortality removed from the production units?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": [
+        {
+          "response": "As soon as possible (More than once each day)",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Daily",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Every 2 to 3 days",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Once a week",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mortality must be removed as soon as possible, or at least on a daily basis, to prevent the transmission of diseases-either from infected animals or through changes in the aquatic environment"
+        },
+        {
+          "response": "Only when mortality is above normal",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_9": {
+      "id": "_8_9",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How is mortality managed in the facility? (Select all that apply):",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "It is buried",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "It is incinerated",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "It is discarded in water body",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mortalities must not be released into any water source. This prevents the contamination of water, which could affect wild populations, neighboring aquaculture facilities, and downstream human users"
+        },
+        {
+          "response": "It is used for composting or silage",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "It is used to feed other fish/animals",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mortalities must not be used as feed, either alone or in combination with other ingredients"
+        },
+        {
+          "response": "It is delivered to other establishments",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mortalities must not be delivered to other establishments without verifying the correct final disposal method"
+        },
+        {
+          "response": "Human consumption",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mortalities must not be used for human consumption, as the decomposition process beginds inmediately upon death, posing a significant food safety risk"
+        },
+        {
+          "response": "Aquatic animals are not removed",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Mortality must be removed as soon as possible, or at least on a daily basis, to prevent the transmission of diseases-either from infected animals or through changes in the aquatic environment"
+        },
+        {
+          "response": "It is processed for sub-products (feed, oil, etc.) in a disposal plant",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_10": {
+      "id": "_8_10",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "When are diagnostic tests conducted to detect diseases of concern? (Select all that apply):",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "In the presence of unexplained mortality or morbidity",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "After the arrival of new aquatic animals to the facility",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "Before sending aquatic animals to another facility",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "Routinely, with a frequency that depends on the specific disease and the time of year",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "If other facilities in the area have the disease of interest",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "When the disease clinical signs are not familiar",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "When treatment /medication does not help",
+          "rawScore": "0.15",
+          "score": 0.15,
+          "recommendation": null
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Diagnostic tests should be conducted to detect diseases of concern on a routine basis. Testinf is required: after the arrival of new aquatic animals, before transfering aquatic animals to another facility, in the presence of unexplained mortality and morbidity, when neighboring facilities report new diseases or increasing prevalence, and when treatments ot medications do not work"
+        }
+      ]
+    },
+    "_8_11": {
+      "id": "_8_11",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "What techniques are used in the diagnostic process?  \n(Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_8_12": {
+      "id": "_8_12",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "How often are diagnostic tests conducted on the aquatic animal population?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "At least once a month",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least every 3 months",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least every 6 months",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Yearly",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Once every production cycle",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Only when needed",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Diagnostic tests should be conducted to detect diseases of concern on a routine basis, testing is required: after the arrival of new aquatic animals, before transferring aquatic animals to another facility, in the presence of unexplained mortality and morbidity, when neighboring facilities report new diseases or an increasing prevalence of a disease of interest, and when treatments or medications do not work"
+        },
+        {
+          "response": "No diagnostics tests carried out",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_8_13": {
+      "id": "_8_13",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "When is a disease reported to the Competent Authority?  (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "When deaths or illnesses last longer than expected",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "When treatment/medication doesn't help",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "When a listed disease is suspected",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "When the disease is unknown or unusual",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "When there is a high or unusual mortality",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Not applicable as diseases are not present in the facility",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "The diseases are not reported to the competent authority",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The presence of unknown or unusual clinical sings, unusual mortality, or the suspicion of listed diseases must be reported to the competent authority. This ensure a confirmed diagnosis and the application of proper mitigation and control mesaures as soon as possible to control or eradicate the disease. Facility personnel should know when and to whon to report, and the notification contact details must be easily accessible"
+        }
+      ]
+    },
+    "_8_14": {
+      "id": "_8_14",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Who performs the sampling in the event of suspected disease presence? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_8_15": {
+      "id": "_8_15",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Does the facility have a defined process for handling aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Internal procedures must be developed and implemented to ensure aquatic animals are handled correctly, avoiding additional stress and direct injuries. These procedures should specify when and how the animals should be sedated or anesthetized."
+        }
+      ]
+    },
+    "_8_16": {
+      "id": "_8_16",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Is the equipment used to handle aquatic animals designed, constructed, and operated to minimize physical injuries?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Use equipment designed and constructed to handle aquatic animals, and operated it according to procedures to avoid physical injuries or direct mortality"
+        }
+      ]
+    },
+    "_8_17": {
+      "id": "_8_17",
+      "subcategory": "8. Risk Factors related to surveillance and monitoring health and welfare, vaccination  / Internal",
+      "question": "Does the facility have a defined process for loading and unloading aquatic animals that prevents injuries and minimizes stress?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Develop and implement internal procedures for the handling of the aquatic animals during loading and unloading to avoid additional stress and direct injuries. These procedures should specify when and how animals should be sedated or anesthezed"
+        }
+      ]
+    },
+    "_9_1": {
+      "id": "_9_1",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "How is the feed stored in the facility?  (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "In a designated area",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "In closed containers",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "In a dry area",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "In an appropiate temperature",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "Inaccessible to pests",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "Inaccessible to toxic elements (pesticides, chemical products, etc)",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "Using racks and separated of the walls",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "A clean and organized area",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "None",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Feed should be stored in a designated, dry, clean and organized area at an appropiate temperature. It must be keep in closed containers, inaccessible to pests and toxic elements (pesticides, chemicals, etc), using racks to keep it separated from the walls."
+        }
+      ]
+    },
+    "_9_2": {
+      "id": "_9_2",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "How are veterinary medicinal products stored in the facility? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "In original packaging with label",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "In separated containers for each type of supplies (Vaccine, feed, drugs)",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "Cool and dry area",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "In an appropiate temperature",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "Inaccessible to pest",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "In a designated area",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "A clean and organized area",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "Inaccessible to toxic elements (pesticides, chemical products, etc)",
+          "rawScore": "0.125",
+          "score": 0.125,
+          "recommendation": null
+        },
+        {
+          "response": "None",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Veterinary medicial products should be stored in a designated, dry, clean and organized area at an appropiate temperature. They must remain in their original packaging with labels intact, in separated containers for each type of supply (e.g., vaccines, feed, drugs), and be inaccessible to pests and toxic elements (pesticides, chemicals, etc).  use racks and ensure they are separated from the walls."
+        }
+      ]
+    },
+    "_9_3": {
+      "id": "_9_3",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "How often are veterinary medicinal products inspected during storage?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Daily (before feeding)",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least once a week",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least once a month",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Only when necessary",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Veterinary medicial products should be stored in a designated, dry, clean and organized area at an appropiate temperature. They must remain in their original packaging with labels intact, in separated containers for each type of supply (e.g., vaccines, feed, drugs), and be inaccessible to pests and toxic elements (pesticides, chemicals, etc).  use racks and ensure they are separated from the walls."
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_9_4": {
+      "id": "_9_4",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Are the following factors inspected in the feed and veterinary medicinal products storage areas? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Temperature",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Humidity level",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Lightning conditions",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Damage to containers",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Pet/ Vector Signs",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "No factors inspected",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Veterinary medicial products should be stored in a designated, dry, clean and organized area at an appropiate temperature. They must remain in their original packaging with labels intact, in separated containers for each type of supply (e.g., vaccines, feed, drugs), and be inaccessible to pests and toxic elements (pesticides, chemicals, etc).  use racks and ensure they are separated from the walls."
+        }
+      ]
+    },
+    "_9_5": {
+      "id": "_9_5",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "How long is the feed stored in the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Prepared and used on the same day",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Less than 2 weeks",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Between 2-4 weeks",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Between 1-3 months",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "More than 3 months",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "I don’t know",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Apply the First-In, First-Out (FIFO) system to ensure feed is not stored beyond its expritation date. Avoing keeping lanrger quantities of feed in storage than are necessary for immediate production needs."
+        }
+      ]
+    },
+    "_9_6": {
+      "id": "_9_6",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Are veterinary medicinal products intended for other species used on aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Always use veterinary medicinal products specifically intended for aquatic animals"
+        }
+      ]
+    },
+    "_9_7": {
+      "id": "_9_7",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "What veterinary medicinal products are used in the facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_9_8": {
+      "id": "_9_8",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Are the veterinary medicinal products used in the facility prescribed by a veterinarian?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Veterinay medicinal products, such as antibiotics, antiparasitics, anesthetics, and vaccines, must be prescribed by a veterinarian. The prescription should be based on a diagnosis and include the commercial name of the product, dosage, duration of treatment and route of administration"
+        },
+        {
+          "response": "Does not apply- No veterinary medicinal products are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_9_9": {
+      "id": "_9_9",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "If not, who prescribes the use of antibiotics in the facility? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_9_10": {
+      "id": "_9_10",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Are veterinary medicinal products used in accordance with the veterinarian's instructions?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Does not apply- No veterinary medicinal products are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": "Veterinay medicinal products, such as antibiotics, antiparasitics, anesthetics and vaccines, must be prescribed by- and  used according to the instructions given by-a veterinarian. The prescription should be based on diagnosis and include the commercial name of the product, dosage, duration of treatment and route of administration."
+        }
+      ]
+    },
+    "_9_11": {
+      "id": "_9_11",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Which of the following antibiotics have been used in the facility in the last 12 months? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_9_12": {
+      "id": "_9_12",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "If antibiotics are used in feed, are they mixed on the farm, or is medicated feed supplied?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_9_13": {
+      "id": "_9_13",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "What are the reasons antibiotic treatments used in the facility? \n(Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Prevent diseases",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Treat sick animals and reduce mortality rates without a confirmed diagnosis",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Eliminate pathogenic bacteria in water and/or soil",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The use of antibiotics is restricted to cases with a confirmed bacterial infection diagnosis, and as previously stated, must be prescribed by a veterinarian."
+        },
+        {
+          "response": "Improve weigh gain (growth promoters)",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Treat Viral infections",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Treat Parasitic infections",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Treat fungal infections",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Treat bacterial infections with a confimed diagnosis",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Does not apply- No antibiotics are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_9_14": {
+      "id": "_9_14",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Is a susceptibility test performed before using antibiotics in the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Once the bacterial infection is confirmed and an antbiotic treatment is needed, a susceptibility test should be performed to choose the best option to treat and control the disease."
+        },
+        {
+          "response": "Does not apply- No antibiotics are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_9_15": {
+      "id": "_9_15",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Are the withdrawal times for veterinary medicinal products known and followed?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The withdrawal periods for veterinary medicinal products must be strictly complied with. Batches under treatment should be monitored closely and sent to the processing plant for human consumption only once the withdrawal time has been completed."
+        },
+        {
+          "response": "Does not apply- No veterinary medicial products are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_9_16": {
+      "id": "_9_16",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Is there visible signage to identify cages or ponds under veterinary treatment?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "To avoid mistakes in identifying and monitoring batches under treatment, visible signage for tanks, cages or ponds should be implemented throughout the facility. Examples include flags, labels, and color-codes tapes."
+        },
+        {
+          "response": "Does not apply- No antibiotics are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_9_17": {
+      "id": "_9_17",
+      "subcategory": "9. Risk Factors related to use and storage of feed and veterinary medicinal products/ Internal",
+      "question": "Are adverse reactions to veterinary medicinal products reported to the Competent Authority?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Adverse reaccionts including treatment failure, should be reported to the competent authority as part of the pharmacovigilance system. This ensures that the necessary follow-up and corrective measures can be implemented"
+        },
+        {
+          "response": "Does not apply- No veterinary medicial products are used at the facility",
+          "rawScore": "(No score)/1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_10_1": {
+      "id": "_10_1",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Are equipment/materials shared between ponds/cages within the same facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Equipment should not be shared between different batches or production areas with varying risk levels. In exceptional cases where sharing is necessary, the equipment must be thoroughly cleaned and disinfected both before and after use throughout the facility."
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_10_2": {
+      "id": "_10_2",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Are shared equipment/materials between different tanks/cages in the same facility cleaned and disinfected?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes, before and after use",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Yes, but only before it is used",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Equipment should not be shared between different batches or production areas with varying risk levels. In exceptional cases where sharing is necessary, the equipment must be thoroughly cleaned and disinfected both before and after use throughout the facility."
+        },
+        {
+          "response": "Yes, but only after it's used",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_10_3": {
+      "id": "_10_3",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Are there separate equipment for handling dead/moribound aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Use exclusive equipment to handle sick, dead, and moribund animals"
+        }
+      ]
+    },
+    "_10_4": {
+      "id": "_10_4",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Are the facilities/nets/cages for holding animals cleaned and disinfected before introducing new animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement cleaning and disinfection routines after each use of facilities, nets, and cages, and before new animals arrive- to avoid cross-contamination between incoming batches"
+        }
+      ]
+    },
+    "_10_5": {
+      "id": "_10_5",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Are the facilities/nets/cages for holding animals cleaned and disinfected after the animals leave the facilities?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement cleaning and disinfection routines after each use of facilities, nets, and cages, and before new animals arrive- to avoid cross-contamination between incoming batches"
+        }
+      ]
+    },
+    "_10_6": {
+      "id": "_10_6",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Is fallowing conducted before introducing new animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Fallowing must be conducted after cleaning and disinfection procedures are completed. The durantion of the fallowing should be determined based on the specidifc pathogens to be excluded. An all-in/all-out management system should be applied in cages systems and whenever possible for stocking during the grow-out stage"
+        }
+      ]
+    },
+    "_10_7": {
+      "id": "_10_7",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Is soil treatment carried out in earth ponds?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "When the production is conduncted in earth ponds, soil treatment should be applied to reduce the survival and proliferation of pathogenic agents, while increasing the availability of beneficial flora and nutrients."
+        }
+      ]
+    },
+    "_10_8": {
+      "id": "_10_8",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "How often is the equipment used for handling aquatic animals cleaned and disinfected?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "After each use",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Daily",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Weekly",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        },
+        {
+          "response": "Monthly",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement cleaning and disinfection routines after each use, or at least as part of a daily routine, to avoid cross-contamination between batches"
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_10_9": {
+      "id": "_10_9",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Does the facility use pesticides, insecticides, piscicides, or herbicide treatments?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "When necessary apply pesticides, insecticides, piscicides, or herbicides at the facility to protect stocked animals from vector-borne disease transmission."
+        }
+      ]
+    },
+    "_10_10": {
+      "id": "_10_10",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "If yes, how are these treatments applied?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_10_11": {
+      "id": "_10_11",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Does the facility use fertilizers, probiotics, or prebiotics treatments?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Implement treatments such as fertilizers, probiotics, or prebiotics to  reduce the survival of pathogenic agents, and increase the availability of beneficial flora and nutrients"
+        }
+      ]
+    },
+    "_10_12": {
+      "id": "_10_12",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Does the facility use fresh feces from other animals as fertilizer for the ponds/thanks?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Fresh feces from any type of animals must be used to fertilize ponds or tanks. When using organic fertilizers, a sanitization process must be applied to eliminate pathogenic agents from these products"
+        },
+        {
+          "response": "No",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_10_13": {
+      "id": "_10_13",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Is debris and waste removed regularly from the facility?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Debris and waste should be removed from the facility on a frequent basis. Avoiding their storage and accumulation prevents the creation of spaces where pests can hide, nest and reproduce."
+        }
+      ]
+    },
+    "_10_14": {
+      "id": "_10_14",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Do personnel always wash and sanitize their hands after contact with sick or dead aquatic animals?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Personnel must wash and sanitize their hands inmediately following contact with sick or dead animals"
+        }
+      ]
+    },
+    "_10_15": {
+      "id": "_10_15",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "Are personnel familiar with or trained in the following topics?  \n(Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Officially listed diseases",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Animal welfare and normal behavior of the animals",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "General signs of disease",
+          "rawScore": "0.2",
+          "score": 0.2,
+          "recommendation": null
+        },
+        {
+          "response": "Handling aquatic animals",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Humane killing of aquatic animals",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Dead animal management procedures",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Cleaning and disinfection procedures",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Use of veterinary medicinal products",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "None",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Personnel working in the production area must be trained in and familiar with: officially listed diseases, animal welfare and normal behavior, general signs of disease, handling and humane slaughter of aquatic animals, mortality management, cleaning and disinfection procedures, and the correct use of veterinary medicinal products"
+        }
+      ]
+    },
+    "_10_16": {
+      "id": "_10_16",
+      "subcategory": "10. Risk factors related to equiment, desinfection and mangement /Internal",
+      "question": "How often do personnel receive training on biosecurity?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "At least one a year",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least one every two years",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "At least one every three years",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "Training of the topics listed above should be updated on a regular basis, with refreshers conducted at least every one to three years"
+        }
+      ]
+    },
+    "_11_1": {
+      "id": "_11_1",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "Has the facility implemented a biosecurity plan?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The facility must maintain a written biosecurity program based on prioritized measures designed to mitigate the risk of pathogen introduction, spread within, and release from the facility"
+        }
+      ]
+    },
+    "_11_2": {
+      "id": "_11_2",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "Who developed or verified the biosecurity plan? \n(Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_11_3": {
+      "id": "_11_3",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "Do personnel have access to the biosecurity plan?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Yes",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "No",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The biosecurity plan should be communicated to all personnel and made readily available for consultation"
+        }
+      ]
+    },
+    "_11_4": {
+      "id": "_11_4",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "How often is the biosecurity plan reviewed?",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Once a year",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Once every two years",
+          "rawScore": "1",
+          "score": 1.0,
+          "recommendation": null
+        },
+        {
+          "response": "Once every three years",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The biosecurity plan should be revised and updated on a regular basis  to adapt and modify measures as necessary, in accordance with the identified risks"
+        },
+        {
+          "response": "Never",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": null
+        }
+      ]
+    },
+    "_11_5": {
+      "id": "_11_5",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "Do you keep a record of the following routine practices? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Mortality and necropsy reports",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Health status and laboratory test results",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Origin of animals/ Genetic Material",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Stocking densities/ Animals per cage/tank/pond",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Water parameters",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Visitors (People and vehicles)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Feeding/ Grow rate",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Daily inspections (feeding behavior, swimming, clinical signs, sanitary inspection)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Veterinary treatments and prescriptions (including vaccination)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Pests control",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "No records available",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The facility must maintain comprehensive records of routine practices and animal health data, including: mortalities, necropsies, health status, and laboratory results. Documentation must also cover the origin of animals/genetic material, stocking densities, water parameters, visitros logs, feed/growth rates, daily inspections, veterinary prescriptions, and pest control."
+        }
+      ]
+    },
+    "_11_6": {
+      "id": "_11_6",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "How long are these records kept?",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    },
+    "_11_7": {
+      "id": "_11_7",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "Do you have written Standard Operating Procedures (SOPs) for the following routine practices? (Select all that apply)",
+      "mainScore": true,
+      "questionWeight": 1,
+      "responseRules": [
+        {
+          "response": "Mortality (management and disposal)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Management of new animals (quarantine)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Screening of water quality and corrective actions when needed",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Biosecurity measures for visitors (people, vehicles and equipment)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Animal Health Program",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Contingency or emergency plan for diseases outbreaks and notification of unusual mortality",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Daily inspections (feeding behavior, swimming)",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Necropsy and sampling procedures",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "Vaccination procedure",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Pests control",
+          "rawScore": "0.05",
+          "score": 0.05,
+          "recommendation": null
+        },
+        {
+          "response": "Movement of animals",
+          "rawScore": "0.1",
+          "score": 0.1,
+          "recommendation": null
+        },
+        {
+          "response": "No SOPs available",
+          "rawScore": "0",
+          "score": 0.0,
+          "recommendation": "The facility must develop and implement written Standard Operating Procedures (SOPs) for the following routine practices: Mortality mangement and disposal, quarantine of new animals, water quality screening (inlcuding corrective actions), and biosecurity protocols for visitors, vehicles and equipment. Additionaly, SOPs must cover the animal health program, disease outbreak contigency plans, notification of unusual mortality, daily inspections, necropsy and sampling, vaccination, pest control and animal movement"
+        }
+      ]
+    },
+    "_11_8": {
+      "id": "_11_8",
+      "subcategory": "11. Risk factors related to standard operating procedures (SOPs) and recordkeeping /Internal",
+      "question": "How are the records available? (Select all that apply)",
+      "mainScore": false,
+      "questionWeight": 0,
+      "responseRules": []
+    }
+  }
+}

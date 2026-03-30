@@ -13,6 +13,7 @@ import { Locale, supportedLocales, t as translate } from "@/lib/i18n";
 import { Overview } from "@/components/dashboard/overview";
 import { FacilitiesView } from "@/components/dashboard/facilities";
 import { ComparativeView } from "@/components/dashboard/comparative";
+import { MethodologyView } from "@/components/dashboard/methodology";
 
 type ApiState =
   | { status: "idle" }
@@ -21,14 +22,17 @@ type ApiState =
   | { status: "loaded" };
 
 const DEFAULT_UID = "atWJrmvMK43Gtr6zny6vs7";
+type UserRole = "public" | "producer" | "admin";
 
 export default function Home() {
   const [uid, setUid] = useState(DEFAULT_UID);
   const [locale, setLocale] = useState<Locale>("en");
+  const [role, setRole] = useState<UserRole>("public");
   const [data, setData] = useState<DashboardData | null>(null);
   const [state, setState] = useState<ApiState>({ status: "idle" });
   const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative">("overview");
+  const [producerFacilityId, setProducerFacilityId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology">("overview");
 
   const t = useCallback((key: string) => translate(locale, key), [locale]);
 
@@ -37,25 +41,27 @@ export default function Home() {
     return data.facilities.find((f) => f.id === selectedFacility) ?? data.facilities[0];
   }, [data, selectedFacility]);
 
-  const fetchData = async (targetUid: string, useLocal = false) => {
+  const fetchData = useCallback(async (targetUid: string) => {
     setState({ status: "loading" });
     try {
       const params = new URLSearchParams({ uid: targetUid });
-      if (useLocal) params.set("useLocal", "1");
       const res = await fetch(`/api/kobo?${params.toString()}`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const json = await res.json();
       setData(json.data);
       setState({ status: "loaded" });
-      setSelectedFacility(json.data.facilities[0]?.id ?? null);
-    } catch (err: any) {
-      setState({ status: "error", message: err?.message ?? "Unknown error" });
+      const firstId = json.data.facilities[0]?.id ?? null;
+      setSelectedFacility(firstId);
+      if (!producerFacilityId && firstId) setProducerFacilityId(firstId);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setState({ status: "error", message });
     }
-  };
+  }, [producerFacilityId]);
 
   useEffect(() => {
-    fetchData(DEFAULT_UID, true);
-  }, []);
+    void fetchData(DEFAULT_UID);
+  }, [fetchData]);
 
   // force charts to recalc after layout changes
   useEffect(() => {
@@ -66,6 +72,25 @@ export default function Home() {
     }, 80);
     return () => clearTimeout(timer);
   }, [data, selectedFacility, activeTab]);
+
+  useEffect(() => {
+    if (role === "admin") return;
+    if (role === "producer" && (activeTab === "comparative" || activeTab === "methodology")) setActiveTab("facilities");
+    if (role === "public" && activeTab !== "overview") setActiveTab("overview");
+  }, [role, activeTab]);
+
+  const facilitiesForRole = useMemo(() => {
+    if (!data) return [];
+    if (role !== "producer") return data.facilities;
+    const match = data.facilities.find((f) => f.id === producerFacilityId);
+    return match ? [match] : data.facilities.slice(0, 1);
+  }, [data, role, producerFacilityId]);
+
+  const currentFacilityForRole = useMemo(() => {
+    if (!data) return undefined;
+    if (role !== "producer") return currentFacility;
+    return data.facilities.find((f) => f.id === producerFacilityId) ?? data.facilities[0];
+  }, [data, role, producerFacilityId, currentFacility]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -105,6 +130,16 @@ export default function Home() {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="producer">Producer</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
             {/* <Button size="sm" variant="ghost" onClick={toggleTheme} className="gap-2" aria-label={t("theme.toggle")}>
               {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               <span className="hidden sm:inline">{theme === "light" ? t("theme.dark") : t("theme.light")}</span>
@@ -135,7 +170,7 @@ export default function Home() {
                 <Button size="sm" onClick={() => fetchData(uid)} disabled={!uid || state.status === "loading"}>
                   {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => fetchData(DEFAULT_UID, true)}>
+                <Button size="sm" variant="ghost" onClick={() => fetchData(DEFAULT_UID)}>
                   {t("actions.demo")}
                 </Button>
               </div>
@@ -151,34 +186,45 @@ export default function Home() {
         )}
 
         {data && (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "overview" | "facilities" | "comparative" | "methodology")} className="space-y-6">
              <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 rounded-lg bg-slate-100 p-1 sm:justify-center">
               <TabsTrigger value="overview" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 {t("tabs.overview")}
               </TabsTrigger>
-              <TabsTrigger value="facilities" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
-                <Building2 className="mr-2 h-4 w-4" />
-                {t("tabs.facilities")}
-              </TabsTrigger>
-              <TabsTrigger value="comparative" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
-                <Activity className="mr-2 h-4 w-4" />
-                {t("tabs.comparative")}
-              </TabsTrigger>
+              {role !== "public" && (
+                <TabsTrigger value="facilities" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  {t("tabs.facilities")}
+                </TabsTrigger>
+              )}
+              {role === "admin" && (
+                <TabsTrigger value="comparative" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+                  <Activity className="mr-2 h-4 w-4" />
+                  {t("tabs.comparative")}
+                </TabsTrigger>
+              )}
+              {role === "admin" && (
+                <TabsTrigger value="methodology" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+                  <Database className="mr-2 h-4 w-4" />
+                  {t("tabs.methodology")}
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="overview">
               {activeTab === "overview" && (
-                <Overview data={data} t={t} submissionData={data.submissionsOverTime} />
+                <Overview data={data} t={t} />
               )}
             </TabsContent>
 
             <TabsContent value="facilities">
-              {activeTab === "facilities" && (
+              {activeTab === "facilities" && role !== "public" && (
                 <FacilitiesView
-                  facilities={data.facilities}
-                  currentFacility={currentFacility}
+                  facilities={facilitiesForRole}
+                  currentFacility={currentFacilityForRole}
                   onSelect={setSelectedFacility}
+                  readOnlySelection={role === "producer"}
                   t={t}
                   sectionAverages={data.sectionAverages}
                 />
@@ -186,9 +232,13 @@ export default function Home() {
             </TabsContent>
 
             <TabsContent value="comparative">
-              {activeTab === "comparative" && (
+              {activeTab === "comparative" && role === "admin" && (
                 <ComparativeView data={data} t={t} onSelectFacility={setSelectedFacility} />
               )}
+            </TabsContent>
+
+            <TabsContent value="methodology">
+              {activeTab === "methodology" && role === "admin" && <MethodologyView data={data} t={t} />}
             </TabsContent>
           </Tabs>
         )}

@@ -1,26 +1,68 @@
-/* Utility functions to normalize KoboToolbox data into dashboard-friendly structures. */
+import type { QuantificationCatalog, QuantificationQuestionRule, ScoringSide } from "@/lib/risk-quantification";
+
+/* KoboToolbox transformation logic using live Kobo data + instrument metadata. */
 
 export type KoboApiResponse = {
   count: number;
   results: KoboRawRecord[];
 };
 
-export type KoboRawRecord = Record<string, any> & {
+export type KoboAssetResponse = {
+  content?: {
+    survey?: Array<{
+      type?: string;
+      name?: string;
+      $xpath?: string;
+      label?: string[];
+      select_from_list_name?: string;
+    }>;
+    choices?: Array<{
+      list_name?: string;
+      name?: string;
+      label?: string[];
+    }>;
+  };
+};
+
+export type KoboRawRecord = Record<string, unknown> & {
   _id: number;
   _submission_time?: string;
-  "Facility_General_Information/Facility_Name"?: string;
-  "Facility_General_Information/Location"?: string;
-  "Facility_General_Information/Which_species_are_cultured_in_"?: string;
-  "Facility_General_Information/Production_system"?: string;
-  "Facility_General_Information/respondent_role"?: string;
-  "Facility_General_Information/Respondent_name"?: string;
+  _geolocation?: string;
 };
+
+export type RiskCategory = "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH";
 
 export type SectionScore = {
   section: string;
+  side: "external" | "internal";
   score: number;
   positives: number;
   total: number;
+};
+
+export type RuleStatus = {
+  id: string;
+  label: string;
+  matched: boolean;
+  applicable: boolean;
+  answer: string;
+};
+
+export type QuestionStatus = {
+  id: string;
+  label: string;
+  answer: string;
+  applicable: boolean;
+  compliant: boolean;
+  score: number;
+  maxScore: number;
+  recommendation: string;
+};
+
+export type SubcategoryChecklist = {
+  section: string;
+  side: "external" | "internal";
+  items: QuestionStatus[];
 };
 
 export type FacilitySummary = {
@@ -32,7 +74,6 @@ export type FacilitySummary = {
   productionType?: string;
   basedOn?: string;
   market?: string;
-  retailType?: string;
   respondent?: string;
   respondentRole?: string;
   respondentGender?: string;
@@ -40,29 +81,29 @@ export type FacilitySummary = {
   yearsOperation?: string;
   lastUpdated?: string;
   score: number;
-  riskLevel: "LOW" | "MEDIUM" | "HIGH";
+  riskFactorRate: number;
+  externalScore: number;
+  internalScore: number;
+  riskLevel: RiskCategory;
   waterSource?: string;
-  waterMonitoring?: string;
   waterMonitoringFrequency?: string;
-  waterTreatment?: boolean;
   mortalityDisposal?: string;
-  quarantine?: boolean;
-  antibiotics?: boolean;
-  antibioticTypes?: string[];
-  antibioticRecords?: boolean;
-  diagnostics?: boolean;
-  diagnosticTypes?: string[];
-  hasSOP?: boolean;
-  hasRecords?: boolean;
-  recordTypes?: string[];
-  hasBiosecurityProgram?: boolean;
-  feedType?: string;
-  nearbyFacilities?: string;
   sectionScores: SectionScore[];
-  riskFactors: {
-    critical: string[];
-    medium: string[];
-    positive: string[];
+  highRiskFactors: string[];
+  moderateRiskFactors: string[];
+  positivePractices: string[];
+  keyPractices: RuleStatus[];
+  animalHealthMonitoring: RuleStatus[];
+  questionChecklist: QuestionStatus[];
+  subcategoryChecklist: SubcategoryChecklist[];
+  responses: {
+    waterMonitoring: string[];
+    mortalityDisposal: string[];
+    intakeWaterTreatmentApplied: string[];
+    waterParametersMeasured: string[];
+    personnelTrainingTopics: string[];
+    recordsCoverage: string[];
+    sopsCoverage: string[];
   };
   geolocation?: [number, number];
 };
@@ -72,6 +113,9 @@ export type DashboardData = {
   stats: {
     totalRecords: number;
     avgScore: number;
+    avgExternalScore: number;
+    avgInternalScore: number;
+    negligibleRiskCount: number;
     highRiskCount: number;
     mediumRiskCount: number;
     lowRiskCount: number;
@@ -79,15 +123,18 @@ export type DashboardData = {
   };
   practices: {
     quarantineRate: number;
-    antibioticUseRate: number;
-    antibioticRecordRate: number;
-    diagnosticsLabRate: number;
-    sopRate: number;
-    recordKeepingRate: number;
-    biosecurityProgramRate: number;
+    writtenBiosecurityRate: number;
+    noSharedEquipmentRate: number;
+    equipmentDisinfectionRate: number;
     waterTreatmentRate: number;
+    biovectorInspectionRate: number;
     waterMonitoring: { label: string; count: number }[];
     mortalityDisposal: { method: string; count: number }[];
+    intakeWaterTreatmentApplied: { label: string; count: number }[];
+    waterParametersMeasured: { label: string; count: number }[];
+    personnelTrainingTopics: { label: string; count: number }[];
+    recordsCoverage: { label: string; count: number }[];
+    sopsCoverage: { label: string; count: number }[];
     geoCoverage: number;
   };
   demographics: {
@@ -100,15 +147,16 @@ export type DashboardData = {
     byMarket: { market: string; count: number }[];
     byProductionType: { type: string; count: number }[];
     byWaterSource: { source: string; count: number }[];
-    byFeedType: { type: string; count: number }[];
+    bySpecies: { species: string; count: number }[];
+    bySystem: { system: string; count: number }[];
+    byLocation: { location: string; count: number }[];
   };
-  antibioticUsage: { antibiotic: string; count: number }[];
-  riskMix: { level: string; count: number; color: string }[];
+  complianceMix: { name: string; value: number; color: string }[];
   distribution: { bucket: string; count: number }[];
-  submissionsOverTime: { date: string; count: number }[];
-  sectionAverages: { section: string; score: number }[];
-  topRiskFactors: { factor: string; count: number }[];
-  positiveFactors: { factor: string; count: number }[];
+  sectionAverages: { section: string; side: "external" | "internal"; score: number }[];
+  highRiskFactors: { factor: string; count: number }[];
+  moderateRiskFactors: { factor: string; count: number }[];
+  positivePractices: { factor: string; count: number }[];
   comparatives: {
     bySpecies: { name: string; avgScore: number; count: number }[];
     bySystem: { name: string; avgScore: number; count: number }[];
@@ -116,654 +164,777 @@ export type DashboardData = {
     byEducation: { name: string; avgScore: number; count: number }[];
     byYearsOperation: { name: string; avgScore: number; count: number }[];
     byWaterSource: { name: string; avgScore: number; count: number }[];
-    byFeedType: { name: string; avgScore: number; count: number }[];
+    byProductionType: { name: string; avgScore: number; count: number }[];
+    byLocation: { name: string; avgScore: number; count: number }[];
   };
-  heatmap: { facility: string; factor: string; value: number }[];
+  riskMatrixExternal: { facility: string; subcategory: string; value: number; score: number }[];
+  riskMatrixInternal: { facility: string; subcategory: string; value: number; score: number }[];
+  locations: { facility: string; location?: string; lat: number; lon: number }[];
+  scoringMethodology: {
+    sideWeights: { external: number; internal: number };
+    subcategoryWeights: { section: string; side: "external" | "internal"; weight: number }[];
+    questionRules: {
+      id: string;
+      section: string;
+      side: "external" | "internal";
+      question: string;
+      mainScore: boolean;
+      questionWeight: number;
+      responses: { response: string; score: number | null; recommendation?: string }[];
+    }[];
+  };
 };
 
-const SECTION_FIELDS: Record<string, string[]> = {
-  Environment: [
-    "Environment_and_surrounding_areas/_1_1",
-    "Environment_and_surrounding_areas/_1_2",
-    "Environment_and_surrounding_areas/_1_3",
-    "Environment_and_surrounding_areas/_1_4",
-    "Environment_and_surrounding_areas/_1_5",
-  ],
-  Introduction: [
-    "Introduction_of_all_life_stages/_2_1",
-    "Introduction_of_all_life_stages/_2_2",
-    "Introduction_of_all_life_stages/_2_3",
-    "Introduction_of_all_life_stages/_2_4",
-    "Introduction_of_all_life_stages/_2_5",
-    "Introduction_of_all_life_stages/_2_7",
-    "Introduction_of_all_life_stages/_2_12",
-    "Introduction_of_all_life_stages/_2_13",
-  ],
-  Water: [
-    "source_of_water/_3_1",
-    "source_of_water/_3_2",
-    "source_of_water/_3_3",
-    "source_of_water/_3_4",
-    "source_of_water/_3_5",
-    "source_of_water/_3_6",
-    "source_of_water/_3_8",
-    "source_of_water/_3_9",
-    "source_of_water/_3_10",
-    "source_of_water/_3_11",
-  ],
-  Fomites: [
-    "fomites/_4_1",
-    "fomites/_4_2",
-    "fomites/_4_3",
-    "fomites/_4_4",
-    "fomites/_4_5",
-    "fomites/_4_6",
-    "fomites/_4_7",
-    "fomites/_4_8",
-    "fomites/_4_9",
-    "fomites/_4_13",
-    "fomites/_4_14",
-    "fomites/_4_15",
-  ],
-  Biovectors: [
-    "biovectors/_5_1",
-    "biovectors/_5_2",
-    "biovectors/_5_3",
-    "biovectors/_5_4",
-    "biovectors/_5_5",
-    "biovectors/_5_6",
-    "biovectors/_5_7",
-  ],
-  Personnel: [
-    "personnel_and_visitor/_6_1",
-    "personnel_and_visitor/_6_2",
-    "personnel_and_visitor/_6_3",
-    "personnel_and_visitor/_6_4",
-    "personnel_and_visitor/_6_5",
-    "personnel_and_visitor/_6_6",
-    "personnel_and_visitor/_6_7",
-    "personnel_and_visitor/_6_8",
-    "personnel_and_visitor/_6_9",
-  ],
-  Management: [
-    "management/_7_1",
-    "management/_7_2",
-    "management/_7_3",
-    "management/_7_4",
-    "management/_7_5",
-  ],
-  Health: [
-    "health_monitoring/_8_1",
-    "health_monitoring/_8_2",
-    "health_monitoring/_8_3",
-    "health_monitoring/_8_4",
-    "health_monitoring/_8_5",
-    "health_monitoring/_8_6",
-    "health_monitoring/_8_7",
-    "health_monitoring/_8_8",
-    "health_monitoring/_8_9",
-    "health_monitoring/_8_10",
-    "health_monitoring/_8_11",
-    "health_monitoring/_8_12",
-    "health_monitoring/_8_13",
-    "health_monitoring/_8_14",
-    "health_monitoring/_8_15",
-    "health_monitoring/_8_16",
-    "health_monitoring/_8_17",
-  ],
-  VMP: [
-    "VMP/_9_1",
-    "VMP/_9_2",
-    "VMP/_9_3",
-    "VMP/_9_4",
-    "VMP/_9_5",
-    "VMP/_9_6",
-    "VMP/_9_7",
-    "VMP/_9_8",
-    "VMP/_9_9",
-    "VMP/_9_10",
-    "VMP/_9_11",
-    "VMP/_9_12",
-    "VMP/_9_13",
-    "VMP/_9_14",
-    "VMP/_9_15",
-    "VMP/_9_16",
-    "VMP/_9_17",
-  ],
-  Equipment: [
-    "equipment/_10_1",
-    "equipment/_10_2",
-    "equipment/_10_3",
-    "equipment/_10_4",
-    "equipment/_10_5",
-    "equipment/_10_6",
-    "equipment/_10_7",
-    "equipment/_10_8",
-    "equipment/_10_9",
-    "equipment/_10_11",
-    "equipment/_10_13",
-    "equipment/_10_14",
-    "equipment/_10_15",
-    "equipment/_10_16",
-  ],
-  SOP: [
-    "SOP/_11_1",
-    "SOP/_11_5",
-    "SOP/_11_6",
-    "SOP/_11_7",
-    "SOP/_11_8",
-  ],
+type InstrumentIndex = {
+  idToXpath: Record<string, string>;
+  idToLabel: Record<string, string>;
+  idToType: Record<string, string>;
+  idToOptions: Record<string, Array<{ code: string; label: string }>>;
 };
 
-const RISK_MAPPING: { key: string; label: string; critical?: boolean }[] = [
+type RuleDefinition = {
+  id: string;
+  label: string;
+  expectedAny: string[];
+  applicable?: (record: KoboRawRecord, index: InstrumentIndex) => boolean;
+};
+
+type EvaluatedQuestion = {
+  score: number;
+  maxScore: number;
+  applicable: boolean;
+  answer: string;
+  recommendation?: string;
+};
+
+const SUBCATEGORIES = [
+  { section: "Environment", side: "external", ids: ["_1_1", "_1_2", "_1_3", "_1_4", "_1_5"] },
+  { section: "Introduction", side: "external", ids: ["_2_1", "_2_2", "_2_3", "_2_4", "_2_5", "_2_7", "_2_12", "_2_13"] },
+  { section: "Water", side: "external", ids: ["_3_1", "_3_2", "_3_3", "_3_4", "_3_5", "_3_6", "_3_8", "_3_9", "_3_10", "_3_11"] },
+  { section: "Fomites", side: "external", ids: ["_4_1", "_4_2", "_4_3", "_4_4", "_4_5", "_4_6", "_4_7", "_4_8", "_4_9", "_4_13", "_4_14", "_4_15"] },
+  { section: "Biovectors", side: "external", ids: ["_5_1", "_5_2", "_5_3", "_5_4", "_5_5", "_5_6", "_5_7"] },
+  { section: "Personnel", side: "external", ids: ["_6_1", "_6_2", "_6_3", "_6_4", "_6_5", "_6_6", "_6_7", "_6_8", "_6_9"] },
+  { section: "Management", side: "internal", ids: ["_7_1", "_7_2", "_7_3", "_7_4", "_7_5"] },
+  { section: "Health", side: "internal", ids: ["_8_1", "_8_2", "_8_3", "_8_4", "_8_5", "_8_6", "_8_7", "_8_8", "_8_9", "_8_10", "_8_11", "_8_12", "_8_13", "_8_14", "_8_15", "_8_16", "_8_17"] },
+  { section: "VMP", side: "internal", ids: ["_9_1", "_9_2", "_9_3", "_9_4", "_9_5", "_9_6", "_9_7", "_9_8", "_9_9", "_9_10", "_9_11", "_9_12", "_9_13", "_9_14", "_9_15", "_9_16", "_9_17"] },
+  { section: "Equipment", side: "internal", ids: ["_10_1", "_10_2", "_10_3", "_10_4", "_10_5", "_10_6", "_10_7", "_10_8", "_10_9", "_10_11", "_10_13", "_10_14", "_10_15", "_10_16"] },
+  { section: "SOP", side: "internal", ids: ["_11_1", "_11_5", "_11_6", "_11_7", "_11_8"] },
+] as const;
+
+const CATEGORY_SIDE_WEIGHTS: Record<ScoringSide, number> = {
+  external: 0.5,
+  internal: 0.5,
+};
+
+const CATEGORY_SIDE_POINTS: Record<ScoringSide, number> = {
+  external: 50,
+  internal: 50,
+};
+
+const HIGH_RISK_RULES: RuleDefinition[] = [
+  { id: "_2_5", label: "Purchasing animals with unknown health status", expectedAny: ["no"] },
+  { id: "_4_9", label: "Shared equipment with other facilities", expectedAny: ["yes"] },
+  { id: "_6_1", label: "Personnel visit other aquaculture facilities", expectedAny: ["yes", "don_t_know", "don't know"] },
+  { id: "_8_10", label: "No diagnostic tests to detect diseases of concern", expectedAny: ["never"] },
+  { id: "_10_8", label: "Low frequency of equipment disinfection", expectedAny: ["never", "weekly", "monthly"] },
+  { id: "_8_13", label: "Listed diseases are not reported", expectedAny: ["the_diseases_are_not_reported_to_the_vet", "not reported"] },
+  { id: "_11_5", label: "No written records", expectedAny: ["no_records_available"] },
+  { id: "_11_7", label: "No written SOPs", expectedAny: ["no_sops_available"] },
+];
+
+const MODERATE_RISK_RULES: RuleDefinition[] = [
+  { id: "_4_5", label: "Transport vehicles/containers are not appropriate", expectedAny: ["no"] },
+  { id: "_4_6", label: "Vehicles are not disinfected before entering facility", expectedAny: ["no"] },
+  { id: "_5_7", label: "No pest control measures", expectedAny: ["no"] },
+  { id: "_6_6", label: "No visitor biosecurity procedures", expectedAny: ["none"] },
+  { id: "_8_16", label: "Handling equipment is not appropriate", expectedAny: ["no"] },
+  { id: "_10_1", label: "Equipment shared between ponds/cages", expectedAny: ["yes"] },
+  { id: "_10_14", label: "Personnel do not sanitize hands after contact", expectedAny: ["no"] },
+  { id: "_10_15", label: "Personnel are not trained", expectedAny: ["none"] },
+];
+
+const POSITIVE_RULES: RuleDefinition[] = [
+  { id: "_1_5", label: "Sanitary entry system in place", expectedAny: ["yes"] },
+  { id: "_2_5", label: "Health status documentation required", expectedAny: ["yes"] },
+  { id: "_3_4", label: "Intake water treatment implemented", expectedAny: ["yes"] },
+  { id: "_5_1", label: "Barriers/fencing prevent vector entry", expectedAny: ["yes"] },
+  { id: "_9_8", label: "Veterinary medicinal products prescribed", expectedAny: ["yes"] },
+  { id: "_10_6", label: "Fallowing conducted before introducing new animals", expectedAny: ["yes"] },
+  { id: "_10_13", label: "Debris and waste removed regularly", expectedAny: ["yes"] },
+  { id: "_6_7", label: "Visitors receive biosecurity procedures", expectedAny: ["yes"] },
+];
+
+const WATER_TREATMENT_APPLICABILITY: RuleDefinition["applicable"] = (record, idx) => {
+  const answers = getNormalizedAnswerSet(record, "Production_system", idx);
+  if (answers.size === 0) return true;
+  for (const v of answers) {
+    if (v.includes("cage") || v.includes("jaula")) return false;
+  }
+  return true;
+};
+
+const KEY_PRACTICES: RuleDefinition[] = [
+  { id: "_2_7", label: "Quarantine on arrival", expectedAny: ["yes"] },
+  { id: "_11_1", label: "Written biosecurity plan", expectedAny: ["yes"] },
+  { id: "_4_9", label: "No shared equipment with other farms", expectedAny: ["no"] },
+  { id: "_10_8", label: "Equipment disinfection to handle animals", expectedAny: ["after_each_use", "daily"] },
+  { id: "_3_4", label: "Treatment of water (if applicable)", expectedAny: ["yes"], applicable: WATER_TREATMENT_APPLICABILITY },
+  { id: "_5_2", label: "Inspection of biovectors", expectedAny: ["yes"] },
+];
+
+const ANIMAL_HEALTH_RULES: RuleDefinition[] = [
+  { id: "_8_1", label: "Monitoring abnormal behavior", expectedAny: ["at_least_once_a_day"] },
+  { id: "_8_2", label: "Monitoring feeding behavior", expectedAny: ["at_least_once_a_day", "at_least_twice_a_day"] },
   {
-    key: "Introduction_of_all_life_stages/_2_12",
-    label: "No quarantine or isolation on arrival",
-    critical: true,
+    id: "_8_4",
+    label: "Necropsies in disease monitoring",
+    expectedAny: ["when_unusual_mortality_presented", "when_clinical_signs_of_disease_present", "at_least_once_a_week"],
   },
   {
-    key: "Introduction_of_all_life_stages/_2_13",
-    label: "No diagnostic testing on arrival",
-  },
-  {
-    key: "source_of_water/_3_4",
-    label: "Water without filtration or treatment",
-    critical: true,
-  },
-  {
-    key: "source_of_water/_3_8",
-    label: "No water-quality monitoring",
-  },
-  {
-    key: "fomites/_4_6",
-    label: "Vehicles/equipment not cleaned",
-    critical: true,
-  },
-  {
-    key: "fomites/_4_9",
-    label: "Shared equipment without disinfection",
-    critical: true,
-  },
-  {
-    key: "biovectors/_5_6",
-    label: "Waste released into water",
-    critical: true,
-  },
-  {
-    key: "personnel_and_visitor/_6_2",
-    label: "No PPE for staff or visitors",
-  },
-  {
-    key: "personnel_and_visitor/_6_3",
-    label: "No hand hygiene on entry",
-  },
-  {
-    key: "health_monitoring/_8_3",
-    label: "No clinical monitoring",
-  },
-  {
-    key: "health_monitoring/_8_11",
-    label: "No laboratory diagnostics",
-  },
-  {
-    key: "VMP/_9_6",
-    label: "No expiry or storage control of VMP",
-  },
-  {
-    key: "VMP/_9_15",
-    label: "No antibiotic-use records",
-    critical: true,
-  },
-  {
-    key: "equipment/_10_9",
-    label: "Equipment not disinfected",
-  },
-  {
-    key: "SOP/_11_7",
-    label: "No written SOPs",
-    critical: true,
-  },
-  {
-    key: "SOP/_11_8",
-    label: "No operational records",
+    id: "_8_12",
+    label: "Diagnostic testing frequency",
+    expectedAny: ["at_least_once_a_month", "at_least_every_3_months", "at_least_every_6_months", "yearly", "once_every_production_cycle"],
   },
 ];
 
-const POSITIVE_HINTS = ["yes", "daily", "weekly", "twice", "original_packaging", "signalized", "protective", "designated", "cool_and_dry", "approved", "filtration"];
-const NEGATIVE_HINTS = ["no", "never", "none", "does_not", "not_applicable", "no_apply", "no_diagnostics", "not_available"];
+const POSITIVE_HINTS = ["yes", "daily", "weekly", "twice", "after_each_use", "approved", "filtration", "quarantine"];
+const NEGATIVE_HINTS = ["no", "never", "none", "does_not", "not_applicable", "no_apply", "no_records", "no_sops"];
 
-function scoreValue(value: unknown): number {
-  if (!value) return 0.5;
-  const v = String(value).toLowerCase();
-  if (NEGATIVE_HINTS.some((k) => v.includes(k))) return 0;
-  if (POSITIVE_HINTS.some((k) => v.includes(k))) return 1;
-  return 0.6; // neutral/unknown, lean slightly positive
-}
-
-function computeSectionScores(record: KoboRawRecord): SectionScore[] {
-  return Object.entries(SECTION_FIELDS).map(([section, fields]) => {
-    let positives = 0;
-    let total = 0;
-    fields.forEach((field) => {
-      if (record[field] !== undefined) {
-        total += 1;
-        positives += scoreValue(record[field]);
-      }
-    });
-    const score = total ? Math.round((positives / total) * 100) : 50;
-    return { section, score, positives, total };
-  });
-}
-
-function toRiskLevel(score: number): "LOW" | "MEDIUM" | "HIGH" {
-  if (score < 50) return "HIGH";
-  if (score < 70) return "MEDIUM";
-  return "LOW";
+function normalize(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  return String(value)
+    .toLowerCase()
+    .replace(/[\u2018\u2019\u201c\u201d]/g, "'")
+    .replace(/[^a-z0-9_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function cleanLabel(str?: string): string {
   if (!str) return "";
-  return str
-    .replace(/_/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return str.replace(/_/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function extractSingle(value?: string): string | undefined {
-  if (!value) return undefined;
-  return cleanLabel(value.split(" ")[0] ?? value);
+function toRiskCategory(score: number): RiskCategory {
+  const rate = Math.max(0, Math.min(100, 100 - score));
+  if (rate <= 10) return "NEGLIGIBLE";
+  if (rate <= 40) return "LOW";
+  if (rate <= 70) return "MEDIUM";
+  return "HIGH";
 }
 
-function isPositive(value?: string): boolean {
-  if (!value) return false;
-  const v = value.toLowerCase();
-  if (NEGATIVE_HINTS.some((k) => v.includes(k))) return false;
-  return POSITIVE_HINTS.some((k) => v.includes(k));
+function scoreValue(value: unknown): number {
+  const v = normalize(value);
+  if (!v) return 0.5;
+  if (NEGATIVE_HINTS.some((k) => v.includes(k))) return 0;
+  if (POSITIVE_HINTS.some((k) => v.includes(k))) return 1;
+  return 0.6;
 }
 
-function includeWord(value: unknown, word: string) {
-  if (!value) return false;
-  return String(value).toLowerCase().includes(word.toLowerCase());
+function getQuestionRule(catalog: QuantificationCatalog | undefined, id: string): QuantificationQuestionRule | undefined {
+  return catalog?.questionRules[id];
 }
 
-function detectRisks(record: KoboRawRecord) {
-  const critical: string[] = [];
-  const medium: string[] = [];
-  const positive: string[] = [];
+function candidatesForValue(value: string, label?: string): string[] {
+  const normalizedValue = normalize(value);
+  const normalizedLabel = label ? normalize(label) : "";
+  const candidates = [normalizedValue, normalizedLabel].filter(Boolean);
+  return Array.from(new Set(candidates));
+}
 
-  RISK_MAPPING.forEach(({ key, label, critical: isCritical }) => {
-    const raw = record[key];
-    if (raw === undefined) return;
-    const val = String(raw).toLowerCase();
-    const isNegative = NEGATIVE_HINTS.some((k) => val.includes(k));
-    const isPositive = POSITIVE_HINTS.some((k) => val.includes(k));
-    if (isNegative) {
-      (isCritical ? critical : medium).push(label);
-    } else if (isPositive) {
-      positive.push(label);
-    }
+function findMatchingScore(rule: QuantificationQuestionRule, value: string, label?: string): EvaluatedQuestion {
+  const candidates = candidatesForValue(value, label);
+  const matchedRules = rule.responseRules.filter((option) => {
+    const normalizedOption = option.normalizedResponse || normalize(option.response);
+    if (!normalizedOption) return false;
+    return candidates.some(
+      (candidate) =>
+        candidate === normalizedOption ||
+        candidate.includes(normalizedOption) ||
+        normalizedOption.includes(candidate),
+    );
   });
 
-  return { critical, medium, positive };
+  if (matchedRules.length === 0) {
+    const fallback = scoreValue(value);
+    return {
+      score: fallback * rule.questionWeight,
+      maxScore: rule.questionWeight,
+      applicable: true,
+      answer: label ? cleanLabel(label) : cleanLabel(value),
+      recommendation: undefined,
+    };
+  }
+
+  const numericScores = matchedRules.map((item) => item.score).filter((item): item is number => item !== null);
+  const maxNumeric = matchedRules.length > 0 ? Math.max(...numericScores, 0) : 0;
+  const recommendation = matchedRules.find((item) => item.recommendation)?.recommendation ?? undefined;
+
+  if (numericScores.length === 0) {
+    return {
+      score: 0,
+      maxScore: 0,
+      applicable: false,
+      answer: label ? cleanLabel(label) : cleanLabel(value),
+      recommendation,
+    };
+  }
+
+  return {
+    score: maxNumeric * rule.questionWeight,
+    maxScore: rule.questionWeight,
+    applicable: true,
+    answer: label ? cleanLabel(label) : cleanLabel(value),
+    recommendation,
+  };
 }
 
-function extractList(value?: string): string[] {
-  if (!value) return [];
-  return value.split(" ").map((v) => cleanLabel(v)).filter(Boolean);
+function avg(values: number[]): number {
+  if (values.length === 0) return 0;
+  return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
 }
 
-function countByField<T extends Record<string, any>>(
-  items: T[],
-  field: keyof T,
-): { name: string; count: number }[] {
+function buildSubcategoryWeights(catalog?: QuantificationCatalog): Record<string, number> {
+  const map: Record<string, number> = {};
+
+  (["external", "internal"] as const).forEach((side) => {
+    const subcategories = SUBCATEGORIES.filter((subcategory) => subcategory.side === side);
+    const scoredSubcategories = subcategories.filter((subcategory) => {
+      if (!catalog) return true;
+      return subcategory.ids.some((id) => catalog.questionRules[id]?.mainScore);
+    });
+    const eligible = scoredSubcategories.length > 0 ? scoredSubcategories : subcategories;
+    const weight = eligible.length > 0 ? CATEGORY_SIDE_POINTS[side] / eligible.length : 0;
+    eligible.forEach((subcategory) => {
+      map[subcategory.section] = weight;
+    });
+  });
+
+  return map;
+}
+
+function buildInstrumentIndex(asset?: KoboAssetResponse): InstrumentIndex {
+  const idToXpath: Record<string, string> = {};
+  const idToLabel: Record<string, string> = {};
+  const idToType: Record<string, string> = {};
+  const idToOptions: Record<string, Array<{ code: string; label: string }>> = {};
+
+  const survey = asset?.content?.survey ?? [];
+  const choices = asset?.content?.choices ?? [];
+
+  const optionsByList: Record<string, Array<{ code: string; label: string }>> = {};
+  choices.forEach((c) => {
+    const list = String(c.list_name ?? "").trim();
+    const code = String(c.name ?? "").trim();
+    const label = String(c.label?.[0] ?? code).trim();
+    if (!list || !code) return;
+    optionsByList[list] = optionsByList[list] || [];
+    optionsByList[list].push({ code, label });
+  });
+
+  survey.forEach((q) => {
+    const type = String(q.type ?? "").trim();
+    if (!type || type === "begin_group" || type === "end_group") return;
+    const xpath = String(q.$xpath ?? "").trim();
+    if (!xpath) return;
+    const name = String(q.name ?? "").trim();
+    const id = name || (xpath.includes("/") ? xpath.slice(xpath.lastIndexOf("/") + 1) : xpath);
+    if (!id) return;
+    idToXpath[id] = xpath;
+    idToLabel[id] = String(q.label?.[0] ?? id).trim();
+    idToType[id] = type;
+    const list = String(q.select_from_list_name ?? "").trim();
+    if (list) idToOptions[id] = optionsByList[list] ?? [];
+  });
+
+  if (!idToXpath.Production_system) {
+    idToXpath.Production_system = "Facility_General_Information/Production_system";
+    idToType.Production_system = "select_multiple";
+  }
+
+  return { idToXpath, idToLabel, idToType, idToOptions };
+}
+
+function getRaw(record: KoboRawRecord, id: string, idx: InstrumentIndex): string {
+  const xpath = idx.idToXpath[id];
+  if (!xpath) return "";
+  const value = record[xpath];
+  return value === undefined || value === null ? "" : String(value).trim();
+}
+
+function getValues(record: KoboRawRecord, id: string, idx: InstrumentIndex): string[] {
+  const raw = getRaw(record, id, idx);
+  if (!raw) return [];
+  return idx.idToType[id] === "select_multiple" ? raw.split(/\s+/).filter(Boolean) : [raw];
+}
+
+function getDisplayValues(record: KoboRawRecord, id: string, idx: InstrumentIndex): string[] {
+  const values = getValues(record, id, idx);
+  if (values.length === 0) return [];
+  const labelByCode: Record<string, string> = {};
+  (idx.idToOptions[id] ?? []).forEach((opt) => {
+    labelByCode[opt.code] = opt.label;
+  });
+  return values.map((v) => cleanLabel(labelByCode[v] ?? v)).filter(Boolean);
+}
+
+function getNormalizedAnswerSet(record: KoboRawRecord, id: string, idx: InstrumentIndex): Set<string> {
+  const set = new Set<string>();
+  const values = getValues(record, id, idx);
+  const labelByCode: Record<string, string> = {};
+  (idx.idToOptions[id] ?? []).forEach((opt) => (labelByCode[opt.code] = opt.label));
+  values.forEach((v) => {
+    set.add(normalize(v));
+    if (labelByCode[v]) set.add(normalize(labelByCode[v]));
+  });
+  const raw = getRaw(record, id, idx);
+  if (raw) set.add(normalize(raw));
+  return set;
+}
+
+function evaluateQuestion(
+  record: KoboRawRecord,
+  idx: InstrumentIndex,
+  id: string,
+  catalog?: QuantificationCatalog,
+): EvaluatedQuestion {
+  const rule = getQuestionRule(catalog, id);
+  const raw = getRaw(record, id, idx);
+  const display = getDisplayValues(record, id, idx);
+  const type = idx.idToType[id];
+  const values = getValues(record, id, idx);
+
+  if (!rule || !rule.mainScore || rule.questionWeight <= 0) {
+    const rawNormalized = normalize(raw);
+    const applicable = Boolean(raw) && !rawNormalized.includes("does not apply") && !rawNormalized.includes("not applicable");
+    const fallbackScore = applicable ? scoreValue(raw) : 0;
+    return {
+      score: fallbackScore,
+      maxScore: applicable ? 1 : 0,
+      applicable,
+      answer: display.join(", ") || cleanLabel(raw) || "-",
+      recommendation: undefined,
+    };
+  }
+
+  if (!raw || values.length === 0) {
+    return {
+      score: 0,
+      maxScore: 0,
+      applicable: false,
+      answer: "-",
+      recommendation: undefined,
+    };
+  }
+
+  if (type === "select_multiple") {
+    const evaluations = values.map((value, index) => findMatchingScore(rule, value, display[index]));
+    const applicableEvaluations = evaluations.filter((item) => item.applicable);
+    if (applicableEvaluations.length === 0) {
+      return {
+        score: 0,
+        maxScore: 0,
+        applicable: false,
+        answer: display.join(", ") || cleanLabel(raw) || "-",
+        recommendation: evaluations.find((item) => item.recommendation)?.recommendation,
+      };
+    }
+    const questionScore = Math.min(
+      rule.questionWeight,
+      applicableEvaluations.reduce((acc, item) => acc + item.score, 0),
+    );
+    return {
+      score: questionScore,
+      maxScore: rule.questionWeight,
+      applicable: true,
+      answer: display.join(", ") || cleanLabel(raw) || "-",
+      recommendation: applicableEvaluations.find((item) => item.recommendation)?.recommendation,
+    };
+  }
+
+  const matched = findMatchingScore(rule, values[0], display[0]);
+  return {
+    score: matched.score,
+    maxScore: matched.maxScore,
+    applicable: matched.applicable,
+    answer: display.join(", ") || cleanLabel(raw) || "-",
+    recommendation: matched.recommendation,
+  };
+}
+
+function matches(record: KoboRawRecord, idx: InstrumentIndex, rule: RuleDefinition): boolean {
+  const answers = getNormalizedAnswerSet(record, rule.id, idx);
+  return rule.expectedAny.some((v) => answers.has(normalize(v)));
+}
+
+function ruleStatus(record: KoboRawRecord, idx: InstrumentIndex, rule: RuleDefinition): RuleStatus {
+  const applicable = rule.applicable ? rule.applicable(record, idx) : true;
+  const answer = getDisplayValues(record, rule.id, idx).join(", ") || getRaw(record, rule.id, idx) || "-";
+  return { id: rule.id, label: rule.label, matched: applicable ? matches(record, idx, rule) : false, applicable, answer };
+}
+
+function countByField<T extends Record<string, unknown>>(items: T[], key: keyof T): { name: string; count: number }[] {
   const map: Record<string, number> = {};
   items.forEach((item) => {
-    const val = item[field];
-    if (val) {
-      const key = String(val);
-      map[key] = (map[key] || 0) + 1;
-    }
+    const v = item[key];
+    if (!v) return;
+    const k = String(v);
+    map[k] = (map[k] || 0) + 1;
   });
   return Object.entries(map)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 }
 
-function avgScoreByField<T extends { score: number } & Record<string, any>>(
-  items: T[],
-  field: keyof T,
-): { name: string; avgScore: number; count: number }[] {
+function avgScoreByField<T extends { score: number } & Record<string, unknown>>(items: T[], key: keyof T): { name: string; avgScore: number; count: number }[] {
   const map: Record<string, number[]> = {};
   items.forEach((item) => {
-    const val = item[field];
-    if (val) {
-      const key = String(val);
-      map[key] = map[key] || [];
-      map[key].push(item.score);
-    }
+    const v = item[key];
+    if (!v) return;
+    const k = String(v);
+    map[k] = map[k] || [];
+    map[k].push(item.score);
   });
-  return Object.entries(map).map(([name, scores]) => ({
-    name,
-    avgScore: Math.round(scores.reduce((a, b) => a + b, 0) / Math.max(scores.length, 1)),
-    count: scores.length,
-  }));
+  return Object.entries(map)
+    .map(([name, scores]) => ({ name, avgScore: avg(scores), count: scores.length }))
+    .sort((a, b) => b.count - a.count);
 }
 
-export function transformKoboData(raw: KoboApiResponse): DashboardData {
-  const facilities: FacilitySummary[] = raw.results.map((record) => {
-    const sectionScores = computeSectionScores(record);
-    const score =
-      sectionScores.length > 0
-        ? Math.round(
-            sectionScores.reduce((acc, s) => acc + s.score, 0) /
-              sectionScores.length,
-          )
-        : 0;
-    const riskFactors = detectRisks(record);
+function aggregateResponseValues(
+  facilities: FacilitySummary[],
+  key: keyof FacilitySummary["responses"],
+): { label: string; count: number }[] {
+  const map: Record<string, number> = {};
+  facilities.forEach((f) => {
+    (f.responses[key] ?? []).forEach((label) => {
+      if (!label) return;
+      map[label] = (map[label] || 0) + 1;
+    });
+  });
+  return Object.entries(map)
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count);
+}
 
-    const waterMonitoringFreq = record["source_of_water/_3_10"];
-    const waterParams = record["source_of_water/_3_9"];
-    const mortalityDisposal = record["health_monitoring/_8_9"];
-    const quarantine = includeWord(record["Introduction_of_all_life_stages/_2_12"], "yes");
-    const antibiotics = includeWord(record["VMP/_9_7"], "antibiotic");
-    const antibioticRecords = includeWord(record["VMP/_9_15"], "yes");
-    const diagnostics = !NEGATIVE_HINTS.some((n) =>
-      String(record["health_monitoring/_8_11"] ?? "").toLowerCase().includes(n),
+function buildQuestionStatus(
+  record: KoboRawRecord,
+  idx: InstrumentIndex,
+  id: string,
+  catalog?: QuantificationCatalog,
+  precomputed?: EvaluatedQuestion,
+): QuestionStatus {
+  const evaluation = precomputed ?? evaluateQuestion(record, idx, id, catalog);
+  const threshold = evaluation.maxScore > 0 ? evaluation.maxScore * 0.6 : 0;
+  const compliant = evaluation.applicable ? evaluation.score >= threshold : false;
+  return {
+    id,
+    label: idx.idToLabel[id] || id,
+    answer: evaluation.answer,
+    applicable: evaluation.applicable,
+    compliant,
+    score: evaluation.score,
+    maxScore: evaluation.maxScore,
+    recommendation: !evaluation.applicable || compliant ? "-" : evaluation.recommendation ?? `Strengthen measure: ${idx.idToLabel[id] || id}`,
+  };
+}
+
+function toRate(records: KoboRawRecord[], idx: InstrumentIndex, rule: RuleDefinition): number {
+  const applicable = records.filter((r) => (rule.applicable ? rule.applicable(r, idx) : true));
+  if (applicable.length === 0) return 0;
+  const matched = applicable.filter((r) => matches(r, idx, rule)).length;
+  return Math.round((matched / applicable.length) * 100);
+}
+
+function parseGeolocation(value: unknown): [number, number] | undefined {
+  if (Array.isArray(value) && value.length >= 2) {
+    const lat = Number(value[0]);
+    const lon = Number(value[1]);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) return [lat, lon];
+  }
+
+  const raw = String(value ?? "").trim();
+  if (!raw) return undefined;
+
+  const numbers = raw
+    .replace(/[;,]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => Number(part))
+    .filter((num) => Number.isFinite(num));
+
+  if (numbers.length < 2) return undefined;
+
+  const first = numbers[0];
+  const second = numbers[1];
+
+  const latLon = Math.abs(first) <= 90 && Math.abs(second) <= 180;
+  const lonLat = Math.abs(first) <= 180 && Math.abs(second) <= 90;
+
+  if (latLon) return [first, second];
+  if (lonLat) return [second, first];
+  return undefined;
+}
+
+export function transformKoboData(raw: KoboApiResponse, asset?: KoboAssetResponse, catalog?: QuantificationCatalog): DashboardData {
+  const idx = buildInstrumentIndex(asset);
+  const records = raw.results ?? [];
+  const subcategoryWeights = buildSubcategoryWeights(catalog);
+
+  const facilities: FacilitySummary[] = records.map((record) => {
+    const evaluatedQuestions: Record<string, EvaluatedQuestion> = {};
+    SUBCATEGORIES.forEach((subcategory) => {
+      subcategory.ids.forEach((id) => {
+        if (!evaluatedQuestions[id]) {
+          evaluatedQuestions[id] = evaluateQuestion(record, idx, id, catalog);
+        }
+      });
+    });
+
+    const subcategoryChecklist: SubcategoryChecklist[] = SUBCATEGORIES.map((subcategory) => {
+      const items = subcategory.ids.map((id) =>
+        buildQuestionStatus(record, idx, id, catalog, evaluatedQuestions[id]),
+      );
+      return { section: subcategory.section, side: subcategory.side, items };
+    });
+
+    const sectionScores: SectionScore[] = SUBCATEGORIES.map((subcategory) => {
+      const values = subcategory.ids.map((id) => evaluatedQuestions[id]).filter(Boolean);
+      const positives = values.reduce((acc, item) => acc + item.score, 0);
+      const total = values.reduce((acc, item) => acc + item.maxScore, 0);
+      return {
+        section: subcategory.section,
+        side: subcategory.side,
+        score: total ? Math.round((positives / total) * 100) : 0,
+        positives,
+        total,
+      };
+    });
+
+    const categoryScore = (side: ScoringSide): number => {
+      const totalSidePoints = CATEGORY_SIDE_POINTS[side];
+      if (!totalSidePoints) return 0;
+      const weighted = sectionScores
+        .filter((section) => section.side === side && section.total > 0)
+        .reduce((acc, section) => {
+          const weight = subcategoryWeights[section.section] ?? 0;
+          return acc + (section.score / 100) * weight;
+        }, 0);
+      return Math.round((weighted / totalSidePoints) * 100);
+    };
+
+    const externalScore = categoryScore("external");
+    const internalScore = categoryScore("internal");
+    const score = Math.round(
+      externalScore * CATEGORY_SIDE_WEIGHTS.external + internalScore * CATEGORY_SIDE_WEIGHTS.internal,
     );
-    const hasSOP = includeWord(record["SOP/_11_1"], "yes");
-    const hasRecords = !includeWord(record["SOP/_11_5"], "no_records");
-    const hasBiosecurityProgram = includeWord(record["SOP/_11_2"], "biosecurity");
-    const waterTreatment = includeWord(record["source_of_water/_3_4"], "yes") || 
-                           includeWord(record["source_of_water/_3_5"], "filtration");
+    const riskLevel = toRiskCategory(score);
 
-    const geolocation = record._geolocation as [number, number] | undefined;
+    const high = HIGH_RISK_RULES.map((r) => ruleStatus(record, idx, r));
+    const moderate = MODERATE_RISK_RULES.map((r) => ruleStatus(record, idx, r));
+    const positive = POSITIVE_RULES.map((r) => ruleStatus(record, idx, r));
+    const keyPractices = KEY_PRACTICES.map((r) => ruleStatus(record, idx, r));
+    const animalHealthMonitoring = ANIMAL_HEALTH_RULES.map((r) => ruleStatus(record, idx, r));
+
+    const geolocation = parseGeolocation(record._geolocation);
+
+    const speciesValues = getDisplayValues(record, "Which_species_are_cultured_in_", idx);
+    const productionSystemValues = getDisplayValues(record, "Production_system", idx);
+    const basedOn = cleanLabel(getRaw(record, "Based", idx)) || undefined;
 
     return {
       id: record._id,
-      name:
-        record["Facility_General_Information/Facility_Name"] ??
-        `Facility ${record._id}`,
-      location: record["Facility_General_Information/Location"],
-      species: extractSingle(
-        record["Facility_General_Information/Which_species_are_cultured_in_"],
-      ),
-      productionSystem: extractSingle(
-        record["Facility_General_Information/Production_system"],
-      ),
-      productionType: cleanLabel(record["Facility_General_Information/Type_production"]),
-      basedOn: cleanLabel(record["Facility_General_Information/Based"]),
-      market: cleanLabel(record["Facility_General_Information/Market"]),
-      retailType: cleanLabel(record["Facility_General_Information/Type_retails"]),
-      respondent: record["Facility_General_Information/Respondent_name"],
-      respondentRole: cleanLabel(record["Facility_General_Information/respondent_role"]),
-      respondentGender: cleanLabel(record["Facility_General_Information/Respondent_s_Gender"]),
-      respondentEducation: cleanLabel(record["Facility_General_Information/Respondent_education"]),
-      yearsOperation: cleanLabel(record["Facility_General_Information/Years_operation"]),
+      name: getRaw(record, "Facility_Name", idx) || `Facility ${record._id}`,
+      location: cleanLabel(getRaw(record, "Location", idx)) || basedOn,
+      species: speciesValues[0] || undefined,
+      productionSystem: productionSystemValues[0] || undefined,
+      productionType: cleanLabel(getRaw(record, "Type_production", idx)) || undefined,
+      basedOn,
+      market: cleanLabel(getRaw(record, "Market", idx)) || undefined,
+      respondent: getRaw(record, "Respondent_name", idx) || undefined,
+      respondentRole: cleanLabel(getRaw(record, "respondent_role", idx)) || undefined,
+      respondentGender: cleanLabel(getRaw(record, "Respondent_s_Gender", idx)) || undefined,
+      respondentEducation: cleanLabel(getRaw(record, "Respondent_education", idx)) || undefined,
+      yearsOperation: cleanLabel(getRaw(record, "Years_operation", idx)) || undefined,
       lastUpdated: record._submission_time,
-      waterSource: cleanLabel(record["source_of_water/_3_1"]),
-      waterMonitoring: cleanLabel(waterParams),
-      waterMonitoringFrequency: cleanLabel(waterMonitoringFreq),
-      waterTreatment,
-      mortalityDisposal: cleanLabel(mortalityDisposal),
-      quarantine,
-      antibiotics,
-      antibioticTypes: extractList(record["VMP/_9_11"]),
-      antibioticRecords,
-      diagnostics,
-      diagnosticTypes: extractList(record["health_monitoring/_8_11"]),
-      hasSOP,
-      hasRecords,
-      recordTypes: extractList(record["SOP/_11_5"]),
-      hasBiosecurityProgram,
-      feedType: cleanLabel(record["fomites/_4_1"]),
-      nearbyFacilities: cleanLabel(record["Environment_and_surrounding_areas/_1_2"]),
       score,
-      riskLevel: toRiskLevel(score),
+      riskFactorRate: Math.max(0, Math.min(100, 100 - score)),
+      externalScore,
+      internalScore,
+      riskLevel,
+      waterSource: cleanLabel(getDisplayValues(record, "_3_1", idx)[0]) || undefined,
+      waterMonitoringFrequency: cleanLabel(getDisplayValues(record, "_3_10", idx)[0]) || undefined,
+      mortalityDisposal: cleanLabel(getDisplayValues(record, "_8_9", idx)[0]) || undefined,
       sectionScores,
-      riskFactors,
+      highRiskFactors: high.filter((r) => r.matched).map((r) => r.label),
+      moderateRiskFactors: moderate.filter((r) => r.matched).map((r) => r.label),
+      positivePractices: positive.filter((r) => r.matched).map((r) => r.label),
+      keyPractices,
+      animalHealthMonitoring,
+      questionChecklist: subcategoryChecklist.flatMap((s) => s.items),
+      subcategoryChecklist,
+      responses: {
+        waterMonitoring: getDisplayValues(record, "_3_10", idx),
+        mortalityDisposal: getDisplayValues(record, "_8_9", idx),
+        intakeWaterTreatmentApplied: getDisplayValues(record, "_3_5", idx),
+        waterParametersMeasured: getDisplayValues(record, "_3_9", idx),
+        personnelTrainingTopics: getDisplayValues(record, "_10_15", idx),
+        recordsCoverage: getDisplayValues(record, "_11_5", idx),
+        sopsCoverage: getDisplayValues(record, "_11_7", idx),
+      },
       geolocation,
     };
   });
 
   const totalRecords = facilities.length;
-  const avgScore =
-    totalRecords > 0
-      ? Math.round(
-          facilities.reduce((acc, f) => acc + f.score, 0) / totalRecords,
-        )
-      : 0;
+  const avgScore = avg(facilities.map((f) => f.score));
+  const avgExternalScore = avg(facilities.map((f) => f.externalScore));
+  const avgInternalScore = avg(facilities.map((f) => f.internalScore));
+  const negligibleRiskCount = facilities.filter((f) => f.riskLevel === "NEGLIGIBLE").length;
   const highRiskCount = facilities.filter((f) => f.riskLevel === "HIGH").length;
   const mediumRiskCount = facilities.filter((f) => f.riskLevel === "MEDIUM").length;
-  const lowRiskCount = facilities.filter((f) => f.riskLevel === "LOW").length;
-  const lastUpdated =
-    facilities
-      .map((f) => f.lastUpdated)
-      .filter(Boolean)
-      .sort()
-      .reverse()[0] ?? undefined;
+  const lowRiskCount = facilities.filter((f) => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length;
 
-  const riskMix = [
-    { level: "High", count: highRiskCount, color: "#ef4444" },
-    { level: "Medium", count: mediumRiskCount, color: "#f59e0b" },
-    { level: "Low", count: lowRiskCount, color: "#22c55e" },
-  ];
-
-  const calcRate = (filter: (f: FacilitySummary) => boolean) =>
-    facilities.length > 0
-      ? Math.round((facilities.filter(filter).length / facilities.length) * 100)
-      : 0;
-
-  const quarantineRate = calcRate((f) => f.quarantine === true);
-  const antibioticUseRate = calcRate((f) => f.antibiotics === true);
-  const antibioticRecordRate = calcRate((f) => f.antibioticRecords === true);
-  const diagnosticsLabRate = calcRate((f) => f.diagnostics === true);
-  const sopRate = calcRate((f) => f.hasSOP === true);
-  const recordKeepingRate = calcRate((f) => f.hasRecords === true);
-  const biosecurityProgramRate = calcRate((f) => f.hasBiosecurityProgram === true);
-  const waterTreatmentRate = calcRate((f) => f.waterTreatment === true);
-
-  const waterMonitoringMap: Record<string, number> = {};
+  const highRiskMap: Record<string, number> = {};
+  const moderateRiskMap: Record<string, number> = {};
+  const positiveMap: Record<string, number> = {};
   facilities.forEach((f) => {
-    if (!f.waterMonitoringFrequency) return;
-    const key = f.waterMonitoringFrequency;
-    waterMonitoringMap[key] = (waterMonitoringMap[key] || 0) + 1;
+    f.highRiskFactors.forEach((x) => (highRiskMap[x] = (highRiskMap[x] || 0) + 1));
+    f.moderateRiskFactors.forEach((x) => (moderateRiskMap[x] = (moderateRiskMap[x] || 0) + 1));
+    f.positivePractices.forEach((x) => (positiveMap[x] = (positiveMap[x] || 0) + 1));
   });
-  const waterMonitoring = Object.entries(waterMonitoringMap)
-    .map(([label, count]) => ({ label, count }))
-    .sort((a, b) => b.count - a.count);
 
-  const mortalityMap: Record<string, number> = {};
-  facilities.forEach((f) => {
-    if (!f.mortalityDisposal) return;
-    const key = f.mortalityDisposal;
-    mortalityMap[key] = (mortalityMap[key] || 0) + 1;
+  const sectionAverages = SUBCATEGORIES.map((sub) => {
+    const vals = facilities
+      .map((f) => f.sectionScores.find((s) => s.section === sub.section)?.score ?? 0)
+      .filter((v) => v > 0);
+    return { section: sub.section, side: sub.side, score: avg(vals) };
   });
-  const mortalityDisposal = Object.entries(mortalityMap)
-    .map(([method, count]) => ({ method, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
 
-  const geoCoverage = facilities.filter((f) => !!f.geolocation).length;
+  const distribution = [
+    { bucket: "0-20", min: 0, max: 20 },
+    { bucket: "21-40", min: 21, max: 40 },
+    { bucket: "41-60", min: 41, max: 60 },
+    { bucket: "61-80", min: 61, max: 80 },
+    { bucket: "81-100", min: 81, max: 100 },
+  ].map((b) => ({ bucket: b.bucket, count: facilities.filter((f) => f.score >= b.min && f.score <= b.max).length }));
 
-  // Demographics
-  const byEducation = countByField(
-    facilities.map((f) => ({ education: f.respondentEducation })),
-    "education"
-  ).map((e) => ({ level: e.name, count: e.count }));
-
-  const byYearsOperation = countByField(
-    facilities.map((f) => ({ years: f.yearsOperation })),
-    "years"
-  ).map((e) => ({ years: e.name, count: e.count }));
-
-  const byGender = countByField(
-    facilities.map((f) => ({ gender: f.respondentGender })),
-    "gender"
-  ).map((e) => ({ gender: e.name, count: e.count }));
-
-  const byRole = countByField(
-    facilities.map((f) => ({ role: f.respondentRole })),
-    "role"
-  ).map((e) => ({ role: e.name, count: e.count }));
-
-  // Operations
-  const byMarketOps = countByField(
-    facilities.map((f) => ({ market: f.market })),
-    "market"
-  ).map((e) => ({ market: e.name, count: e.count }));
-
-  const byProductionType = countByField(
-    facilities.map((f) => ({ type: f.productionType })),
-    "type"
-  ).map((e) => ({ type: e.name, count: e.count }));
-
-  const byWaterSource = countByField(
-    facilities.map((f) => ({ source: f.waterSource })),
-    "source"
-  ).map((e) => ({ source: e.name, count: e.count }));
-
-  const byFeedType = countByField(
-    facilities.map((f) => ({ type: f.feedType })),
-    "type"
-  ).map((e) => ({ type: e.name, count: e.count }));
-
-  // Antibiotic usage breakdown
-  const antibioticCounts: Record<string, number> = {};
+  const riskMatrixExternal: { facility: string; subcategory: string; value: number; score: number }[] = [];
+  const riskMatrixInternal: { facility: string; subcategory: string; value: number; score: number }[] = [];
   facilities.forEach((f) => {
-    (f.antibioticTypes ?? []).forEach((ab) => {
-      antibioticCounts[ab] = (antibioticCounts[ab] || 0) + 1;
+    f.sectionScores.forEach((s) => {
+      const row = { facility: f.name, subcategory: s.section, value: s.score >= 70 ? 1 : 0, score: s.score };
+      if (s.side === "external") riskMatrixExternal.push(row);
+      else riskMatrixInternal.push(row);
     });
   });
-  const antibioticUsage = Object.entries(antibioticCounts)
-    .map(([antibiotic, count]) => ({ antibiotic, count }))
-    .sort((a, b) => b.count - a.count);
 
-  const distributionBuckets = [
-    { label: "0-20", min: 0, max: 20 },
-    { label: "21-40", min: 21, max: 40 },
-    { label: "41-60", min: 41, max: 60 },
-    { label: "61-80", min: 61, max: 80 },
-    { label: "81-100", min: 81, max: 100 },
-  ];
-  const distribution = distributionBuckets.map((b) => ({
-    bucket: b.label,
-    count: facilities.filter(
-      (f) => f.score >= b.min && f.score <= b.max,
-    ).length,
-  }));
+  const locations = facilities
+    .filter((f) => f.geolocation)
+    .map((f) => ({ facility: f.name, location: f.location ?? f.basedOn, lat: f.geolocation![0], lon: f.geolocation![1] }));
 
-  // Submission timeline (by day)
-  const submissionMap: Record<string, number> = {};
-  facilities.forEach((f) => {
-    if (!f.lastUpdated) return;
-    const date = String(f.lastUpdated).slice(0, 10);
-    submissionMap[date] = (submissionMap[date] || 0) + 1;
-  });
-  const submissionsOverTime = Object.entries(submissionMap)
-    .map(([date, count]) => ({ date, count }))
-    .sort((a, b) => (a.date > b.date ? 1 : -1));
-
-  const sectionAverages = Object.keys(SECTION_FIELDS).map((section) => {
-    const values: number[] = [];
-    facilities.forEach((f) => {
-      const match = f.sectionScores.find((s) => s.section === section);
-      if (match) values.push(match.score);
-    });
-    const score =
-      values.length > 0
-        ? Math.round(values.reduce((a, b) => a + b, 0) / values.length)
-        : 0;
-    return { section, score };
-  });
-
-  const riskCounts: Record<string, number> = {};
-  const positiveCounts: Record<string, number> = {};
-  facilities.forEach((f) => {
-    [...f.riskFactors.critical, ...f.riskFactors.medium].forEach((factor) => {
-      riskCounts[factor] = (riskCounts[factor] || 0) + 1;
-    });
-    f.riskFactors.positive.forEach((factor) => {
-      positiveCounts[factor] = (positiveCounts[factor] || 0) + 1;
-    });
-  });
-  const topRiskFactors = Object.entries(riskCounts)
-    .map(([factor, count]) => ({ factor, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 8);
-
-  const positiveFactors = Object.entries(positiveCounts)
-    .map(([factor, count]) => ({ factor, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
-
-  const bySpecies = avgScoreByField(facilities, "species");
-  const bySystem = avgScoreByField(facilities, "productionSystem");
-  const byMarket = avgScoreByField(facilities, "market");
-  const byEducationComp = avgScoreByField(facilities, "respondentEducation");
-  const byYearsComp = avgScoreByField(facilities, "yearsOperation");
-  const byWaterSourceComp = avgScoreByField(facilities, "waterSource");
-  const byFeedTypeComp = avgScoreByField(facilities, "feedType");
-
-  const heatmap: { facility: string; factor: string; value: number }[] = [];
-  const heatmapFactors = topRiskFactors.slice(0, 6).map((r) => r.factor);
-  facilities.forEach((f) => {
-    heatmapFactors.forEach((factor) => {
-      const hasFactor =
-        f.riskFactors.critical.includes(factor) ||
-        f.riskFactors.medium.includes(factor);
-      heatmap.push({
-        facility: f.name,
-        factor,
-        value: hasFactor ? 1 : 0,
-      });
-    });
-  });
+  const questionRulesForMethodology = SUBCATEGORIES.flatMap((subcategory) =>
+    subcategory.ids.map((id) => {
+      const rule = catalog?.questionRules[id];
+      return {
+        id,
+        section: subcategory.section,
+        side: subcategory.side,
+        question: rule?.question || idx.idToLabel[id] || id,
+        mainScore: rule?.mainScore ?? true,
+        questionWeight: rule?.questionWeight ?? 1,
+        responses:
+          rule?.responseRules.map((response) => ({
+            response: response.response,
+            score: response.score,
+            recommendation: response.recommendation ?? undefined,
+          })) ?? [],
+      };
+    }),
+  );
 
   return {
     facilities,
-    stats: { totalRecords, avgScore, highRiskCount, mediumRiskCount, lowRiskCount, lastUpdated },
+    stats: {
+      totalRecords,
+      avgScore,
+      avgExternalScore,
+      avgInternalScore,
+      negligibleRiskCount,
+      highRiskCount,
+      mediumRiskCount,
+      lowRiskCount,
+      lastUpdated: facilities
+        .map((f) => f.lastUpdated)
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] ?? undefined,
+    },
     practices: {
-      quarantineRate,
-      antibioticUseRate,
-      antibioticRecordRate,
-      diagnosticsLabRate,
-      sopRate,
-      recordKeepingRate,
-      biosecurityProgramRate,
-      waterTreatmentRate,
-      waterMonitoring,
-      mortalityDisposal,
-      geoCoverage,
+      quarantineRate: toRate(records, idx, KEY_PRACTICES[0]),
+      writtenBiosecurityRate: toRate(records, idx, KEY_PRACTICES[1]),
+      noSharedEquipmentRate: toRate(records, idx, KEY_PRACTICES[2]),
+      equipmentDisinfectionRate: toRate(records, idx, KEY_PRACTICES[3]),
+      waterTreatmentRate: toRate(records, idx, KEY_PRACTICES[4]),
+      biovectorInspectionRate: toRate(records, idx, KEY_PRACTICES[5]),
+      waterMonitoring: aggregateResponseValues(facilities, "waterMonitoring"),
+      mortalityDisposal: aggregateResponseValues(facilities, "mortalityDisposal").map((x) => ({ method: x.label, count: x.count })),
+      intakeWaterTreatmentApplied: aggregateResponseValues(facilities, "intakeWaterTreatmentApplied"),
+      waterParametersMeasured: aggregateResponseValues(facilities, "waterParametersMeasured"),
+      personnelTrainingTopics: aggregateResponseValues(facilities, "personnelTrainingTopics"),
+      recordsCoverage: aggregateResponseValues(facilities, "recordsCoverage"),
+      sopsCoverage: aggregateResponseValues(facilities, "sopsCoverage"),
+      geoCoverage: locations.length,
     },
     demographics: {
-      byEducation,
-      byYearsOperation,
-      byGender,
-      byRole,
+      byEducation: countByField(facilities.map((f) => ({ education: f.respondentEducation })), "education").map((x) => ({ level: x.name, count: x.count })),
+      byYearsOperation: countByField(facilities.map((f) => ({ years: f.yearsOperation })), "years").map((x) => ({ years: x.name, count: x.count })),
+      byGender: countByField(facilities.map((f) => ({ gender: f.respondentGender })), "gender").map((x) => ({ gender: x.name, count: x.count })),
+      byRole: countByField(facilities.map((f) => ({ role: f.respondentRole })), "role").map((x) => ({ role: x.name, count: x.count })),
     },
     operations: {
-      byMarket: byMarketOps,
-      byProductionType,
-      byWaterSource,
-      byFeedType,
+      byMarket: countByField(facilities.map((f) => ({ market: f.market })), "market").map((x) => ({ market: x.name, count: x.count })),
+      byProductionType: countByField(facilities.map((f) => ({ type: f.productionType })), "type").map((x) => ({ type: x.name, count: x.count })),
+      byWaterSource: countByField(facilities.map((f) => ({ source: f.waterSource })), "source").map((x) => ({ source: x.name, count: x.count })),
+      bySpecies: countByField(facilities.map((f) => ({ species: f.species })), "species").map((x) => ({ species: x.name, count: x.count })),
+      bySystem: countByField(facilities.map((f) => ({ system: f.productionSystem })), "system").map((x) => ({ system: x.name, count: x.count })),
+      byLocation: countByField(facilities.map((f) => ({ location: f.basedOn ?? f.location })), "location").map((x) => ({ location: x.name, count: x.count })),
     },
-    antibioticUsage,
-    riskMix,
+    complianceMix: [
+      { name: "External", value: avgExternalScore, color: "#16a34a" },
+      { name: "Internal", value: avgInternalScore, color: "#2563eb" },
+    ],
     distribution,
     sectionAverages,
-    topRiskFactors,
-    positiveFactors,
+    highRiskFactors: Object.entries(highRiskMap)
+      .map(([factor, count]) => ({ factor, count }))
+      .sort((a, b) => b.count - a.count),
+    moderateRiskFactors: Object.entries(moderateRiskMap)
+      .map(([factor, count]) => ({ factor, count }))
+      .sort((a, b) => b.count - a.count),
+    positivePractices: Object.entries(positiveMap)
+      .map(([factor, count]) => ({ factor, count }))
+      .sort((a, b) => b.count - a.count),
     comparatives: {
-      bySpecies,
-      bySystem,
-      byMarket,
-      byEducation: byEducationComp,
-      byYearsOperation: byYearsComp,
-      byWaterSource: byWaterSourceComp,
-      byFeedType: byFeedTypeComp,
+      bySpecies: avgScoreByField(facilities, "species"),
+      bySystem: avgScoreByField(facilities, "productionSystem"),
+      byMarket: avgScoreByField(facilities, "market"),
+      byEducation: avgScoreByField(facilities, "respondentEducation"),
+      byYearsOperation: avgScoreByField(facilities, "yearsOperation"),
+      byWaterSource: avgScoreByField(facilities, "waterSource"),
+      byProductionType: avgScoreByField(facilities, "productionType"),
+      byLocation: avgScoreByField(facilities, "basedOn"),
     },
-    heatmap,
-    submissionsOverTime,
+    riskMatrixExternal,
+    riskMatrixInternal,
+    locations,
+    scoringMethodology: {
+      sideWeights: CATEGORY_SIDE_WEIGHTS,
+      subcategoryWeights: SUBCATEGORIES.map((subcategory) => ({
+        section: subcategory.section,
+        side: subcategory.side,
+        weight: subcategoryWeights[subcategory.section] ?? 0,
+      })),
+      questionRules: questionRulesForMethodology,
+    },
   };
 }
