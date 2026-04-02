@@ -1,13 +1,32 @@
-# Work Methodologies
+# About this Project
 
-## Planning
+This project is a Dashboard that displays all results from the Kobolotbox application — a tool designed to evaluate biosecurity measures on aquaculture facilities. The dashboard fetches data from the Kobolotbox API using a project UID (since there may be multiple projects, but the assessment tool is the same for all of them and the data collected is identical) and presents it in a user-friendly format.
 
-All implementation plans MUST include a dependency graph. Every task declares 'depends_on: [] with explicit task IDs 'T1, T2'.
-After executing a plan, create a dedicated folder in `docs/plans/<plan-slug>/`, store the plan file inside that folder, and add a detailed implementation status markdown that records what was completed, what is still pending, validation performed, blockers, risks, and concrete next steps.
+The authors of the assessment tool are the ones who commissioned this development. They use the dashboard as admin users, along with producers or facility managers (producer) and visitors (public).
 
-## Execution
+# Obsidian Workflow
 
-Complete all tasks from a plan without stopping to ask permission between steps. Use best judgment, keep moving. Only stop to ask if you're about to make destructive/irreversible change or hit a genuine blocker.
+This project uses the Obsidian Project System which is a set of conventions for organizing and managing projects in Obsidian supported by the Obsidian Skills.
+
+- Project path: `Proyectos/bioDashboard/`
+- Master note: `bioDashboard - Project.md`
+- Plans: `plans/<plan-slug>/plan.md` + `tasks/T*.md`
+- Logs: `logs/plans/<plan-slug>/YYYY-MM-DD-session-NN.md`
+- General log: `logs/project-log.md`
+- Docs: `docs/architecture/`, `docs/decisions/`, `docs/specs/`, `docs/research/`
+
+## Rules for Obsidian Workflow:
+- Resolve vault context first with `obsidian vaults verbose` and `obsidian vault=<name> vault info=path`
+- Pin every CLI command with `vault=<name>`
+- Use the real project folder path for links/filters (`bioDashboard` in this vault), while keeping slug values canonical in frontmatter (`bio-dashboard`)
+- Never write Obsidian artifacts to `./Proyectos` inside the repository unless that path is exactly the vault path
+- Markdown + frontmatter = source of truth
+- `.base` = dashboards only
+- `.canvas` = visualization only
+- Use canonical properties only
+- Update Obsidian artifacts when planning, executing, or documenting meaningful work
+
+# General Rules
 
 ## Design
 
