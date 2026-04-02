@@ -26,6 +26,16 @@ export function MethodologyView({ data, t }: Props) {
             {t("methodology.sideWeights")}: {t("overview.external")}={model.sideWeights.external * 100}% |{" "}
             {t("overview.internal")}={model.sideWeights.internal * 100}%
           </p>
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-700">
+            <p>
+              <span className="font-semibold">{t("methodology.expertWeightsDecision")}:</span>{" "}
+              {model.decisions.expertWeights.description}
+            </p>
+            <p className="mt-2">
+              <span className="font-semibold">{t("methodology.noScoreDecision")}:</span>{" "}
+              {model.decisions.noScore.description}
+            </p>
+          </div>
         </CardContent>
       </Card>
 

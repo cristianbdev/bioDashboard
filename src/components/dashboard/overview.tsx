@@ -229,7 +229,7 @@ export function Overview({ data, t }: Props) {
           <CardDescription>Mapa interactivo con cobertura de facilities</CardDescription>
         </CardHeader>
         <CardContent className="h-[420px] p-0 overflow-hidden">
-          <MapLibreFacilitiesMap data={data} filteredFacilities={filteredFacilities} />
+          <MapLibreFacilitiesMap filteredFacilities={filteredFacilities} />
         </CardContent>
       </Card>
 

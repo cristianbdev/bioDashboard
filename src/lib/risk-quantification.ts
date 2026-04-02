@@ -98,7 +98,7 @@ function parseScoreValue(raw: string): number | null {
 
   const normalized = value.toLowerCase().replace(/\s+/g, "");
   if (normalized.includes("no-score") || normalized.includes("noscore")) {
-    return normalized.includes("/1") ? 1 : null;
+    return null;
   }
 
   const numberLike = value.replace(",", ".").trim();

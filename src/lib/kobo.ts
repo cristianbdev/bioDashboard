@@ -1,4 +1,5 @@
 import type { QuantificationCatalog, QuantificationQuestionRule, ScoringSide } from "@/lib/risk-quantification";
+import { SCORING_POLICY } from "@/lib/scoring-policy";
 
 /* KoboToolbox transformation logic using live Kobo data + instrument metadata. */
 
@@ -182,6 +183,10 @@ export type DashboardData = {
       questionWeight: number;
       responses: { response: string; score: number | null; recommendation?: string }[];
     }[];
+    decisions: {
+      expertWeights: { status: string; description: string };
+      noScore: { status: string; description: string };
+    };
   };
 };
 
@@ -222,8 +227,8 @@ const SUBCATEGORIES = [
 ] as const;
 
 const CATEGORY_SIDE_WEIGHTS: Record<ScoringSide, number> = {
-  external: 0.5,
-  internal: 0.5,
+  external: SCORING_POLICY.sideWeights.external,
+  internal: SCORING_POLICY.sideWeights.internal,
 };
 
 const CATEGORY_SIDE_POINTS: Record<ScoringSide, number> = {
@@ -935,6 +940,16 @@ export function transformKoboData(raw: KoboApiResponse, asset?: KoboAssetRespons
         weight: subcategoryWeights[subcategory.section] ?? 0,
       })),
       questionRules: questionRulesForMethodology,
+      decisions: {
+        expertWeights: {
+          status: SCORING_POLICY.expertWeightsDecision.status,
+          description: SCORING_POLICY.expertWeightsDecision.description,
+        },
+        noScore: {
+          status: SCORING_POLICY.noScoreDecision.status,
+          description: SCORING_POLICY.noScoreDecision.description,
+        },
+      },
     },
   };
 }

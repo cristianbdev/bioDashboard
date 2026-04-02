@@ -12,10 +12,14 @@ import Map, {
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 import Supercluster from "supercluster";
-import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import type { FacilitySummary } from "@/lib/kobo";
+
+type PointProperties = {
+  id: number;
+  facility: FacilitySummary;
+};
 
 type Props = {
-  data: DashboardData;
   filteredFacilities: FacilitySummary[];
 };
 
@@ -48,7 +52,7 @@ const formatNumber = (n: number): string => {
   return n.toString();
 };
 
-export function MapLibreFacilitiesMap({ data, filteredFacilities }: Props) {
+export function MapLibreFacilitiesMap({ filteredFacilities }: Props) {
   const mapRef = useRef<MapRef>(null);
   const [mapStyle, setMapStyle] = useState(MAP_STYLES.cartoDark.url);
   const [selectedFacility, setSelectedFacility] = useState<FacilitySummary | null>(null);
@@ -74,7 +78,7 @@ export function MapLibreFacilitiesMap({ data, filteredFacilities }: Props) {
 
   // Crear supercluster index
   const supercluster = useMemo(() => {
-    const sc = new Supercluster({
+    const sc = new Supercluster<PointProperties>({
       radius: 60,
       maxZoom: 16,
     });
@@ -205,10 +209,10 @@ export function MapLibreFacilitiesMap({ data, filteredFacilities }: Props) {
         {/* Renderizar clusters y puntos individuales */}
         {clusters.map((cluster) => {
           const [lng, lat] = cluster.geometry.coordinates;
-          const { cluster: isCluster, point_count: pointCount, cluster_id: clusterId } =
-            cluster.properties as any;
 
-          if (isCluster && pointCount) {
+          if ("cluster" in cluster.properties && cluster.properties.cluster) {
+            const pointCount = cluster.properties.point_count;
+            const clusterId = cluster.properties.cluster_id;
             // Es un cluster - mostrar con HTML/CSS personalizado
             const size = Math.min(50, 30 + pointCount * 0.5);
             const isLarge = pointCount >= 25;
@@ -244,9 +248,9 @@ export function MapLibreFacilitiesMap({ data, filteredFacilities }: Props) {
             );
           } else {
             // Es un punto individual
-            const facility = (cluster.properties as any).facility as FacilitySummary;
+            const facility = cluster.properties.facility;
             if (!facility) return null;
-            
+
             const colors = RISK_COLORS[facility.riskLevel] || DEFAULT_RISK_COLOR;
 
             return (

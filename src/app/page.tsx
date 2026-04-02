@@ -1,19 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, BarChart3, Building2, Clock, Database, Languages, Loader2, RefreshCw, Shield } from "lucide-react";
+import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { Activity, BarChart3, Building2, Clock, Database, Languages, Loader2, RefreshCw, Shield, Users } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { DashboardData, FacilitySummary } from "@/lib/kobo";
-import { Locale, supportedLocales, t as translate } from "@/lib/i18n";
-import { Overview } from "@/components/dashboard/overview";
-import { FacilitiesView } from "@/components/dashboard/facilities";
 import { ComparativeView } from "@/components/dashboard/comparative";
+import { FacilitiesView } from "@/components/dashboard/facilities";
 import { MethodologyView } from "@/components/dashboard/methodology";
+import { Overview } from "@/components/dashboard/overview";
+import { UserManagementView } from "@/components/dashboard/user-management";
+import { type AppRole, canAccessTab, DEFAULT_PROJECT_UID, normalizeRole, parseFacilityId, ROLE_ACCESS_MATRIX } from "@/lib/access-control";
+import { Locale, supportedLocales, t as translate } from "@/lib/i18n";
+import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 
 type ApiState =
   | { status: "idle" }
@@ -21,76 +25,100 @@ type ApiState =
   | { status: "error"; message: string }
   | { status: "loaded" };
 
-const DEFAULT_UID = "atWJrmvMK43Gtr6zny6vs7";
-type UserRole = "public" | "producer" | "admin";
-
 export default function Home() {
-  const [uid, setUid] = useState(DEFAULT_UID);
+  const { user, isLoaded } = useUser();
+
+  const [uid, setUid] = useState(DEFAULT_PROJECT_UID);
   const [locale, setLocale] = useState<Locale>("en");
-  const [role, setRole] = useState<UserRole>("public");
   const [data, setData] = useState<DashboardData | null>(null);
   const [state, setState] = useState<ApiState>({ status: "idle" });
   const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
-  const [producerFacilityId, setProducerFacilityId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology" | "users">("overview");
+
+  const role: AppRole = useMemo(() => normalizeRole(user?.publicMetadata?.role), [user?.publicMetadata?.role]);
+  const assignedProjectUid = useMemo(() => {
+    const value = user?.publicMetadata?.projectUid;
+    return typeof value === "string" && value.length > 0 ? value : undefined;
+  }, [user?.publicMetadata?.projectUid]);
+  const producerFacilityId = useMemo(() => parseFacilityId(user?.publicMetadata?.facilityId), [user?.publicMetadata?.facilityId]);
 
   const t = useCallback((key: string) => translate(locale, key), [locale]);
 
   const currentFacility: FacilitySummary | undefined = useMemo(() => {
     if (!data || data.facilities.length === 0) return undefined;
-    return data.facilities.find((f) => f.id === selectedFacility) ?? data.facilities[0];
+    return data.facilities.find((facility) => facility.id === selectedFacility) ?? data.facilities[0];
   }, [data, selectedFacility]);
 
   const fetchData = useCallback(async (targetUid: string) => {
     setState({ status: "loading" });
     try {
       const params = new URLSearchParams({ uid: targetUid });
-      const res = await fetch(`/api/kobo?${params.toString()}`);
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const json = await res.json();
-      setData(json.data);
+      const response = await fetch(`/api/kobo?${params.toString()}`, { cache: "no-store" });
+      const payload = (await response.json()) as { data?: DashboardData; error?: string };
+
+      if (!response.ok || !payload.data) {
+        throw new Error(payload.error ?? `Error ${response.status}`);
+      }
+
+      setData(payload.data);
       setState({ status: "loaded" });
-      const firstId = json.data.facilities[0]?.id ?? null;
-      setSelectedFacility(firstId);
-      if (!producerFacilityId && firstId) setProducerFacilityId(firstId);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+
+      const preferredFacility = producerFacilityId ?? payload.data.facilities[0]?.id ?? null;
+      setSelectedFacility(preferredFacility);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
       setState({ status: "error", message });
     }
   }, [producerFacilityId]);
 
   useEffect(() => {
-    void fetchData(DEFAULT_UID);
-  }, [fetchData]);
+    if (!isLoaded) return;
 
-  // force charts to recalc after layout changes
+    const initialUid = role === "producer" && assignedProjectUid ? assignedProjectUid : DEFAULT_PROJECT_UID;
+    setUid(initialUid);
+    void fetchData(initialUid);
+  }, [isLoaded, role, assignedProjectUid, fetchData]);
+
+  useEffect(() => {
+    if (!canAccessTab(role, activeTab)) {
+      setActiveTab("overview");
+    }
+  }, [role, activeTab]);
+
+  useEffect(() => {
+    if (!data || role !== "producer") return;
+
+    const fallbackFacility = data.facilities[0]?.id;
+    const nextFacility = producerFacilityId ?? fallbackFacility ?? null;
+    setSelectedFacility(nextFacility);
+  }, [data, role, producerFacilityId]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("resize"));
       }
     }, 80);
+
     return () => clearTimeout(timer);
   }, [data, selectedFacility, activeTab]);
-
-  useEffect(() => {
-    if (role === "admin") return;
-    if (role === "producer" && (activeTab === "comparative" || activeTab === "methodology")) setActiveTab("facilities");
-    if (role === "public" && activeTab !== "overview") setActiveTab("overview");
-  }, [role, activeTab]);
 
   const facilitiesForRole = useMemo(() => {
     if (!data) return [];
     if (role !== "producer") return data.facilities;
-    const match = data.facilities.find((f) => f.id === producerFacilityId);
-    return match ? [match] : data.facilities.slice(0, 1);
+
+    const ownFacility = data.facilities.find((facility) => facility.id === producerFacilityId);
+    return ownFacility ? [ownFacility] : data.facilities.slice(0, 1);
   }, [data, role, producerFacilityId]);
 
   const currentFacilityForRole = useMemo(() => {
     if (!data) return undefined;
     if (role !== "producer") return currentFacility;
-    return data.facilities.find((f) => f.id === producerFacilityId) ?? data.facilities[0];
-  }, [data, role, producerFacilityId, currentFacility]);
+
+    return facilitiesForRole[0];
+  }, [data, role, currentFacility, facilitiesForRole]);
+
+  const canUseCustomUid = ROLE_ACCESS_MATRIX[role].canUseCustomProjectUid;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -104,50 +132,61 @@ export default function Home() {
               <h1 className="text-lg font-semibold text-slate-900">{t("header.title")}</h1>
               <p className="text-xs text-slate-500">{t("header.subtitle")}</p>
             </div>
+            <Badge variant="secondary" className="capitalize">
+              {t(`role.${role}`)}
+            </Badge>
           </div>
+
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
               <Clock className="h-3.5 w-3.5" />
               <span>
-                {t("header.lastUpdated")}:{" "}
+                {t("header.lastUpdated")}: {" "}
                 {data?.stats.lastUpdated
                   ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(data.stats.lastUpdated))
                   : "-"}
               </span>
             </div>
+
             <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}>
               <SelectTrigger className="w-28">
                 <SelectValue placeholder="Lang" />
               </SelectTrigger>
               <SelectContent>
-                {supportedLocales.map((l) => (
-                  <SelectItem key={l} value={l}>
+                {supportedLocales.map((entry) => (
+                  <SelectItem key={entry} value={entry}>
                     <div className="flex items-center gap-2">
                       <Languages className="h-4 w-4" />
-                      <span className="uppercase">{l}</span>
+                      <span className="uppercase">{entry}</span>
                     </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="producer">Producer</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* <Button size="sm" variant="ghost" onClick={toggleTheme} className="gap-2" aria-label={t("theme.toggle")}>
-              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              <span className="hidden sm:inline">{theme === "light" ? t("theme.dark") : t("theme.light")}</span>
-            </Button> */}
+
             <Button size="sm" variant="outline" onClick={() => fetchData(uid)} disabled={state.status === "loading"} className="gap-2">
               {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
               <span className="hidden sm:inline">{t("actions.refresh")}</span>
             </Button>
+
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <Button size="sm" variant="secondary">{t("auth.signIn")}</Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button size="sm">{t("auth.signUp")}</Button>
+              </SignUpButton>
+            </Show>
+
+            <Show when="signed-in">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9",
+                  },
+                }}
+              />
+            </Show>
           </div>
         </div>
       </header>
@@ -164,18 +203,28 @@ export default function Home() {
                 <p className="text-xs text-slate-500">{t("datasource.subtitle")}</p>
               </div>
             </div>
+
             <div className="flex flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
-              <Input value={uid} onChange={(e) => setUid(e.target.value)} placeholder="Project UID" className="h-9 text-sm" />
+              <Input
+                value={uid}
+                onChange={(event) => setUid(event.target.value)}
+                placeholder="Project UID"
+                className="h-9 text-sm"
+                disabled={!canUseCustomUid}
+              />
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => fetchData(uid)} disabled={!uid || state.status === "loading"}>
                   {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => fetchData(DEFAULT_UID)}>
+                <Button size="sm" variant="ghost" onClick={() => fetchData(DEFAULT_PROJECT_UID)}>
                   {t("actions.demo")}
                 </Button>
               </div>
             </div>
           </CardContent>
+          {!canUseCustomUid && (
+            <p className="px-4 pb-4 text-xs text-slate-500">{t("datasource.lockedByRole")}</p>
+          )}
         </Card>
 
         {state.status === "error" && (
@@ -186,40 +235,52 @@ export default function Home() {
         )}
 
         {data && (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "overview" | "facilities" | "comparative" | "methodology")} className="space-y-6">
-             <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 rounded-lg bg-slate-100 p-1 sm:justify-center">
-              <TabsTrigger value="overview" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as "overview" | "facilities" | "comparative" | "methodology" | "users")}
+            className="space-y-6"
+          >
+            <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 rounded-lg bg-slate-100 p-1 sm:justify-center">
+              <TabsTrigger value="overview" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 {t("tabs.overview")}
               </TabsTrigger>
-              {role !== "public" && (
-                <TabsTrigger value="facilities" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+
+              {canAccessTab(role, "facilities") && (
+                <TabsTrigger value="facilities" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
                   <Building2 className="mr-2 h-4 w-4" />
                   {t("tabs.facilities")}
                 </TabsTrigger>
               )}
-              {role === "admin" && (
-                <TabsTrigger value="comparative" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+
+              {canAccessTab(role, "comparative") && (
+                <TabsTrigger value="comparative" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
                   <Activity className="mr-2 h-4 w-4" />
                   {t("tabs.comparative")}
                 </TabsTrigger>
               )}
-              {role === "admin" && (
-                <TabsTrigger value="methodology" className="flex-1 min-w-[120px] justify-center rounded-md px-3 py-2 text-sm">
+
+              {canAccessTab(role, "methodology") && (
+                <TabsTrigger value="methodology" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
                   <Database className="mr-2 h-4 w-4" />
                   {t("tabs.methodology")}
+                </TabsTrigger>
+              )}
+
+              {canAccessTab(role, "users") && (
+                <TabsTrigger value="users" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
+                  <Users className="mr-2 h-4 w-4" />
+                  {t("tabs.users")}
                 </TabsTrigger>
               )}
             </TabsList>
 
             <TabsContent value="overview">
-              {activeTab === "overview" && (
-                <Overview data={data} t={t} />
-              )}
+              {activeTab === "overview" && <Overview data={data} t={t} />}
             </TabsContent>
 
             <TabsContent value="facilities">
-              {activeTab === "facilities" && role !== "public" && (
+              {activeTab === "facilities" && canAccessTab(role, "facilities") && (
                 <FacilitiesView
                   facilities={facilitiesForRole}
                   currentFacility={currentFacilityForRole}
@@ -232,13 +293,19 @@ export default function Home() {
             </TabsContent>
 
             <TabsContent value="comparative">
-              {activeTab === "comparative" && role === "admin" && (
+              {activeTab === "comparative" && canAccessTab(role, "comparative") && (
                 <ComparativeView data={data} t={t} onSelectFacility={setSelectedFacility} />
               )}
             </TabsContent>
 
             <TabsContent value="methodology">
-              {activeTab === "methodology" && role === "admin" && <MethodologyView data={data} t={t} />}
+              {activeTab === "methodology" && canAccessTab(role, "methodology") && <MethodologyView data={data} t={t} />}
+            </TabsContent>
+
+            <TabsContent value="users">
+              {activeTab === "users" && canAccessTab(role, "users") && (
+                <UserManagementView facilities={data.facilities} projectUid={uid} t={t} />
+              )}
             </TabsContent>
           </Tabs>
         )}
