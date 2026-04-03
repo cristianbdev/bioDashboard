@@ -186,6 +186,15 @@ const translations: Record<Locale, Record<string, string>> = {
     "status.notApplicable": "N/A",
     "status.compliant": "Compliant",
     "status.nonCompliant": "Non-compliant",
+
+    "footer.developed": "Developed by and property of",
+    "footer.usage": "Authorized exclusively for the Norwegian Veterinary Institute for research purposes.",
+    "footer.inquiries": "Inquiries",
+    "footer.copyright": "All rights reserved.",
+    "footer.links.title": "Resources",
+    "footer.links.methodology": "Methodology",
+    "footer.links.contact": "Support",
+    "footer.links.terms": "Terms of Use",
   },
   es: {
     "header.title": "Tablero de Bioseguridad",
@@ -370,6 +379,15 @@ const translations: Record<Locale, Record<string, string>> = {
     "status.notApplicable": "No aplica",
     "status.compliant": "Cumple",
     "status.nonCompliant": "No cumple",
+
+    "footer.developed": "Desarrollado por y propiedad de",
+    "footer.usage": "Uso autorizado exclusivamente para el Instituto Veterinario Noruego con fines de investigación.",
+    "footer.inquiries": "Consultas",
+    "footer.copyright": "Todos los derechos reservados.",
+    "footer.links.title": "Recursos",
+    "footer.links.methodology": "Metodología",
+    "footer.links.contact": "Soporte",
+    "footer.links.terms": "Términos de uso",
   },
 };
 

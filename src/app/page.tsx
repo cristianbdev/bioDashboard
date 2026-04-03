@@ -17,6 +17,7 @@ import { Overview } from "@/components/dashboard/overview";
 import { UserManagementView } from "@/components/dashboard/user-management";
 import { type AppRole, canAccessTab, DEFAULT_PROJECT_UID, normalizeRole, parseFacilityId, ROLE_ACCESS_MATRIX } from "@/lib/access-control";
 import { Locale, supportedLocales, t as translate } from "@/lib/i18n";
+import { useLocaleContext } from "@/context/LocaleContext";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 
 type ApiState =
@@ -27,9 +28,9 @@ type ApiState =
 
 export default function Home() {
   const { user, isLoaded } = useUser();
+  const { locale, setLocale } = useLocaleContext();
 
   const [uid, setUid] = useState(DEFAULT_PROJECT_UID);
-  const [locale, setLocale] = useState<Locale>("en");
   const [data, setData] = useState<DashboardData | null>(null);
   const [state, setState] = useState<ApiState>({ status: "idle" });
   const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
