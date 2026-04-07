@@ -91,21 +91,52 @@ export function CoveragePill({
 }) {
   const boundedValue = Math.max(0, Math.min(100, value));
   const progressColor = boundedValue >= 80 ? "var(--color-success)" : boundedValue >= 50 ? "var(--color-warning)" : "var(--color-danger)";
+  const circumference = 2 * Math.PI * 36;
+  const strokeDashoffset = circumference - (boundedValue / 100) * circumference;
 
   return (
-    <div className="card-flat p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className="h-3.5 w-3.5" style={{ color: `${color}90`, opacity: 0.7 }} />
-          <p className="text-sm font-medium text-[var(--color-text-primary)]">{label}</p>
+    <div className="card-flat flex flex-col items-center p-4 text-center">
+      {/* Circular Progress */}
+      <div className="relative mb-3">
+        <svg className="h-20 w-20 -rotate-90 transform" viewBox="0 0 80 80">
+          {/* Background circle */}
+          <circle
+            cx="40"
+            cy="40"
+            r="36"
+            fill="none"
+            stroke="var(--color-surface-base)"
+            strokeWidth="8"
+          />
+          {/* Progress circle */}
+          <circle
+            cx="40"
+            cy="40"
+            r="36"
+            fill="none"
+            stroke={progressColor}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="transition-all duration-500 ease-out"
+          />
+        </svg>
+        {/* Icon in center */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Icon className="h-8 w-8" style={{ color }} />
         </div>
-        <span className="font-scientific text-sm font-bold" style={{ color: progressColor }}>
-          {boundedValue}%
-        </span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-[var(--color-surface-base)]">
-        <div className="h-1.5 rounded-full" style={{ width: `${boundedValue}%`, backgroundColor: progressColor }} />
-      </div>
+
+      {/* Label */}
+      <p className="mb-2 line-clamp-2 text-xs font-medium leading-tight text-[var(--color-text-primary)]">
+        {label}
+      </p>
+
+      {/* Percentage */}
+      <span className="font-scientific text-xl font-bold" style={{ color: progressColor }}>
+        {boundedValue}%
+      </span>
     </div>
   );
 }

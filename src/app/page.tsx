@@ -96,6 +96,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology" | "users">("overview");
   const [isNavOpen, setIsNavOpen] = useState(false);
 
+  const openNav = useCallback(() => setIsNavOpen(true), []);
+  const closeNav = useCallback(() => setIsNavOpen(false), []);
+
   const role: AppRole = useMemo(() => normalizeRole(user?.publicMetadata?.role), [user?.publicMetadata?.role]);
   const assignedProjectUid = useMemo(() => {
     const value = user?.publicMetadata?.projectUid;
@@ -137,6 +140,7 @@ export default function Home() {
 
     const initialUid = role === "producer" && assignedProjectUid ? assignedProjectUid : DEFAULT_PROJECT_UID;
     setUid(initialUid);
+    setIsNavOpen(false);
     void fetchData(initialUid);
     if (role === "producer") {
       setActiveTab("facilities");
@@ -156,16 +160,6 @@ export default function Home() {
     const nextFacility = producerFacilityId ?? fallbackFacility ?? null;
     setSelectedFacility(nextFacility);
   }, [data, role, producerFacilityId]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("resize"));
-      }
-    }, 80);
-
-    return () => clearTimeout(timer);
-  }, [data, selectedFacility, activeTab]);
 
   const facilitiesForRole = useMemo(() => {
     if (!data) return [];
@@ -193,25 +187,28 @@ export default function Home() {
         role={role}
         data={data}
         isLoaded={isLoaded}
+        isNavOpen={isNavOpen}
         onRefresh={() => fetchData(uid)}
         isLoading={state.status === "loading"}
-        onOpenNav={role !== "public" ? () => setIsNavOpen(true) : undefined}
+        onOpenNav={role !== "public" ? openNav : undefined}
       />
 
       {/* Mobile navigation bottom sheet */}
-      <BottomSheet
-        isOpen={isNavOpen}
-        onClose={() => setIsNavOpen(false)}
-        title={t("navigation.title")}
-      >
-        <NavigationContent
-          role={role}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onClose={() => setIsNavOpen(false)}
-          t={t}
-        />
-      </BottomSheet>
+      {role !== "admin" ? (
+        <BottomSheet
+          isOpen={isNavOpen}
+          onClose={closeNav}
+          title={t("navigation.title")}
+        >
+          <NavigationContent
+            role={role}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onClose={closeNav}
+            t={t}
+          />
+        </BottomSheet>
+      ) : null}
 
       <div className={cn(
         "flex-1 flex flex-col md:flex-row mx-auto w-full",
@@ -242,6 +239,8 @@ export default function Home() {
                 data={data}
                 role={role}
                 t={t}
+                isNavOpen={isNavOpen}
+                onCloseNav={closeNav}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 uid={uid}
@@ -254,7 +253,7 @@ export default function Home() {
                 state={state}
               />
             ) : (
-              <main className="flex-1 px-6 py-6 overflow-x-hidden">
+              <main className="flex-1 px-6 py-6">
                 <Card className="card-flat mb-6 transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
                   <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-3">

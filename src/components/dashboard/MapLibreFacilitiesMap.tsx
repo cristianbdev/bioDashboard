@@ -151,7 +151,8 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
   return (
     <div className={cn("flex h-full flex-col", className)}>
       <div className="relative flex-1 overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
-        <div className="absolute left-3 top-3 z-10 flex max-w-[calc(100%-76px)] gap-2 overflow-x-auto pb-1 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Map style buttons - hidden on mobile, shown below */}
+        <div className="absolute left-3 top-3 z-10 hidden items-center gap-2 md:flex max-w-[calc(100%-76px)] overflow-x-auto pb-1 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {Object.entries(MAP_STYLES).map(([key, style]) => (
             <button
               key={key}
@@ -170,10 +171,6 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
           ))}
         </div>
 
-        <div className="absolute right-3 top-3 z-10 rounded-full border border-[var(--color-border-subtle)] bg-white/95 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] shadow-sm">
-          {points.length} {points.length === 1 ? t("table.facility") : t("tabs.facilities")}
-        </div>
-
         <Map
           ref={mapRef}
           mapStyle={mapStyle}
@@ -190,8 +187,8 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
           dragRotate={false}
           touchPitch={false}
         >
-          <NavigationControl position="top-right" showCompass={false} />
-          <FullscreenControl position="top-right" />
+          <NavigationControl position="bottom-right" showCompass={false} />
+          <FullscreenControl position="bottom-right" />
           <ScaleControl position="bottom-right" />
 
           {clusters.map((cluster) => {
@@ -271,12 +268,39 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
         </Map>
       </div>
 
-      <div className="mt-3 rounded-xl border border-[var(--color-border-subtle)] bg-white px-3 py-2">
-        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{t("tabs.risk")}</div>
-        <div className="flex flex-wrap gap-x-4 gap-y-2">
+      {/* Legend and Controls */}
+      <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-white px-3 py-3 sm:px-4">
+        {/* Map controls for mobile - ABOVE legend */}
+        <div className="flex items-center justify-between gap-2 md:hidden">
+          <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] shadow-sm">
+            <span className="font-bold text-[var(--color-brand)]">{points.length}</span>
+            <span>{points.length === 1 ? t("table.facility") : t("tabs.facilities")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {Object.entries(MAP_STYLES).map(([key, style]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setMapStyle(style.url)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium shadow-sm transition-colors",
+                  mapStyle === style.url
+                    ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
+                    : "border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]",
+                )}
+              >
+                <span className="text-sm">{style.icon}</span>
+                <span>{t(style.key)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Legend - Risk levels */}
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
           {RISK_LEVELS.map((entry) => (
             <div key={entry.level} className="flex items-center gap-2 text-xs text-[var(--color-text-primary)]">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+              <span className="h-3 w-3 rounded-full ring-1 ring-white shadow-sm" style={{ backgroundColor: entry.color }} />
               <span>{t(entry.labelKey)}</span>
             </div>
           ))}

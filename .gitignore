@@ -40,3 +40,6 @@ next-env.d.ts
 # Agents Docs
 .agents/
 skills-lock.json
+
+# Limux
+squashfs-root/

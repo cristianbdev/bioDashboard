@@ -250,31 +250,31 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)}>
+        <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)} ariaLabel={`${t("comparative.scoreBySystem")}. ${charts.bySystem.length} groups.`}>
           <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)}>
+        <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)} ariaLabel={`${t("comparative.scoreByProductionType")}. ${charts.byProductionType.length} groups.`}>
           <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)}>
+        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} groups.`}>
           <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)}>
+        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} groups.`}>
           <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
-        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)}>
+        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} groups.`}>
           <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)}>
+        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} groups.`}>
           <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)}>
+        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} groups.`}>
           <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" />
         </ChartCard>
       </div>
@@ -287,7 +287,9 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </CardHeader>
           <CardContent className="h-[460px]">
             {externalHeatmap ? (
-              <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+              <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. Heatmap of facilities by subcategory.`} className="h-full w-full">
+                <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+              </div>
             ) : (
               <EmptyChartState />
             )}
@@ -301,7 +303,9 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </CardHeader>
           <CardContent className="h-[460px]">
             {internalHeatmap ? (
-              <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+              <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. Heatmap of facilities by subcategory.`} className="h-full w-full">
+                <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+              </div>
             ) : (
               <EmptyChartState />
             )}
@@ -335,8 +339,17 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                   .map((facility) => (
                     <TableRow
                       key={facility.id}
-                      className="cursor-pointer hover:bg-slate-50"
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${t("table.facility")}: ${facility.name}. ${t("table.score")}: ${facility.score}. ${t("table.risk")}: ${t(`risk.${facility.riskLevel.toLowerCase()}`)}`}
+                      className="cursor-pointer hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)]"
                       onClick={() => onSelectFacility(facility.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onSelectFacility(facility.id);
+                        }
+                      }}
                     >
                       <TableCell className="font-medium">{facility.name}</TableCell>
                       <TableCell className="text-center">
@@ -386,7 +399,7 @@ function ComparisonBar({
   const xAxisHeight = isDense ? 52 : 30;
   const barSize = Math.max(18, Math.min(46, Math.floor(230 / Math.max(1, data.length))));
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
       <BarChart data={data} margin={{ left: 4, right: 12, top: 8, bottom: isDense ? 8 : 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-subtle)" />
         <XAxis

@@ -1,6 +1,6 @@
 "use client";
 
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { Clock, Languages, Loader2, Menu, RefreshCw, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ type AppHeaderProps = {
   role: AppRole;
   data?: DashboardData | null;
   isLoaded: boolean;
+  isNavOpen: boolean;
   onRefresh: () => void;
   isLoading: boolean;
   onOpenNav?: () => void;
@@ -26,7 +27,7 @@ const ROLE_BADGE_STYLE: Record<AppRole, string> = {
   public: "border-[var(--color-muted)]/30 bg-[var(--color-muted)]/10 text-[var(--color-muted)]",
 };
 
-export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNav }: AppHeaderProps) {
+export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoading, onOpenNav }: AppHeaderProps) {
   const { locale, setLocale } = useLocaleContext();
   const t = (key: string) => translate(locale, key);
 
@@ -36,8 +37,8 @@ export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNa
   })();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-white/90 backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+    <header className="sticky top-0 z-50 h-16 border-b border-[var(--color-border-subtle)] bg-white will-change-transform">
+      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
         {/* Left: Logo + Title + Badge */}
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)] shadow-sm">
@@ -67,7 +68,7 @@ export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNa
           {/* Language selector */}
           <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}>
             <SelectTrigger
-              className="h-8 w-auto min-w-[60px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)]"
+              className="h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)] sm:h-8 sm:min-w-[60px]"
             >
               <div className="flex items-center gap-1">
                 <Languages className="h-3.5 w-3.5" />
@@ -90,7 +91,7 @@ export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNa
             variant="ghost"
             onClick={onRefresh}
             disabled={isLoading}
-            className="h-8 w-8 p-0 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)]"
+            className="h-11 w-11 p-0 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] sm:h-8 sm:w-8"
             aria-label={t("actions.refresh")}
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -100,7 +101,7 @@ export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNa
           {isLoaded ? (
             <Show when="signed-out">
               <SignInButton mode="modal">
-                <Button size="sm" variant="ghost" className="h-8 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]">
+                <Button size="sm" variant="ghost" className="h-11 px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)] sm:h-8 sm:px-2.5">
                   {t("auth.signIn")}
                 </Button>
               </SignInButton>
@@ -112,7 +113,7 @@ export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNa
             <Show when="signed-in">
               <UserButton
                 appearance={{
-                  elements: { avatarBox: "h-8 w-8" },
+                  elements: { avatarBox: "h-11 w-11 sm:h-8 sm:w-8" },
                 }}
               />
             </Show>
@@ -124,8 +125,10 @@ export function AppHeader({ role, data, isLoaded, onRefresh, isLoading, onOpenNa
               type="button"
               variant="ghost"
               onClick={onOpenNav}
-              className="flex h-8 w-8 items-center justify-center rounded-lg p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-brand)] lg:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-lg p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-brand)] lg:hidden"
               aria-label={t("navigation.openMenu")}
+              aria-expanded={isNavOpen}
+              aria-haspopup="dialog"
             >
               <Menu className="h-5 w-5" />
             </Button>

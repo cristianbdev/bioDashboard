@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ type BottomSheetProps = {
 
 export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,6 +46,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
       onClick={handleBackdropClick}
       aria-modal="true"
       role="dialog"
+      aria-labelledby={title ? titleId : undefined}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
@@ -66,7 +68,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-4 pb-3">
           {title ? (
-            <p className="font-semibold text-[var(--color-text-primary)]">{title}</p>
+            <p id={titleId} className="font-semibold text-[var(--color-text-primary)]">{title}</p>
           ) : (
             <div />
           )}
@@ -74,7 +76,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 -mr-2 text-[var(--color-text-secondary)]"
+            className="h-11 w-11 -mr-2 text-[var(--color-text-secondary)] sm:h-8 sm:w-8"
             aria-label="Close navigation"
           >
             <X className="h-5 w-5" />

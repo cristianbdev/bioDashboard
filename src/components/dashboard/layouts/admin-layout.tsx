@@ -1,9 +1,28 @@
 import { Database as DbIcon, Loader2, RefreshCw } from "lucide-react";
+import dynamic from "next/dynamic";
 import { ComparativeView } from "@/components/dashboard/comparative";
 import { FacilitiesView } from "@/components/dashboard/facilities";
 import { MethodologyView } from "@/components/dashboard/methodology";
-import { Overview } from "@/components/dashboard/overview";
 import { UserManagementView } from "@/components/dashboard/user-management";
+
+// Dynamically import Overview component with ssr: false to avoid ResponsiveContainer hydration warnings
+// Recharts ResponsiveContainer doesn't support SSR and causes width(-1)/height(-1) warnings during hydration
+const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col gap-8 pb-6">
+      <div className="space-y-4">
+        <div className="h-[100px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-[80px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
+          ))}
+        </div>
+      </div>
+      <div className="h-[400px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
+    </div>
+  ),
+});
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +34,8 @@ type AdminLayoutProps = {
   data: DashboardData;
   role: AppRole;
   t: (key: string) => string;
+  isNavOpen: boolean;
+  onCloseNav: () => void;
   activeTab: DashboardTab;
   setActiveTab: (tab: DashboardTab) => void;
   uid: string;
@@ -31,6 +52,8 @@ export function AdminLayout({
   data,
   role,
   t,
+  isNavOpen,
+  onCloseNav,
   activeTab,
   setActiveTab,
   uid,
@@ -43,13 +66,12 @@ export function AdminLayout({
   state,
 }: AdminLayoutProps) {
   return (
-    <div className="flex w-full flex-1 bg-[var(--color-surface-base)]">
+    <div className="flex w-full flex-1 items-start bg-(--color-surface-base)">
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        isOpen={false}
-        onOpen={() => {}}
-        onClose={() => {}}
+        isOpen={isNavOpen}
+        onClose={onCloseNav}
         t={t}
       />
 
@@ -107,7 +129,7 @@ export function AdminLayout({
         </Card>
 
         {/* Tab contents */}
-        {activeTab === "overview" && <Overview data={data} t={t} />}
+        {activeTab === "overview" && <OverviewClient data={data} t={t} />}
         {activeTab === "facilities" && canAccessTab(role, "facilities") && (
           <FacilitiesView
             facilities={facilitiesForRole}

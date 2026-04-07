@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 export type ChartCardHeight = "sm" | "md" | "lg" | "xl";
 
 const HEIGHT_CLASSES: Record<ChartCardHeight, string> = {
-  sm: "min-h-[200px] h-[200px] sm:h-[220px] md:h-[240px]",
-  md: "min-h-[220px] h-[220px] sm:h-[250px] md:h-[280px]",
-  lg: "min-h-[240px] h-[240px] sm:h-[280px] md:h-[330px]",
-  xl: "min-h-[280px] h-[300px] sm:h-[340px] md:h-[400px] xl:h-[450px]",
+  sm: "min-h-[180px] h-[180px] sm:h-[200px] md:h-[220px]",
+  md: "min-h-[200px] h-[200px] sm:h-[230px] md:h-[260px]",
+  lg: "min-h-[220px] h-[220px] sm:h-[260px] md:h-[300px]",
+  xl: "min-h-[260px] h-[280px] sm:h-[320px] md:h-[380px] xl:h-[420px]",
 };
 
 export const CHART_TOOLTIP_STYLE: CSSProperties = {
@@ -36,15 +36,21 @@ export function getAdaptiveChartHeight(itemCount: number): ChartCardHeight {
 
 export function getAdaptiveVerticalBarLayout(itemCount: number, longestLabelLength: number) {
   const safeCount = Math.max(1, itemCount);
-  const yAxisWidth = Math.min(168, Math.max(68, Math.floor(longestLabelLength * 5.2)));
-  const barSize = Math.max(12, Math.min(34, Math.floor(220 / safeCount)));
-  const showValues = safeCount <= 9;
+  // Calculate yAxisWidth based on truncated label length (24 chars max displayed)
+  const truncatedLength = Math.min(longestLabelLength, 24);
+  const yAxisWidth = Math.min(120, Math.max(40, Math.floor(truncatedLength * 5.5)));
+  // Bar size scales with item count but stays reasonable
+  const barSize = Math.max(18, Math.min(32, Math.floor(180 / safeCount)));
+  const showValues = safeCount <= 10;
+  // No extra left margin - yAxisWidth already accounts for label space
+  const leftMargin = 0;
 
   return {
     yAxisWidth,
     barSize,
     showValues,
-    rightMargin: showValues ? 24 : 12,
+    rightMargin: showValues ? 32 : 16,
+    leftMargin,
   };
 }
 
@@ -56,6 +62,7 @@ type ChartCardProps = {
   height?: ChartCardHeight;
   className?: string;
   contentClassName?: string;
+  ariaLabel?: string;
 };
 
 export function ChartCard({
@@ -66,6 +73,7 @@ export function ChartCard({
   height = "md",
   className,
   contentClassName,
+  ariaLabel,
 }: ChartCardProps) {
   return (
     <Card className={cn("card-flat", className)}>
@@ -76,7 +84,9 @@ export function ChartCard({
         </div>
       </CardHeader>
       <CardContent className={cn("p-3 sm:p-4 lg:p-5", contentClassName)}>
-        <div className={cn("chart-container", HEIGHT_CLASSES[height])}>{children}</div>
+        <div className={cn("chart-container", HEIGHT_CLASSES[height])} role={ariaLabel ? "img" : undefined} aria-label={ariaLabel}>
+          {children}
+        </div>
       </CardContent>
     </Card>
   );

@@ -139,8 +139,9 @@ export function FacilitiesView({
             <InfoTitle title={t("facilities.benchmark")} info={t("info.facilityBenchmark")} />
           </CardHeader>
           <CardContent className="h-[340px] md:h-[380px] xl:h-[420px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={benchmarkData} layout="vertical" margin={{ left: 8, right: 20, top: 10, bottom: 10 }} barGap={2} barSize={benchmarkLayout.barSize}>
+            <div role="img" aria-label={`${t("facilities.benchmark")}. ${benchmarkData.length} sections compared against the network average.`} className="h-full w-full">
+              <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+                <BarChart data={benchmarkData} layout="vertical" margin={{ left: 8, right: 20, top: 10, bottom: 10 }} barGap={2} barSize={benchmarkLayout.barSize}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} />
                 <YAxis
@@ -168,8 +169,9 @@ export function FacilitiesView({
                   ))}
                   <LabelList dataKey="facility" position="right" fontSize={10} fill="#1F2A2A" fontWeight={600} />
                 </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 

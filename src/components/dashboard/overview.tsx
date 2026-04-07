@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { BarChart3, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart3, ClipboardList, DoorOpen, Droplets, Filter, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
 import { MapLibreFacilitiesMap } from "./MapLibreFacilitiesMap";
 import { CoveragePill, MetricCard } from "./cards";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
 import { EmptyChartState } from "@/components/charts/empty-chart-state";
 import { useLocaleContext } from "@/context/LocaleContext";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import { FloatingFilters } from "./floating-filters";
 
 type Props = {
   data: DashboardData;
@@ -99,6 +100,7 @@ export function Overview({ data, t }: Props) {
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const [systemFilter, setSystemFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const hasActiveFilters = speciesFilter !== "all" || systemFilter !== "all" || locationFilter !== "all";
 
@@ -139,9 +141,9 @@ export function Overview({ data, t }: Props) {
 
   const practices = [
     { id: "_2_7", label: t("coverage.quarantine"), icon: Shield, color: "var(--color-chart-2)" },
-    { id: "_11_1", label: t("coverage.biosecurityPlan"), icon: Shield, color: "var(--color-chart-1)" },
+    { id: "_11_1", label: t("coverage.biosecurityPlan"), icon: ClipboardList, color: "var(--color-chart-1)" },
     { id: "_4_9", label: t("coverage.noSharedEquipment"), icon: Gauge, color: "var(--color-chart-5)" },
-    { id: "_10_8", label: t("coverage.equipmentDisinfection"), icon: Gauge, color: "var(--color-chart-3)" },
+    { id: "_10_8", label: t("coverage.equipmentDisinfection"), icon: DoorOpen, color: "var(--color-chart-3)" },
     { id: "_3_4", label: t("coverage.waterTreatment"), icon: Droplets, color: "var(--color-chart-2)" },
     { id: "_5_2", label: t("coverage.biovectorInspection"), icon: Waves, color: "var(--color-chart-6)" },
   ].map((practice) => ({
@@ -198,11 +200,16 @@ export function Overview({ data, t }: Props) {
             <h2 className="text-dashboard-title">{t("tabs.overview")}</h2>
             <p className="mt-1 text-dashboard-subtitle">Global biosecurity overview and analytics for all registered facilities.</p>
           </div>
-          <div className="rounded-xl border border-[var(--color-border-subtle)] bg-white p-2 shadow-sm">
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <FilterSelect value={speciesFilter} onChange={setSpeciesFilter} options={speciesOptions} placeholder={t("overview.filterSpecies")} t={t} />
-              <FilterSelect value={systemFilter} onChange={setSystemFilter} options={systemOptions} placeholder={t("overview.filterSystem")} t={t} />
-              <FilterSelect value={locationFilter} onChange={setLocationFilter} options={locationOptions} placeholder={t("overview.filterLocation")} t={t} />
+          {/* Desktop filters */}
+          <div className="hidden lg:block rounded-xl border-2 border-[var(--color-brand)]/20 bg-gradient-to-br from-white to-[var(--color-surface-base)] p-4 shadow-md">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
+              <Filter className="h-4 w-4" />
+              <span>{t("overview.filters") || "Filters"}</span>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-3">
+              <FilterSelect value={speciesFilter} onChange={setSpeciesFilter} options={speciesOptions} placeholder={t("overview.filterSpecies")} label={t("overview.filterSpecies")} t={t} />
+              <FilterSelect value={systemFilter} onChange={setSystemFilter} options={systemOptions} placeholder={t("overview.filterSystem")} label={t("overview.filterSystem")} t={t} />
+              <FilterSelect value={locationFilter} onChange={setLocationFilter} options={locationOptions} placeholder={t("overview.filterLocation")} label={t("overview.filterLocation")} t={t} />
             </div>
             {hasActiveFilters && (
               <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-2">
@@ -220,9 +227,34 @@ export function Overview({ data, t }: Props) {
               </div>
             )}
           </div>
+          {/* Mobile floating filters */}
+          <FloatingFilters
+            isOpen={isFiltersOpen}
+            onOpen={() => setIsFiltersOpen(true)}
+            onClose={() => setIsFiltersOpen(false)}
+            filters={[
+              { label: t("overview.filterSpecies"), activeValue: speciesFilter, allValue: "all", onClear: () => setSpeciesFilter("all") },
+              { label: t("overview.filterSystem"), activeValue: systemFilter, allValue: "all", onClear: () => setSystemFilter("all") },
+              { label: t("overview.filterLocation"), activeValue: locationFilter, allValue: "all", onClear: () => setLocationFilter("all") },
+            ]}
+            onClearAll={() => { setSpeciesFilter("all"); setSystemFilter("all"); setLocationFilter("all"); }}
+            speciesFilter={speciesFilter}
+            systemFilter={systemFilter}
+            locationFilter={locationFilter}
+            speciesOptions={speciesOptions}
+            systemOptions={systemOptions}
+            locationOptions={locationOptions}
+            speciesPlaceholder={t("overview.filterSpecies")}
+            systemPlaceholder={t("overview.filterSystem")}
+            locationPlaceholder={t("overview.filterLocation")}
+            setSpeciesFilter={setSpeciesFilter}
+            setSystemFilter={setSystemFilter}
+            setLocationFilter={setLocationFilter}
+            t={t}
+          />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard title={t("metrics.total.title")} value={filteredFacilities.length} subtitle={t("metrics.total.subtitle")} icon={MapPin} color="sky" />
           <MetricCard
             title={t("metrics.avg.title")}
@@ -239,31 +271,44 @@ export function Overview({ data, t }: Props) {
       {/* Section 2: Map + Score Distribution */}
       <section className="grid gap-6 xl:grid-cols-3">
         <Card className="card-flat xl:col-span-2">
-          <CardContent className="p-4">
-            <div className="h-[300px] md:h-[400px] xl:h-[500px]">
+          <CardContent className="p-3 sm:p-4">
+            <div className="h-[320px] sm:h-[360px] md:h-[420px] lg:h-[460px] xl:h-[480px]">
               <MapLibreFacilitiesMap filteredFacilities={filteredFacilities} t={t} locale={locale} />
             </div>
           </CardContent>
         </Card>
-        <ChartCard title={t("charts.scoreDistribution")} info={t("info.scoreDistribution")} icon={<BarChart3 className="h-4 w-4" />} height="md">
-          <SimpleVerticalBar
-            data={scoreDistribution}
-            labelKey="bucket"
-            valueKey="count"
-            barColor="var(--color-chart-1)"
-            emptyTitle={t("charts.noData")}
-            emptySubtitle={t("charts.tryFilters")}
-          />
+        <ChartCard
+          title={t("charts.scoreDistribution")}
+          info={t("info.scoreDistribution")}
+          icon={<BarChart3 className="h-4 w-4" />}
+          height="md"
+          ariaLabel={`${t("charts.scoreDistribution")}. ${scoreDistribution.length} buckets.`}
+        >
+          <div className="relative h-full w-full">
+            <DonutChart
+              data={scoreDistribution}
+              labelKey="bucket"
+              valueKey="count"
+              emptyTitle={t("charts.noData")}
+              emptySubtitle={t("charts.tryFilters")}
+            />
+          </div>
         </ChartCard>
       </section>
 
       {/* Section 3: Section Detail (bar chart) */}
       <section>
-        <ChartCard title={t("charts.sectionDetail")} info={t("info.sectionDetail")} icon={<BarChart3 className="h-4 w-4" />} height="xl">
+        <ChartCard
+          title={t("charts.sectionDetail")}
+          info={t("info.sectionDetail")}
+          icon={<BarChart3 className="h-4 w-4" />}
+          height="xl"
+          ariaLabel={`${t("charts.sectionDetail")}. ${sectionAverages.length} sections.`}
+        >
           {sectionAverages.length === 0 ? (
             <EmptyChartState title={t("charts.noData")} subtitle={t("charts.tryFilters")} />
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
               <BarChart data={sectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
@@ -297,7 +342,7 @@ export function Overview({ data, t }: Props) {
       {/* Section 5: Practice Coverage */}
       <section className="space-y-4">
         <h3 className="text-dashboard-section">{t("charts.practiceCoverage")}</h3>
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {practices.map((item) => (
             <CoveragePill key={item.id} label={item.label} value={item.value} icon={item.icon} color={item.color} />
           ))}
@@ -322,19 +367,22 @@ export function Overview({ data, t }: Props) {
   );
 }
 
-function FilterSelect({ value, onChange, options, placeholder, t }: { value: string; onChange: (value: string) => void; options: string[]; placeholder: string; t: (key: string) => string }) {
+function FilterSelect({ value, onChange, options, placeholder, label, t }: { value: string; onChange: (value: string) => void; options: string[]; placeholder: string; label: string; t: (key: string) => string }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)]">
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-        {options.map((option) => (
-          <SelectItem key={option} value={option}>{option}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>{option}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -380,7 +428,13 @@ function ChartBlock({ title, info, data, labelKey, valueKey, height, t }: { titl
   const effectiveCount = nonZeroCount > 0 ? nonZeroCount : data.length;
 
   return (
-    <ChartCard title={title} info={info} icon={<BarChart3 className="h-4 w-4" />} height={height ?? getAdaptiveChartHeight(effectiveCount)}>
+    <ChartCard
+      title={title}
+      info={info}
+      icon={<BarChart3 className="h-4 w-4" />}
+      height={height ?? getAdaptiveChartHeight(effectiveCount)}
+      ariaLabel={`${title}. ${effectiveCount} categories.`}
+    >
       <SimpleVerticalBar
         data={data}
         labelKey={labelKey}
@@ -412,8 +466,8 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
   const layout = getAdaptiveVerticalBarLayout(chartData.length, longestLabel);
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={chartData} layout="vertical" margin={{ top: 8, right: layout.rightMargin, left: 8, bottom: 8 }} barSize={layout.barSize}>
+    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+      <BarChart data={chartData} layout="vertical" margin={{ top: 8, right: layout.rightMargin, left: layout.leftMargin ?? 8, bottom: 8 }} barSize={layout.barSize}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
         <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
         <YAxis
@@ -434,5 +488,66 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
         </Bar>
       </BarChart>
     </ResponsiveContainer>
+  );
+}
+
+function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle: string; emptySubtitle: string }) {
+  if (data.length === 0) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+  }
+
+  const hasAnyValue = data.some((item) => Number(item[valueKey] ?? 0) > 0);
+  if (!hasAnyValue) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+  }
+
+  const total = data.reduce((sum, item) => sum + Number(item[valueKey] ?? 0), 0);
+
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius="55%"
+            outerRadius="80%"
+            paddingAngle={2}
+            dataKey={valueKey}
+            nameKey={labelKey}
+            stroke="none"
+          >
+            {data.map((_, index) => (
+              <Cell key={index} fill={CHART_PALETTE[index % CHART_PALETTE.length]} />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={CHART_TOOLTIP_STYLE}
+            cursor={CHART_TOOLTIP_CURSOR}
+            formatter={(value, name) => {
+              const numericValue = typeof value === "number" ? value : Number(value ?? 0);
+              return [`${numericValue} (${((numericValue / total) * 100).toFixed(1)}%)`, String(name)] as [string, string];
+            }}
+          />
+          {/* Center label */}
+          <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-primary)]" fontSize={28} fontWeight={700}>
+            {total}
+          </text>
+          <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-secondary)]" fontSize={12}>
+            Total
+          </text>
+        </PieChart>
+      </ResponsiveContainer>
+      {/* Legend below chart */}
+      <div className="absolute bottom-2 left-0 right-0 flex flex-wrap justify-center gap-3 px-4">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: CHART_PALETTE[index % CHART_PALETTE.length] }} />
+            <span className="text-xs text-[var(--color-text-secondary)]">{String(item[labelKey])}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

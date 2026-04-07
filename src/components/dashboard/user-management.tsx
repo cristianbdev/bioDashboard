@@ -100,19 +100,25 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">{t("users.email")}</p>
+            <label htmlFor="user-email" className="text-sm font-medium text-slate-700">
+              {t("users.email")}
+            </label>
             <Input
+              id="user-email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="producer@example.com"
+              autoComplete="email"
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-700">{t("users.role")}</p>
+              <label htmlFor="user-role" className="text-sm font-medium text-slate-700">
+                {t("users.role")}
+              </label>
               <Select value={role} onValueChange={(value) => setRole(value as ManagedRole)}>
-                <SelectTrigger>
+                <SelectTrigger id="user-role" className="h-11 sm:h-9">
                   <SelectValue placeholder={t("users.role")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,9 +130,11 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
             {role === "producer" && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">{t("users.facility")}</p>
+                <label htmlFor="user-facility" className="text-sm font-medium text-slate-700">
+                  {t("users.facility")}
+                </label>
                 <Select value={facilityId} onValueChange={setFacilityId}>
-                  <SelectTrigger>
+                  <SelectTrigger id="user-facility" className="h-11 sm:h-9">
                     <SelectValue placeholder={t("users.facilityPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -143,7 +151,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
           <p className="text-xs text-slate-500">{t("users.passwordPolicyHint")}</p>
 
-          <Button onClick={onCreateUser} disabled={loading}>
+          <Button onClick={onCreateUser} disabled={loading} className="h-11 sm:h-9">
             {loading ? t("users.creating") : t("users.create")}
           </Button>
         </CardContent>
