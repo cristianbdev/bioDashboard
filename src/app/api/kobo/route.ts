@@ -51,6 +51,29 @@ async function fetchKoboAsset(uid: string, token: string) {
   return (await response.json()) as KoboAssetResponse;
 }
 
+// Debug function to check instrument index
+function debugInstrumentIndex(asset?: KoboAssetResponse) {
+  if (!asset?.content?.survey) {
+    console.log("[DEBUG] No survey data found in asset");
+    return;
+  }
+  const ids: string[] = [];
+  asset.content.survey.forEach((q) => {
+    if (q.type && q.type !== "begin_group" && q.type !== "end_group") {
+      const xpath = q.$xpath || "";
+      const name = q.name || "";
+      const id = name || (xpath.includes("/") ? xpath.slice(xpath.lastIndexOf("/") + 1) : xpath);
+      if (id) ids.push(id);
+    }
+  });
+  console.log("[DEBUG] Total survey questions:", ids.length);
+  const targetIds = ["_3_10", "_3_9", "_3_5", "_10_15", "_11_5", "_11_7", "_8_9"];
+  const foundIds = ids.filter(id => targetIds.includes(id));
+  console.log("[DEBUG] Found target IDs:", foundIds);
+  const missingIds = targetIds.filter(id => !ids.includes(id));
+  console.log("[DEBUG] Missing target IDs:", missingIds);
+}
+
 function average(values: number[]): number {
   if (values.length === 0) return 0;
   return Math.round(values.reduce((total, value) => total + value, 0) / values.length);

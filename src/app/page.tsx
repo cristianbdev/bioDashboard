@@ -1,24 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { Activity, BarChart3, Building2, Clock, Database, Languages, Loader2, RefreshCw, Shield, Users } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { Database, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ComparativeView } from "@/components/dashboard/comparative";
-import { FacilitiesView } from "@/components/dashboard/facilities";
-import { MethodologyView } from "@/components/dashboard/methodology";
-import { Overview } from "@/components/dashboard/overview";
-import { UserManagementView } from "@/components/dashboard/user-management";
-import { type AppRole, canAccessTab, DEFAULT_PROJECT_UID, normalizeRole, parseFacilityId, ROLE_ACCESS_MATRIX } from "@/lib/access-control";
-import { Locale, supportedLocales, t as translate } from "@/lib/i18n";
+import { AdminLayout } from "@/components/dashboard/layouts/admin-layout";
+import { ProducerLayout } from "@/components/dashboard/layouts/producer-layout";
+import { PublicLayout } from "@/components/dashboard/layouts/public-layout";
+import { AppHeader } from "@/components/layout/app-header";
+import { BottomSheet } from "@/components/layout/bottom-sheet";
+import { Activity, BarChart3, Building2, Database as DbIcon, Users } from "lucide-react";
+import type { AppRole, DashboardTab } from "@/lib/access-control";
+import { canAccessTab, DEFAULT_PROJECT_UID, normalizeRole, parseFacilityId, ROLE_ACCESS_MATRIX } from "@/lib/access-control";
+import { t as translate } from "@/lib/i18n";
 import { useLocaleContext } from "@/context/LocaleContext";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import { cn } from "@/lib/utils";
 
 type ApiState =
   | { status: "idle" }
@@ -26,15 +26,75 @@ type ApiState =
   | { status: "error"; message: string }
   | { status: "loaded" };
 
+// Navigation items for mobile bottom sheet
+const ADMIN_NAV_ITEMS: Array<{ id: DashboardTab; icon: typeof BarChart3; labelKey: string }> = [
+  { id: "overview", icon: BarChart3, labelKey: "tabs.overview" },
+  { id: "facilities", icon: Building2, labelKey: "tabs.facilities" },
+  { id: "comparative", icon: Activity, labelKey: "tabs.comparative" },
+  { id: "methodology", icon: DbIcon, labelKey: "tabs.methodology" },
+  { id: "users", icon: Users, labelKey: "tabs.users" },
+];
+
+const PRODUCER_NAV_ITEMS: Array<{ id: "overview" | "facilities"; icon: typeof BarChart3; labelKey: string }> = [
+  { id: "facilities", icon: Building2, labelKey: "producer.myFacility" },
+  { id: "overview", icon: BarChart3, labelKey: "producer.globalOverview" },
+];
+
+function NavigationContent({
+  role,
+  activeTab,
+  onTabChange,
+  onClose,
+  t,
+}: {
+  role: AppRole;
+  activeTab: DashboardTab;
+  onTabChange: (tab: DashboardTab) => void;
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
+  const items = role === "admin" ? ADMIN_NAV_ITEMS : PRODUCER_NAV_ITEMS;
+
+  return (
+    <nav className="space-y-1">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const isActive = activeTab === item.id;
+
+        return (
+          <button
+            type="button"
+            key={item.id}
+            onClick={() => {
+              onTabChange(item.id as DashboardTab);
+              onClose();
+            }}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all",
+              isActive
+                ? "bg-[var(--color-brand)] text-white shadow-sm"
+                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-brand)]",
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            <span>{t(item.labelKey)}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 export default function Home() {
   const { user, isLoaded } = useUser();
-  const { locale, setLocale } = useLocaleContext();
+  const { locale } = useLocaleContext();
 
   const [uid, setUid] = useState(DEFAULT_PROJECT_UID);
   const [data, setData] = useState<DashboardData | null>(null);
   const [state, setState] = useState<ApiState>({ status: "idle" });
   const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology" | "users">("overview");
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   const role: AppRole = useMemo(() => normalizeRole(user?.publicMetadata?.role), [user?.publicMetadata?.role]);
   const assignedProjectUid = useMemo(() => {
@@ -78,10 +138,13 @@ export default function Home() {
     const initialUid = role === "producer" && assignedProjectUid ? assignedProjectUid : DEFAULT_PROJECT_UID;
     setUid(initialUid);
     void fetchData(initialUid);
+    if (role === "producer") {
+      setActiveTab("facilities");
+    }
   }, [isLoaded, role, assignedProjectUid, fetchData]);
 
   useEffect(() => {
-    if (!canAccessTab(role, activeTab)) {
+    if (!canAccessTab(role, activeTab) && role !== "producer") {
       setActiveTab("overview");
     }
   }, [role, activeTab]);
@@ -121,196 +184,136 @@ export default function Home() {
 
   const canUseCustomUid = ROLE_ACCESS_MATRIX[role].canUseCustomProjectUid;
 
+  // Layout selection based on role
+  const isSidebarLayout = role === "admin";
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500">
-              <Shield className="h-5 w-5 text-white" />
+    <div className="min-h-screen bg-[#F5F7F6] flex flex-col">
+      <AppHeader
+        role={role}
+        data={data}
+        isLoaded={isLoaded}
+        onRefresh={() => fetchData(uid)}
+        isLoading={state.status === "loading"}
+        onOpenNav={role !== "public" ? () => setIsNavOpen(true) : undefined}
+      />
+
+      {/* Mobile navigation bottom sheet */}
+      <BottomSheet
+        isOpen={isNavOpen}
+        onClose={() => setIsNavOpen(false)}
+        title={t("navigation.title")}
+      >
+        <NavigationContent
+          role={role}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onClose={() => setIsNavOpen(false)}
+          t={t}
+        />
+      </BottomSheet>
+
+      <div className={cn(
+        "flex-1 flex flex-col md:flex-row mx-auto w-full",
+        isSidebarLayout ? "max-w-[1800px]" : "max-w-7xl"
+      )}>
+        {!data && state.status === "loading" ? (
+          <main className="flex min-h-[40vh] w-full items-center justify-center px-6 py-12">
+            <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>{t("actions.load")}...</span>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-slate-900">{t("header.title")}</h1>
-              <p className="text-xs text-slate-500">{t("header.subtitle")}</p>
-            </div>
-            <Badge variant="secondary" className="capitalize">
-              {t(`role.${role}`)}
-            </Badge>
-          </div>
+          </main>
+        ) : null}
 
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
-              <Clock className="h-3.5 w-3.5" />
-              <span>
-                {t("header.lastUpdated")}: {" "}
-                {data?.stats.lastUpdated
-                  ? new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(data.stats.lastUpdated))
-                  : "-"}
-              </span>
-            </div>
-
-            <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}>
-              <SelectTrigger className="w-28">
-                <SelectValue placeholder="Lang" />
-              </SelectTrigger>
-              <SelectContent>
-                {supportedLocales.map((entry) => (
-                  <SelectItem key={entry} value={entry}>
-                    <div className="flex items-center gap-2">
-                      <Languages className="h-4 w-4" />
-                      <span className="uppercase">{entry}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button size="sm" variant="outline" onClick={() => fetchData(uid)} disabled={state.status === "loading"} className="gap-2">
-              {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              <span className="hidden sm:inline">{t("actions.refresh")}</span>
-            </Button>
-
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <Button size="sm" variant="secondary">{t("auth.signIn")}</Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button size="sm">{t("auth.signUp")}</Button>
-              </SignUpButton>
-            </Show>
-
-            <Show when="signed-in">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "h-9 w-9",
-                  },
-                }}
-              />
-            </Show>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-6 py-6">
-        <Card className="mb-6 border-slate-200 bg-white shadow-sm">
-          <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-slate-100 p-2">
-                <Database className="h-4 w-4 text-slate-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-700">{t("datasource.title")}</p>
-                <p className="text-xs text-slate-500">{t("datasource.subtitle")}</p>
-              </div>
-            </div>
-
-            <div className="flex flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
-              <Input
-                value={uid}
-                onChange={(event) => setUid(event.target.value)}
-                placeholder="Project UID"
-                className="h-9 text-sm"
-                disabled={!canUseCustomUid}
-              />
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => fetchData(uid)} disabled={!uid || state.status === "loading"}>
-                  {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => fetchData(DEFAULT_PROJECT_UID)}>
-                  {t("actions.demo")}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-          {!canUseCustomUid && (
-            <p className="px-4 pb-4 text-xs text-slate-500">{t("datasource.lockedByRole")}</p>
-          )}
-        </Card>
-
-        {state.status === "error" && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        )}
+        {!data && state.status === "error" ? (
+          <main className="w-full px-6 py-10">
+            <Alert variant="destructive" className="mx-auto max-w-3xl">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{state.message}</AlertDescription>
+            </Alert>
+          </main>
+        ) : null}
 
         {data && (
-          <Tabs
-            value={activeTab}
-            onValueChange={(value) => setActiveTab(value as "overview" | "facilities" | "comparative" | "methodology" | "users")}
-            className="space-y-6"
-          >
-            <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 rounded-lg bg-slate-100 p-1 sm:justify-center">
-              <TabsTrigger value="overview" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                {t("tabs.overview")}
-              </TabsTrigger>
+          <>
+            {role === "admin" ? (
+              <AdminLayout
+                data={data}
+                role={role}
+                t={t}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                uid={uid}
+                facilitiesForRole={facilitiesForRole}
+                currentFacilityForRole={currentFacilityForRole}
+                setSelectedFacility={setSelectedFacility}
+                fetchData={fetchData}
+                canUseCustomUid={canUseCustomUid}
+                setUid={setUid}
+                state={state}
+              />
+            ) : (
+              <main className="flex-1 px-6 py-6 overflow-x-hidden">
+                <Card className="card-flat mb-6 transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg border border-[#E2E8E5] bg-[#F5F7F6] p-2">
+                        <Database className="h-4 w-4 text-[#5E7A8A]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[#1F2A2A]">{t("datasource.title")}</p>
+                        <p className="text-xs text-[#6B7C72]">{t("datasource.subtitle")}</p>
+                      </div>
+                    </div>
 
-              {canAccessTab(role, "facilities") && (
-                <TabsTrigger value="facilities" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
-                  <Building2 className="mr-2 h-4 w-4" />
-                  {t("tabs.facilities")}
-                </TabsTrigger>
-              )}
+                    <div className="flex flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
+                      <Input
+                        value={uid}
+                        onChange={(event) => setUid(event.target.value)}
+                        placeholder="Project UID"
+                        className="h-9 border-[#E2E8E5] bg-white text-sm text-[#1F2A2A] font-scientific shadow-sm"
+                        disabled={!canUseCustomUid}
+                      />
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <Button size="sm" onClick={() => fetchData(uid)} disabled={!uid || state.status === "loading"} className="flex-1 sm:flex-none bg-[#0F766E] text-white hover:bg-[#0F766E]/90 shadow-sm transition-all duration-200 hover:shadow-md">
+                          {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => fetchData(DEFAULT_PROJECT_UID)} className="flex-1 sm:flex-none border-[#E2E8E5] bg-white text-[#1F2A2A] shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+                          {t("actions.demo")}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                  {!canUseCustomUid && (
+                    <p className="px-4 pb-4 text-xs text-[#6B7C72]">{t("datasource.lockedByRole")}</p>
+                  )}
+                </Card>
 
-              {canAccessTab(role, "comparative") && (
-                <TabsTrigger value="comparative" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
-                  <Activity className="mr-2 h-4 w-4" />
-                  {t("tabs.comparative")}
-                </TabsTrigger>
-              )}
+                {state.status === "error" && (
+                  <Alert variant="destructive" className="mb-6 shadow-sm">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{state.message}</AlertDescription>
+                  </Alert>
+                )}
 
-              {canAccessTab(role, "methodology") && (
-                <TabsTrigger value="methodology" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
-                  <Database className="mr-2 h-4 w-4" />
-                  {t("tabs.methodology")}
-                </TabsTrigger>
-              )}
-
-              {canAccessTab(role, "users") && (
-                <TabsTrigger value="users" className="min-w-[120px] flex-1 justify-center rounded-md px-3 py-2 text-sm">
-                  <Users className="mr-2 h-4 w-4" />
-                  {t("tabs.users")}
-                </TabsTrigger>
-              )}
-            </TabsList>
-
-            <TabsContent value="overview">
-              {activeTab === "overview" && <Overview data={data} t={t} />}
-            </TabsContent>
-
-            <TabsContent value="facilities">
-              {activeTab === "facilities" && canAccessTab(role, "facilities") && (
-                <FacilitiesView
-                  facilities={facilitiesForRole}
-                  currentFacility={currentFacilityForRole}
-                  onSelect={setSelectedFacility}
-                  readOnlySelection={role === "producer"}
-                  t={t}
-                  sectionAverages={data.sectionAverages}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="comparative">
-              {activeTab === "comparative" && canAccessTab(role, "comparative") && (
-                <ComparativeView data={data} t={t} onSelectFacility={setSelectedFacility} />
-              )}
-            </TabsContent>
-
-            <TabsContent value="methodology">
-              {activeTab === "methodology" && canAccessTab(role, "methodology") && <MethodologyView data={data} t={t} />}
-            </TabsContent>
-
-            <TabsContent value="users">
-              {activeTab === "users" && canAccessTab(role, "users") && (
-                <UserManagementView facilities={data.facilities} projectUid={uid} t={t} />
-              )}
-            </TabsContent>
-          </Tabs>
+                {role === "producer" && (
+                  <ProducerLayout
+                    data={data}
+                    t={t}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    facilitiesForRole={facilitiesForRole}
+                    currentFacilityForRole={currentFacilityForRole}
+                    setSelectedFacility={setSelectedFacility}
+                  />
+                )}
+                {role === "public" && <PublicLayout data={data} t={t} />}
+              </main>
+            )}
+          </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

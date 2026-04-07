@@ -1,49 +1,42 @@
 import { useMemo, useState } from "react";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart3, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
 import { MapLibreFacilitiesMap } from "./MapLibreFacilitiesMap";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { Droplets, Gauge, MapPin, Shield, Waves } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { CoveragePill, MetricCard } from "./cards";
-import { InfoTitle } from "./info-title";
-
-
-
-const SECTION_COLORS: Record<string, string> = {
-  Environment: "#16a34a",
-  Introduction: "#22c55e",
-  Water: "#10b981",
-  Fomites: "#059669",
-  Biovectors: "#65a30d",
-  Personnel: "#84cc16",
-  Management: "#2563eb",
-  Health: "#1d4ed8",
-  VMP: "#0ea5e9",
-  Equipment: "#3b82f6",
-  SOP: "#60a5fa",
-};
-
-const SCORE_COLORS = ["#ef4444", "#f59e0b", "#eab308", "#22c55e", "#10b981"];
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  ChartCard,
+  CHART_TOOLTIP_CURSOR,
+  CHART_TOOLTIP_STYLE,
+  getAdaptiveChartHeight,
+  getAdaptiveVerticalBarLayout,
+  truncateChartLabel,
+  type ChartCardHeight,
+} from "@/components/charts/chart-card";
+import { EmptyChartState } from "@/components/charts/empty-chart-state";
+import { useLocaleContext } from "@/context/LocaleContext";
+import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 
 type Props = {
   data: DashboardData;
   t: (key: string) => string;
 };
 
-function average(values: number[]): number {
+const CHART_PALETTE = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+  "var(--color-chart-6)",
+  "var(--color-chart-7)",
+  "var(--color-chart-8)",
+];
+
+function average(values: number[]) {
   if (values.length === 0) return 0;
   return Math.round(values.reduce((acc, value) => acc + value, 0) / values.length);
 }
@@ -52,7 +45,7 @@ function aggregateResponseValues(facilities: FacilitySummary[], key: keyof Facil
   const map: Record<string, number> = {};
   facilities.forEach((facility) => {
     (facility.responses[key] ?? []).forEach((label) => {
-      map[label] = (map[label] || 0) + 1;
+      if (label) map[label] = (map[label] || 0) + 1;
     });
   });
   return Object.entries(map)
@@ -85,23 +78,29 @@ function aggregateFactors(facilities: FacilitySummary[], key: "highRiskFactors" 
 function filteredSectionAverages(base: DashboardData["sectionAverages"], facilities: FacilitySummary[]) {
   return base.map((item) => {
     const values = facilities
-      .map((facility) => facility.sectionScores.find((score) => score.section === item.section)?.score ?? 0)
-      .filter((value) => value > 0);
-    return {
-      section: item.section,
-      side: item.side,
-      score: average(values),
-    };
+      .map((facility) => facility.sectionScores.find((score) => score.section === item.section)?.score ?? 0);
+    return { section: item.section, side: item.side, score: average(values) };
   });
 }
 
-export function Overview({ data, t }: Props) {
-  const [speciesFilter, setSpeciesFilter] = useState<string>("all");
-  const [systemFilter, setSystemFilter] = useState<string>("all");
-  const [locationFilter, setLocationFilter] = useState<string>("all");
+function sectionColor(score: number) {
+  if (score >= 70) return "var(--color-success)";
+  if (score >= 50) return "var(--color-warning)";
+  return "var(--color-danger)";
+}
 
-  // Keep charts visible without overflowing 3-column sections.
-  const chartWidth = Math.max(260, Math.min(1024 - 80, 380));
+function riskLabelToBarColor(kind: "high" | "positive") {
+  return kind === "high" ? "var(--color-danger)" : "var(--color-success)";
+}
+
+export function Overview({ data, t }: Props) {
+  const { locale } = useLocaleContext();
+
+  const [speciesFilter, setSpeciesFilter] = useState("all");
+  const [systemFilter, setSystemFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
+
+  const hasActiveFilters = speciesFilter !== "all" || systemFilter !== "all" || locationFilter !== "all";
 
   const filteredFacilities = useMemo(() => {
     return data.facilities.filter((facility) => {
@@ -117,298 +116,323 @@ export function Overview({ data, t }: Props) {
     () => filteredSectionAverages(data.sectionAverages, filteredFacilities),
     [data.sectionAverages, filteredFacilities],
   );
+  const sectionLongestLabel = sectionAverages.reduce((max, item) => Math.max(max, item.section.length), 0);
+  const sectionLayout = getAdaptiveVerticalBarLayout(sectionAverages.length, sectionLongestLabel);
 
+  const avgScore = average(filteredFacilities.map((f) => f.score));
+  const highRiskCount = filteredFacilities.filter((f) => f.riskLevel === "HIGH").length;
+  const lowRiskCount = filteredFacilities.filter((f) => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length;
 
-
-  const externalAvg = average(filteredFacilities.map((facility) => facility.externalScore));
-  const internalAvg = average(filteredFacilities.map((facility) => facility.internalScore));
-  const avgScore = average(filteredFacilities.map((facility) => facility.score));
-  const highRiskCount = filteredFacilities.filter((facility) => facility.riskLevel === "HIGH").length;
-  const lowRiskCount = filteredFacilities.filter((facility) => facility.riskLevel === "LOW" || facility.riskLevel === "NEGLIGIBLE").length;
-
-  const complianceMix = [
-    { name: t("overview.external"), value: externalAvg, color: "#16a34a" },
-    { name: t("overview.internal"), value: internalAvg, color: "#2563eb" },
-  ];
-
-  const scoreDistribution = [
-    { bucket: "0-20", min: 0, max: 20 },
-    { bucket: "21-40", min: 21, max: 40 },
-    { bucket: "41-60", min: 41, max: 60 },
-    { bucket: "61-80", min: 61, max: 80 },
-    { bucket: "81-100", min: 81, max: 100 },
-  ].map((bucket) => ({
-    bucket: bucket.bucket,
-    count: filteredFacilities.filter((facility) => facility.score >= bucket.min && facility.score <= bucket.max).length,
-  }));
+  // Score Distribution - use pre-computed data.distribution when no filters
+  const scoreDistribution = hasActiveFilters
+    ? [
+        { bucket: "0-20", min: 0, max: 20 },
+        { bucket: "21-40", min: 21, max: 40 },
+        { bucket: "41-60", min: 41, max: 60 },
+        { bucket: "61-80", min: 61, max: 80 },
+        { bucket: "81-100", min: 81, max: 100 },
+      ].map((bucket) => ({
+        bucket: bucket.bucket,
+        count: filteredFacilities.filter((f) => f.score >= bucket.min && f.score <= bucket.max).length,
+      }))
+    : data.distribution;
 
   const practices = [
-    { id: "_2_7", label: t("coverage.quarantine"), icon: Shield, color: "#2563eb" },
-    { id: "_11_1", label: t("coverage.biosecurityPlan"), icon: Shield, color: "#22c55e" },
-    { id: "_4_9", label: t("coverage.noSharedEquipment"), icon: Gauge, color: "#0ea5e9" },
-    { id: "_10_8", label: t("coverage.equipmentDisinfection"), icon: Gauge, color: "#f59e0b" },
-    { id: "_3_4", label: t("coverage.waterTreatment"), icon: Droplets, color: "#14b8a6" },
-    { id: "_5_2", label: t("coverage.biovectorInspection"), icon: Waves, color: "#ef4444" },
+    { id: "_2_7", label: t("coverage.quarantine"), icon: Shield, color: "var(--color-chart-2)" },
+    { id: "_11_1", label: t("coverage.biosecurityPlan"), icon: Shield, color: "var(--color-chart-1)" },
+    { id: "_4_9", label: t("coverage.noSharedEquipment"), icon: Gauge, color: "var(--color-chart-5)" },
+    { id: "_10_8", label: t("coverage.equipmentDisinfection"), icon: Gauge, color: "var(--color-chart-3)" },
+    { id: "_3_4", label: t("coverage.waterTreatment"), icon: Droplets, color: "var(--color-chart-2)" },
+    { id: "_5_2", label: t("coverage.biovectorInspection"), icon: Waves, color: "var(--color-chart-6)" },
   ].map((practice) => ({
     ...practice,
     value: computeRate(filteredFacilities, practice.id),
   }));
 
-  const highRiskFactors = aggregateFactors(filteredFacilities, "highRiskFactors");
-  const positivePractices = aggregateFactors(filteredFacilities, "positivePractices");
+  // Use pre-computed data.practices as primary source, only re-aggregate when filters are active
+  const waterMonitoring = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "waterMonitoring")
+    : data.practices.waterMonitoring.map((x) => ({ label: x.label, count: x.count }));
 
-  const waterMonitoring = aggregateResponseValues(filteredFacilities, "waterMonitoring");
-  const mortalityDisposal = aggregateResponseValues(filteredFacilities, "mortalityDisposal").map((item) => ({
-    method: item.label,
-    count: item.count,
-  }));
-  const intakeWaterTreatmentApplied = aggregateResponseValues(filteredFacilities, "intakeWaterTreatmentApplied");
-  const waterParametersMeasured = aggregateResponseValues(filteredFacilities, "waterParametersMeasured");
-  const personnelTrainingTopics = aggregateResponseValues(filteredFacilities, "personnelTrainingTopics");
-  const recordsCoverage = aggregateResponseValues(filteredFacilities, "recordsCoverage");
-  const sopsCoverage = aggregateResponseValues(filteredFacilities, "sopsCoverage");
+  const mortalityDisposal = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "mortalityDisposal").map((item) => ({ method: item.label, count: item.count }))
+    : data.practices.mortalityDisposal.map((x) => ({ method: x.method, count: x.count }));
+
+  const intakeWaterTreatmentApplied = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "intakeWaterTreatmentApplied")
+    : data.practices.intakeWaterTreatmentApplied.map((x) => ({ label: x.label, count: x.count }));
+
+  const waterParametersMeasured = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "waterParametersMeasured")
+    : data.practices.waterParametersMeasured.map((x) => ({ label: x.label, count: x.count }));
+
+  const personnelTrainingTopics = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "personnelTrainingTopics")
+    : data.practices.personnelTrainingTopics.map((x) => ({ label: x.label, count: x.count }));
+
+  const recordsCoverage = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "recordsCoverage")
+    : data.practices.recordsCoverage.map((x) => ({ label: x.label, count: x.count }));
+
+  const sopsCoverage = hasActiveFilters
+    ? aggregateResponseValues(filteredFacilities, "sopsCoverage")
+    : data.practices.sopsCoverage.map((x) => ({ label: x.label, count: x.count }));
+
+  const topRiskFactors = hasActiveFilters
+    ? aggregateFactors(filteredFacilities, "highRiskFactors").slice(0, 5)
+    : data.highRiskFactors.slice(0, 5);
+  const topPositiveFactors = hasActiveFilters
+    ? aggregateFactors(filteredFacilities, "positivePractices").slice(0, 5)
+    : data.positivePractices.slice(0, 5);
 
   const speciesOptions = data.operations.bySpecies.map((item) => item.species).filter(Boolean);
   const systemOptions = data.operations.bySystem.map((item) => item.system).filter(Boolean);
   const locationOptions = data.operations.byLocation.map((item) => item.location).filter(Boolean);
 
   return (
-    <div className="space-y-6 min-w-0">
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("overview.filters")} info={t("info.overviewFilters")} />
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("overview.filterSpecies")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {speciesOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="flex flex-col gap-8 pb-6">
+      {/* Section 1: Filters + KPIs */}
+      <section className="space-y-4">
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
+          <div>
+            <h2 className="text-dashboard-title">{t("tabs.overview")}</h2>
+            <p className="mt-1 text-dashboard-subtitle">Global biosecurity overview and analytics for all registered facilities.</p>
+          </div>
+          <div className="rounded-xl border border-[var(--color-border-subtle)] bg-white p-2 shadow-sm">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <FilterSelect value={speciesFilter} onChange={setSpeciesFilter} options={speciesOptions} placeholder={t("overview.filterSpecies")} t={t} />
+              <FilterSelect value={systemFilter} onChange={setSystemFilter} options={systemOptions} placeholder={t("overview.filterSystem")} t={t} />
+              <FilterSelect value={locationFilter} onChange={setLocationFilter} options={locationOptions} placeholder={t("overview.filterLocation")} t={t} />
+            </div>
+            {hasActiveFilters && (
+              <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-2">
+                {speciesFilter !== "all" && <FilterPill label={`${t("overview.filterSpecies")}: ${speciesFilter}`} />}
+                {systemFilter !== "all" && <FilterPill label={`${t("overview.filterSystem")}: ${systemFilter}`} />}
+                {locationFilter !== "all" && <FilterPill label={`${t("overview.filterLocation")}: ${locationFilter}`} />}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-xs text-[var(--color-brand)]"
+                  onClick={() => { setSpeciesFilter("all"); setSystemFilter("all"); setLocationFilter("all"); }}
+                >
+                  {t("overview.clearAll")}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
 
-          <Select value={systemFilter} onValueChange={setSystemFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("overview.filterSystem")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {systemOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard title={t("metrics.total.title")} value={filteredFacilities.length} subtitle={t("metrics.total.subtitle")} icon={MapPin} color="sky" />
+          <MetricCard
+            title={t("metrics.avg.title")}
+            value={`${avgScore}/100`}
+            subtitle={avgScore < 50 ? t("metrics.avg.subtitle.bad") : t("metrics.avg.subtitle.good")}
+            icon={Gauge}
+            color={avgScore >= 50 ? "emerald" : "amber"}
+          />
+          <MetricCard title={t("metrics.high.title")} value={highRiskCount} subtitle={t("metrics.high.subtitle")} icon={Shield} color="rose" />
+          <MetricCard title={t("metrics.low.title")} value={lowRiskCount} subtitle={t("metrics.low.subtitle")} icon={Leaf} color="emerald" />
+        </div>
+      </section>
 
-          <Select value={locationFilter} onValueChange={setLocationFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("overview.filterLocation")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {locationOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      {/* Section 2: Map + Score Distribution */}
+      <section className="grid gap-6 xl:grid-cols-3">
+        <Card className="card-flat xl:col-span-2">
+          <CardContent className="p-4">
+            <div className="h-[300px] md:h-[400px] xl:h-[500px]">
+              <MapLibreFacilitiesMap filteredFacilities={filteredFacilities} t={t} locale={locale} />
+            </div>
+          </CardContent>
+        </Card>
+        <ChartCard title={t("charts.scoreDistribution")} info={t("info.scoreDistribution")} icon={<BarChart3 className="h-4 w-4" />} height="md">
+          <SimpleVerticalBar
+            data={scoreDistribution}
+            labelKey="bucket"
+            valueKey="count"
+            barColor="var(--color-chart-1)"
+            emptyTitle={t("charts.noData")}
+            emptySubtitle={t("charts.tryFilters")}
+          />
+        </ChartCard>
+      </section>
 
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("charts.mapCoverage")} info={t("info.mapCoverage")} />
-          <CardDescription>Mapa interactivo con cobertura de facilities</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[420px] p-0 overflow-hidden">
-          <MapLibreFacilitiesMap filteredFacilities={filteredFacilities} />
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard title={t("metrics.total.title")} value={filteredFacilities.length} subtitle={t("metrics.total.subtitle")} icon={MapPin} color="sky" />
-        <MetricCard
-          title={t("metrics.avg.title")}
-          value={`${avgScore}/100`}
-          subtitle={avgScore < 50 ? t("metrics.avg.subtitle.bad") : t("metrics.avg.subtitle.good")}
-          icon={Gauge}
-          color={avgScore >= 50 ? "emerald" : "amber"}
-        />
-        <MetricCard title={t("metrics.high.title")} value={highRiskCount} subtitle={t("metrics.high.subtitle")} icon={Shield} color="rose" />
-        <MetricCard title={t("metrics.low.title")} value={lowRiskCount} subtitle={t("metrics.low.subtitle")} icon={Shield} color="emerald" />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="border-0 shadow-sm lg:col-span-2">
-          <CardHeader className="pb-2">
-            <InfoTitle title={t("charts.sectionDetail")} info={t("info.sectionDetail")} />
-          </CardHeader>
-          <CardContent className="h-96">
-            <ResponsiveContainer width={chartWidth} height="100%">
-              <BarChart data={sectionAverages} layout="vertical" margin={{ left: 20, right: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#475569" }} />
-                <YAxis type="category" dataKey="section" width={130} tick={{ fontSize: 11, fill: "#475569" }} />
-                <Tooltip formatter={(value) => [`${value}/100`, t("table.score")]} />
-                <Bar dataKey="score" radius={[0, 4, 4, 0]}>
+      {/* Section 3: Section Detail (bar chart) */}
+      <section>
+        <ChartCard title={t("charts.sectionDetail")} info={t("info.sectionDetail")} icon={<BarChart3 className="h-4 w-4" />} height="xl">
+          {sectionAverages.length === 0 ? (
+            <EmptyChartState title={t("charts.noData")} subtitle={t("charts.tryFilters")} />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
+                <YAxis
+                  type="category"
+                  dataKey="section"
+                  width={sectionLayout.yAxisWidth}
+                  tick={{ fontSize: 11, fill: "var(--color-text-primary)" }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
+                <Bar dataKey="score" radius={[0, 6, 6, 0]}>
                   {sectionAverages.map((entry) => (
-                    <Cell key={entry.section} fill={SECTION_COLORS[entry.section] ?? "#64748b"} />
+                    <Cell key={entry.section} fill={sectionColor(entry.score)} />
                   ))}
+                  <LabelList dataKey="score" position="right" fontSize={11} fill="var(--color-text-primary)" />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          )}
+        </ChartCard>
+      </section>
 
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <InfoTitle title={t("charts.externalInternalCompliance")} info={t("info.externalInternalCompliance")} />
-          </CardHeader>
-          <CardContent>
-            <div className="h-56">
-              <ResponsiveContainer width={chartWidth} height="100%">
-                <PieChart>
-                  <Pie data={complianceMix} dataKey="value" nameKey="name" outerRadius={90} innerRadius={50}>
-                    {complianceMix.map((item) => (
-                      <Cell key={item.name} fill={item.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value}/100`, t("table.score")]} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-2">
-              {complianceMix.map((item) => (
-                <div key={item.name} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-slate-700">{item.name}</span>
-                  </div>
-                  <span className="font-semibold text-slate-900">{item.value}/100</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Section 4: Risk Analysis */}
+      <section className="grid gap-6 lg:grid-cols-2">
+        <FactorList title={t("charts.highRiskFactors")} factors={topRiskFactors} color="high" t={t} />
+        <FactorList title={t("charts.positiveFactors")} factors={topPositiveFactors} color="positive" t={t} />
+      </section>
 
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("charts.practiceCoverage")} info={t("info.practiceCoverage")} />
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {/* Section 5: Practice Coverage */}
+      <section className="space-y-4">
+        <h3 className="text-dashboard-section">{t("charts.practiceCoverage")}</h3>
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
           {practices.map((item) => (
             <CoveragePill key={item.id} label={item.label} value={item.value} icon={item.icon} color={item.color} />
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <InfoTitle title={t("charts.highRiskFactors")} info={t("info.topRiskFactors")} />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {highRiskFactors.length > 0 ? (
-              highRiskFactors.slice(0, 8).map((item) => (
-                <div key={item.factor} className="flex items-center justify-between text-sm">
-                  <span className="text-slate-700">{item.factor}</span>
-                  <Badge variant="secondary">{item.count}</Badge>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-slate-500">{t("facilities.noData")}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <InfoTitle title={t("charts.positiveFactors")} info={t("info.topRiskFactors")} />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {positivePractices.length > 0 ? (
-              positivePractices.slice(0, 8).map((item) => (
-                <div key={item.factor} className="flex items-center justify-between text-sm">
-                  <span className="text-slate-700">{item.factor}</span>
-                  <Badge variant="secondary">{item.count}</Badge>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-slate-500">{t("facilities.noData")}</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartBlock title={t("charts.scoreDistribution")} info={t("info.scoreDistribution")} data={scoreDistribution} labelKey="bucket" valueKey="count" chartWidth={chartWidth} />
-        <ChartBlock title={t("charts.waterMonitoring")} info={t("info.waterMonitoring")} data={waterMonitoring} labelKey="label" valueKey="count" chartWidth={chartWidth} />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartBlock title={t("charts.mortalityDisposal")} info={t("info.mortalityDisposal")} data={mortalityDisposal} labelKey="method" valueKey="count" chartWidth={chartWidth} />
-        <ChartBlock title={t("charts.intakeWaterTreatmentApplied")} info={t("info.intakeWaterTreatmentApplied")} data={intakeWaterTreatmentApplied} labelKey="label" valueKey="count" chartWidth={chartWidth} />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <ChartBlock title={t("charts.waterParametersMeasured")} info={t("info.waterParametersMeasured")} data={waterParametersMeasured} labelKey="label" valueKey="count" chartWidth={chartWidth} />
-        <ChartBlock title={t("charts.personalTraining")} info={t("info.personalTraining")} data={personnelTrainingTopics} labelKey="label" valueKey="count" chartWidth={chartWidth} />
-        <ChartBlock title={t("charts.records")} info={t("info.records")} data={recordsCoverage} labelKey="label" valueKey="count" chartWidth={chartWidth} />
-      </div>
-
-      <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" chartWidth={chartWidth} />
+      {/* Section 6: Operational Charts */}
+      <section className="space-y-4">
+        <h3 className="text-dashboard-section">{t("tabs.operational")}</h3>
+        <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+          <ChartBlock title={t("charts.scoreDistribution")} info={t("info.scoreDistribution")} data={scoreDistribution} labelKey="bucket" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.waterMonitoring")} info={t("info.waterMonitoring")} data={waterMonitoring} labelKey="label" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.mortalityDisposal")} info={t("info.mortalityDisposal")} data={mortalityDisposal} labelKey="method" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.intakeWaterTreatmentApplied")} info={t("info.intakeWaterTreatmentApplied")} data={intakeWaterTreatmentApplied} labelKey="label" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.waterParametersMeasured")} info={t("info.waterParametersMeasured")} data={waterParametersMeasured} labelKey="label" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.personalTraining")} info={t("info.personalTraining")} data={personnelTrainingTopics} labelKey="label" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.records")} info={t("info.records")} data={recordsCoverage} labelKey="label" valueKey="count" t={t} />
+          <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" t={t} />
+        </div>
+      </section>
     </div>
   );
 }
 
-function ChartBlock({
-  title,
-  info,
-  data,
-  labelKey,
-  valueKey,
-  chartWidth,
-}: {
-  title: string;
-  info?: string;
-  data: Record<string, string | number>[];
-  labelKey: string;
-  valueKey: string;
-  chartWidth: number;
-}) {
+function FilterSelect({ value, onChange, options, placeholder, t }: { value: string; onChange: (value: string) => void; options: string[]; placeholder: string; t: (key: string) => string }) {
   return (
-    <Card className="border-0 shadow-sm">
-      <CardHeader className="pb-2">
-        <InfoTitle title={title} info={info} />
-      </CardHeader>
-      <CardContent className="h-80">
-        {data.length > 0 ? (
-          <ResponsiveContainer width={chartWidth} height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "#475569" }} />
-              <YAxis type="category" dataKey={labelKey} width={160} tick={{ fontSize: 11, fill: "#475569" }} />
-              <Tooltip />
-              <Bar dataKey={valueKey} radius={[0, 4, 4, 0]}>
-                {data.map((_, idx) => (
-                  <Cell key={`${title}-${idx}`} fill={SCORE_COLORS[idx % SCORE_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)]">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option} value={option}>{option}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function FilterPill({ label }: { label: string }) {
+  return (
+    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)]">
+      {label}
+    </Badge>
+  );
+}
+
+function FactorList({ title, factors, color, t }: { title: string; factors: { factor: string; count: number }[]; color: "high" | "positive"; t: (key: string) => string }) {
+  const barColor = riskLabelToBarColor(color);
+  return (
+    <Card className="card-flat">
+      <CardContent className="space-y-4 p-5">
+        <h4 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h4>
+        {factors.length === 0 ? (
+          <EmptyChartState title={t("charts.noData")} subtitle={t("charts.tryFilters")} />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">No data</div>
+          factors.map((item) => (
+            <div key={item.factor} className="space-y-2">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="font-medium text-[var(--color-text-primary)]">{item.factor}</span>
+                <Badge variant="outline" className="text-[var(--color-text-secondary)]">{item.count}</Badge>
+              </div>
+              <div className="h-2 rounded-full bg-[var(--color-surface-base)]">
+                <div
+                  className="h-2 rounded-full"
+                  style={{ width: `${(item.count / (factors[0]?.count || 1)) * 100}%`, backgroundColor: barColor }}
+                />
+              </div>
+            </div>
+          ))
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function ChartBlock({ title, info, data, labelKey, valueKey, height, t }: { title: string; info?: string; data: Record<string, string | number>[]; labelKey: string; valueKey: string; height?: ChartCardHeight; t: (key: string) => string }) {
+  const nonZeroCount = data.filter((item) => Number(item[valueKey] ?? 0) > 0).length;
+  const effectiveCount = nonZeroCount > 0 ? nonZeroCount : data.length;
+
+  return (
+    <ChartCard title={title} info={info} icon={<BarChart3 className="h-4 w-4" />} height={height ?? getAdaptiveChartHeight(effectiveCount)}>
+      <SimpleVerticalBar
+        data={data}
+        labelKey={labelKey}
+        valueKey={valueKey}
+        emptyTitle={t("charts.noData")}
+        emptySubtitle={t("charts.tryFilters")}
+      />
+    </ChartCard>
+  );
+}
+
+function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emptySubtitle }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; barColor?: string; emptyTitle: string; emptySubtitle: string }) {
+  if (data.length === 0) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+  }
+
+  const nonZeroData = data.filter((item) => Number(item[valueKey] ?? 0) > 0);
+  const chartData = nonZeroData.length > 0 ? nonZeroData : data;
+  const hasAnyValue = chartData.some((item) => Number(item[valueKey] ?? 0) > 0);
+
+  if (!hasAnyValue) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+  }
+
+  const longestLabel = chartData.reduce((max, item) => {
+    const label = String(item[labelKey] ?? "");
+    return Math.max(max, label.length);
+  }, 0);
+  const layout = getAdaptiveVerticalBarLayout(chartData.length, longestLabel);
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={chartData} layout="vertical" margin={{ top: 8, right: layout.rightMargin, left: 8, bottom: 8 }} barSize={layout.barSize}>
+        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
+        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
+        <YAxis
+          type="category"
+          dataKey={labelKey}
+          width={layout.yAxisWidth}
+          tick={{ fontSize: 11, fill: "var(--color-text-primary)" }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(value: string) => truncateChartLabel(value, 24)}
+        />
+        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
+        <Bar dataKey={valueKey} radius={[0, 4, 4, 0]}>
+          {chartData.map((_, index) => (
+            <Cell key={index} fill={barColor ?? CHART_PALETTE[index % CHART_PALETTE.length]} />
+          ))}
+          {layout.showValues ? <LabelList dataKey={valueKey} position="right" fontSize={11} fill="var(--color-text-primary)" /> : null}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }

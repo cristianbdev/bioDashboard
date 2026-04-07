@@ -13,7 +13,7 @@ export function MethodologyView({ data, t }: Props) {
 
   return (
     <div className="space-y-6 min-w-0">
-      <Card className="border-0 shadow-sm">
+      <Card className="card-flat">
         <CardHeader className="pb-2">
           <InfoTitle title={t("methodology.title")} info={t("methodology.info")} />
           <CardDescription>{t("methodology.subtitle")}</CardDescription>
@@ -39,7 +39,7 @@ export function MethodologyView({ data, t }: Props) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm">
+      <Card className="card-flat">
         <CardHeader className="pb-2">
           <InfoTitle title={t("methodology.subcategoryWeights")} info={t("methodology.subcategoryWeightsInfo")} />
         </CardHeader>
@@ -65,7 +65,7 @@ export function MethodologyView({ data, t }: Props) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm">
+      <Card className="card-flat">
         <CardHeader className="pb-2">
           <InfoTitle title={t("methodology.rulesTitle")} info={t("methodology.rulesInfo")} />
           <CardDescription>{t("methodology.rulesSubtitle")}</CardDescription>

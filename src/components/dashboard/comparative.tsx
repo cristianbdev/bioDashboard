@@ -1,9 +1,17 @@
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  ChartCard,
+  CHART_TOOLTIP_CURSOR,
+  CHART_TOOLTIP_STYLE,
+  getAdaptiveChartHeight,
+  truncateChartLabel,
+} from "@/components/charts/chart-card";
+import { EmptyChartState } from "@/components/charts/empty-chart-state";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
@@ -122,17 +130,6 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
   const [systemFilter, setSystemFilter] = useState<string>("all");
   const [speciesFilter, setSpeciesFilter] = useState<string>("all");
   const [waterSourceFilter, setWaterSourceFilter] = useState<string>("all");
-  const [vw, setVw] = useState(1024);
-
-  useEffect(() => {
-    const update = () => setVw(typeof window !== "undefined" ? window.innerWidth : 1024);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const chartWidth = Math.max(260, Math.min(vw - 80, 380));
-
   const filteredFacilities = useMemo(() => {
     return data.facilities.filter((facility) => {
       const facilityLocation = facility.basedOn ?? facility.location;
@@ -175,7 +172,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 
   return (
     <div className="space-y-6 min-w-0">
-      <Card className="border-0 shadow-sm">
+      <Card className="card-flat">
         <CardHeader className="pb-2">
           <InfoTitle title={t("comparative.filters")} info={t("info.comparativeFilters")} />
         </CardHeader>
@@ -253,37 +250,37 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.bySystem} color="#2563eb" chartWidth={chartWidth} />
+        <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)}>
+          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.byProductionType} color="#14b8a6" chartWidth={chartWidth} />
-        </ChartCard>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.byEducation} color="#8b5cf6" chartWidth={chartWidth} />
-        </ChartCard>
-        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.byMarket} color="#10b981" chartWidth={chartWidth} />
-        </ChartCard>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.byYears} color="#f59e0b" chartWidth={chartWidth} />
-        </ChartCard>
-        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.bySpecies} color="#0ea5e9" chartWidth={chartWidth} />
-        </ChartCard>
-        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")}>
-          <ComparisonBar data={charts.byWaterSource} color="#06b6d4" chartWidth={chartWidth} />
+        <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)}>
+          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-0 shadow-sm">
+        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)}>
+          <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" />
+        </ChartCard>
+        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)}>
+          <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" />
+        </ChartCard>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
+        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)}>
+          <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" />
+        </ChartCard>
+        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)}>
+          <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" />
+        </ChartCard>
+        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)}>
+          <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" />
+        </ChartCard>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("comparative.riskMatrixExternal")} info={t("info.riskMatrix")} />
             <CardDescription>{t("comparative.riskMatrixLegend")}</CardDescription>
@@ -292,12 +289,12 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
             {externalHeatmap ? (
               <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-slate-500">No data</div>
+              <EmptyChartState />
             )}
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
+        <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("comparative.riskMatrixInternal")} info={t("info.riskMatrix")} />
             <CardDescription>{t("comparative.riskMatrixLegend")}</CardDescription>
@@ -306,13 +303,13 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
             {internalHeatmap ? (
               <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-slate-500">No data</div>
+              <EmptyChartState />
             )}
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-0 shadow-sm">
+      <Card className="card-flat">
         <CardHeader className="pb-2">
           <InfoTitle title={t("comparative.tableTitle")} info={t("info.table")} />
         </CardHeader>
@@ -377,38 +374,40 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 function ComparisonBar({
   data,
   color,
-  chartWidth,
 }: {
   data: { name: string; avgScore: number; count: number }[];
   color: string;
-  chartWidth: number;
 }) {
   if (data.length === 0) {
-    return <div className="flex h-full items-center justify-center text-sm text-slate-500">No data</div>;
+    return <EmptyChartState />;
   }
 
+  const isDense = data.length > 4;
+  const xAxisHeight = isDense ? 52 : 30;
+  const barSize = Math.max(18, Math.min(46, Math.floor(230 / Math.max(1, data.length))));
   return (
-    <ResponsiveContainer width={chartWidth} height="100%">
-      <BarChart data={data} margin={{ left: 8, right: 16, top: 6 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-        <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#334155" }} tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "#334155" }} tickLine={false} axisLine={false} />
-        <Tooltip formatter={(value, _name, props) => [`${value}/100 (${props.payload.count})`, "Score"]} />
-        <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} />
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data} margin={{ left: 4, right: 12, top: 8, bottom: isDense ? 8 : 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-subtle)" />
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
+          tickFormatter={(value: string) => truncateChartLabel(value, 18)}
+          tickLine={false}
+          axisLine={false}
+          interval={0}
+          angle={isDense ? -14 : 0}
+          textAnchor={isDense ? "end" : "middle"}
+          height={xAxisHeight}
+        />
+        <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} width={34} />
+        <Tooltip
+          contentStyle={CHART_TOOLTIP_STYLE}
+          cursor={CHART_TOOLTIP_CURSOR}
+          formatter={(value, _name, props) => [`${value}/100 (${props.payload.count})`, "Score"]}
+        />
+        <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} maxBarSize={50} barSize={barSize} />
       </BarChart>
     </ResponsiveContainer>
-  );
-}
-
-function ChartCard({ title, info, children }: { title: string; info?: string; children: React.ReactNode }) {
-  return (
-    <Card className="border-0 shadow-sm">
-      <CardHeader className="pb-2">
-        <InfoTitle title={title} info={info} />
-      </CardHeader>
-      <CardContent className="h-80">
-        <div className="h-full w-full">{children}</div>
-      </CardContent>
-    </Card>
   );
 }
