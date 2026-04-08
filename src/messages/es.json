@@ -24,6 +24,19 @@
     "operational": "Operativo",
     "facilitiesSelect": "Seleccionar instalación"
   },
+  "sections": {
+    "environment": "Entorno",
+    "introduction": "Introducción",
+    "water": "Agua",
+    "fomites": "Fómites",
+    "biovectors": "Biovectores",
+    "personnel": "Personal",
+    "management": "Gestión",
+    "health": "Salud",
+    "vmp": "VMP",
+    "equipment": "Equipos",
+    "sop": "SOP"
+  },
   "datasource": {
     "title": "Fuente de datos",
     "subtitle": "UID de KoboToolbox",
@@ -198,6 +211,8 @@
     "title": "Metodología de puntaje",
     "subtitle": "Modelo formal de cálculo basado en la definición del instrumento.",
     "info": "Esta vista documenta cómo se calcula el puntaje a partir de las respuestas.",
+    "expertWeightsDecisionDescription": "Se mantienen los pesos expertos actuales: las preguntas que forman parte del puntaje principal valen 1 y las que no forman parte del puntaje principal quedan fuera del cálculo principal.",
+    "noScoreDecisionDescription": "Las respuestas sin puntaje se tratan como no aplicables: no suman al puntaje ni al máximo posible dentro de la subcategoría.",
     "formulaA": "A) Puntaje de subcategoría = SUM(puntaje de respuesta x peso de pregunta) / puntaje máximo posible de la subcategoría.",
     "formulaB": "B) Puntaje de categoría (Externa/Interna) = SUM(puntaje de subcategoría x peso de subcategoría).",
     "formulaC": "C) Puntaje global = (puntaje externo x peso externo) + (puntaje interno x peso interno).",
@@ -230,13 +245,23 @@
     "error": {
       "title": "Error al provisionar usuario",
       "generic": "No se pudo provisionar el usuario",
+      "unauthorized": "Solo los administradores pueden crear usuarios",
+      "invalidJson": "Cuerpo JSON inválido",
+      "invalidEmail": "Correo electrónico inválido",
       "emailRequired": "El correo es obligatorio",
       "facilityRequired": "La instalación es obligatoria para el rol productor"
     },
     "emailPlaceholder": "productor@ejemplo.com"
   },
+  "locales": {
+    "en": "Inglés",
+    "es": "Español",
+    "no": "Noruego"
+  },
   "checklist": {
     "navigationHint": "Seleccione una categoría para navegar a preguntas específicas",
+    "questions": "preguntas",
+    "compliant": "cumplidas",
     "backToSections": "Volver arriba"
   },
   "table": {
@@ -295,7 +320,13 @@
   "errors": {
     "title": "Error",
     "unknown": "Error desconocido",
-    "httpStatus": "Error de solicitud (HTTP {status})"
+    "httpStatus": "Error de solicitud (HTTP {status})",
+    "missingUid": "Se requiere el UID del proyecto",
+    "unauthorizedProject": "No tienes permiso para consultar este proyecto",
+    "missingToken": "No está configurado el token de KoboToolbox",
+    "koboApiError": "No se pudieron cargar los datos de Kobo",
+    "koboAssetApiError": "No se pudieron cargar los metadatos del formulario de Kobo",
+    "unexpected": "Error inesperado"
   },
   "meta": {
     "title": "Tablero de Bioseguridad",

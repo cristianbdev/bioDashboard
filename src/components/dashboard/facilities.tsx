@@ -12,6 +12,7 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Too
 import { CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveVerticalBarLayout, truncateChartLabel } from "@/components/charts/chart-card";
 import { cn } from "@/lib/utils";
 import type { DashboardData, FacilitySummary, RuleStatus, SubcategoryChecklist } from "@/lib/kobo";
+import { translateSectionLabel } from "@/lib/section-labels";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 
@@ -46,9 +47,9 @@ export function FacilitiesView({
   if (!currentFacility) return null;
 
   const benchmarkData = currentFacility.sectionScores.map((section) => {
-    const average = sectionAverages.find((item) => item.section === item.section)?.score ?? 0;
+    const average = sectionAverages.find((item) => item.section === section.section && item.side === section.side)?.score ?? 0;
     return {
-      section: section.section,
+      section: translateSectionLabel(section.section, t),
       side: section.side,
       facility: section.score,
       average,
@@ -342,7 +343,7 @@ function ChecklistView({
                     "text-sm font-semibold leading-tight whitespace-nowrap",
                     isActive ? "text-[#1F2A2A]" : "text-[#6B7C72] group-hover:text-[#1F2A2A]"
                   )}>
-                    {stats.section}
+                    {translateSectionLabel(stats.section, t)}
                   </span>
                   <div className="flex items-center gap-2 text-[11px] mt-0.5">
                     <span className={cn(
@@ -390,9 +391,9 @@ function ChecklistView({
                 subcategory.side === "external" ? "bg-[#0F766E]" : "bg-[#5E7A8A]"
               )} />
               <div className="flex-1">
-                <h4 className="text-lg font-bold text-[#1F2A2A]">{subcategory.section}</h4>
+                <h4 className="text-lg font-bold text-[#1F2A2A]">{translateSectionLabel(subcategory.section, t)}</h4>
                 <p className="text-xs text-[#6B7C72] mt-0.5">
-                  {subcategory.items.length} questions • {subcategory.items.filter(i => i.compliant).length} compliant
+                  {subcategory.items.length} {t("checklist.questions")} • {subcategory.items.filter((i) => i.compliant).length} {t("checklist.compliant")}
                 </p>
               </div>
               <Badge 

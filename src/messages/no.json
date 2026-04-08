@@ -8,7 +8,10 @@
     "refresh": "Oppdater",
     "load": "Last inn",
     "demo": "Standard-UID",
-    "close": "Lukk"
+    "close": "Lukk",
+    "search": "Søk",
+    "show": "Vis",
+    "hide": "Skjul"
   },
   "tabs": {
     "overview": "Oversikt",
@@ -20,6 +23,19 @@
     "practices": "Praksiser",
     "operational": "Drift",
     "facilitiesSelect": "Velg anlegg"
+  },
+  "sections": {
+    "environment": "Miljø",
+    "introduction": "Introduksjon",
+    "water": "Vann",
+    "fomites": "Fomitter",
+    "biovectors": "Biovektorer",
+    "personnel": "Personell",
+    "management": "Drift",
+    "health": "Helse",
+    "vmp": "VMP",
+    "equipment": "Utstyr",
+    "sop": "SOP"
   },
   "datasource": {
     "title": "Datakilde",
@@ -143,7 +159,12 @@
       "positive": "Positive praksiser"
     },
     "riskAndSuggestions": "Risiko og anbefalinger",
-    "benchmarkAriaSuffix": "seksjoner sammenlignet med nettverksgjennomsnittet."
+    "benchmarkAriaSuffix": "seksjoner sammenlignet med nettverksgjennomsnittet.",
+    "selector": {
+      "show": "Vis velgeren",
+      "hide": "Skjul velgeren",
+      "selected": "Valgt anlegg"
+    }
   },
   "comparative": {
     "filters": "Sammenligningsfiltre",
@@ -190,6 +211,8 @@
     "title": "Scoremetodikk",
     "subtitle": "Formell scoremodell utledet fra instrumentdefinisjonen.",
     "info": "Denne visningen dokumenterer hvordan poeng beregnes fra svar på spørsmålsnivå.",
+    "expertWeightsDecisionDescription": "Gjeldende ekspertvekter beholdes: spørsmål som inngår i hovedscoren vektes med 1, og spørsmål som ikke inngår i hovedscoren holdes utenfor hovedberegningen.",
+    "noScoreDecisionDescription": "Svar uten poeng behandles som ikke relevante: de bidrar verken til poengsummen eller til maksimal mulig poengsum i underkategorien.",
     "formulaA": "A) Underkategoripoeng = SUM(svarpoeng x spørsmålsvekt) / maksimal mulig poengsum i underkategorien.",
     "formulaB": "B) Kategoriscore (Ekstern/Intern) = SUM(underkategoriscore x underkategorivekt).",
     "formulaC": "C) Totalpoeng = (Ekstern poengsum x ekstern vekt) + (Intern poengsum x intern vekt).",
@@ -222,13 +245,28 @@
     "error": {
       "title": "Feil ved brukeroppsett",
       "generic": "Kunne ikke opprette bruker",
+      "unauthorized": "Bare administratorer kan opprette brukere",
+      "invalidJson": "Ugyldig JSON-innhold",
+      "invalidEmail": "Ugyldig e-postadresse",
       "emailRequired": "E-post er påkrevd",
       "facilityRequired": "Anlegg er påkrevd for produsentrollen"
     },
     "emailPlaceholder": "produsent@eksempel.no"
   },
+  "locales": {
+    "en": "Engelsk",
+    "es": "Spansk",
+    "no": "Norsk"
+  },
+  "checklist": {
+    "navigationHint": "Velg en kategori for å gå til spesifikke spørsmål",
+    "questions": "spørsmål",
+    "compliant": "i samsvar",
+    "backToSections": "Til toppen"
+  },
   "table": {
     "facility": "Anlegg",
+    "facilities": "Anlegg",
     "section": "Seksjon",
     "side": "Dimensjon",
     "score": "Poeng",
@@ -282,7 +320,13 @@
   "errors": {
     "title": "Feil",
     "unknown": "Ukjent feil",
-    "httpStatus": "Forespørselen mislyktes (HTTP {status})"
+    "httpStatus": "Forespørselen mislyktes (HTTP {status})",
+    "missingUid": "Prosjekt-UID er påkrevd",
+    "unauthorizedProject": "Du har ikke tilgang til å hente data for dette prosjektet",
+    "missingToken": "KoboToolbox-tokenet er ikke konfigurert",
+    "koboApiError": "Klarte ikke å laste Kobo-data",
+    "koboAssetApiError": "Klarte ikke å laste Kobo-skjemadata",
+    "unexpected": "Uventet feil"
   },
   "meta": {
     "title": "Biosikkerhetsdashboard",

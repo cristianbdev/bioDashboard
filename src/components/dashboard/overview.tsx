@@ -11,6 +11,7 @@ import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartH
 import { EmptyChartState } from "@/components/charts/empty-chart-state";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import { translateSectionLabel } from "@/lib/section-labels";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { FloatingFilters } from "./floating-filters";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
@@ -193,8 +194,12 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     () => filteredSectionAverages(data.sectionAverages, filteredFacilities),
     [data.sectionAverages, filteredFacilities],
   );
-  const sectionLongestLabel = sectionAverages.reduce((max, item) => Math.max(max, item.section.length), 0);
-  const sectionLayout = getAdaptiveVerticalBarLayout(sectionAverages.length, sectionLongestLabel);
+  const translatedSectionAverages = useMemo(
+    () => sectionAverages.map((item) => ({ ...item, section: translateSectionLabel(item.section, t) })),
+    [sectionAverages, t],
+  );
+  const sectionLongestLabel = translatedSectionAverages.reduce((max, item) => Math.max(max, item.section.length), 0);
+  const sectionLayout = getAdaptiveVerticalBarLayout(translatedSectionAverages.length, sectionLongestLabel);
 
   const avgScore = average(filteredFacilities.map((f) => f.score));
   const highRiskCount = filteredFacilities.filter((f) => f.riskLevel === "HIGH").length;
@@ -339,11 +344,11 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           height="xl"
           ariaLabel={`${t("charts.sectionDetail")}. ${sectionAverages.length} sections.`}
         >
-          {sectionAverages.length === 0 ? (
+          {translatedSectionAverages.length === 0 ? (
             <EmptyChartState title={t("charts.noData")} subtitle={t("charts.tryFilters")} />
           ) : (
             <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
-              <BarChart data={sectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
+              <BarChart data={translatedSectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
                 <YAxis
@@ -356,7 +361,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
                 />
                 <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
                 <Bar dataKey="score" radius={[0, 6, 6, 0]}>
-                  {sectionAverages.map((entry) => (
+                  {translatedSectionAverages.map((entry) => (
                     <Cell key={entry.section} fill={sectionColor(entry.score)} />
                   ))}
                   <LabelList dataKey="score" position="right" fontSize={11} fill="var(--color-text-primary)" />

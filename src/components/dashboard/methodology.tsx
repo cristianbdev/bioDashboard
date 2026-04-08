@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { DashboardData } from "@/lib/kobo";
+import { translateSectionLabel } from "@/lib/section-labels";
 import { InfoTitle } from "./info-title";
 
 type Props = {
@@ -29,11 +30,11 @@ export function MethodologyView({ data, t }: Props) {
           <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-700">
             <p>
               <span className="font-semibold">{t("methodology.expertWeightsDecision")}:</span>{" "}
-              {model.decisions.expertWeights.description}
+              {t("methodology.expertWeightsDecisionDescription")}
             </p>
             <p className="mt-2">
               <span className="font-semibold">{t("methodology.noScoreDecision")}:</span>{" "}
-              {model.decisions.noScore.description}
+              {t("methodology.noScoreDecisionDescription")}
             </p>
           </div>
         </CardContent>
@@ -50,12 +51,12 @@ export function MethodologyView({ data, t }: Props) {
                 <TableHead>{t("table.section")}</TableHead>
                 <TableHead>{t("table.side")}</TableHead>
                 <TableHead className="text-right">{t("table.weight")}</TableHead>
-              </TableRow>
+                </TableRow>
             </TableHeader>
             <TableBody>
               {model.subcategoryWeights.map((row) => (
                 <TableRow key={`${row.side}-${row.section}`}>
-                  <TableCell className="font-medium">{row.section}</TableCell>
+                  <TableCell className="font-medium">{translateSectionLabel(row.section, t)}</TableCell>
                   <TableCell>{row.side === "external" ? t("overview.external") : t("overview.internal")}</TableCell>
                   <TableCell className="text-right">{row.weight.toFixed(2)}</TableCell>
                 </TableRow>
@@ -78,10 +79,10 @@ export function MethodologyView({ data, t }: Props) {
                   {rule.id} - {rule.question}
                 </p>
                 <p className="text-slate-600">
-                  {rule.section} | {rule.side === "external" ? t("overview.external") : t("overview.internal")}
+                  {translateSectionLabel(rule.section, t)} | {rule.side === "external" ? t("overview.external") : t("overview.internal")}
                 </p>
                 <p className="text-slate-600">
-                  {t("table.weight")}: {rule.questionWeight} | {t("methodology.mainScore")}: {rule.mainScore ? "1" : "0"}
+                  {t("table.weight")}: {rule.questionWeight} | {t("methodology.mainScore")}: {rule.mainScore ? t("status.yes") : t("status.no")}
                 </p>
               </div>
               {rule.responses.length > 0 ? (
@@ -96,7 +97,9 @@ export function MethodologyView({ data, t }: Props) {
                     {rule.responses.map((response, index) => (
                       <TableRow key={`${rule.id}-${index}`}>
                         <TableCell>{response.response}</TableCell>
-                        <TableCell className="text-right">{response.score === null ? "N/A" : response.score}</TableCell>
+                        <TableCell className="text-right">
+                          {response.score === null ? t("status.notApplicable") : response.score}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

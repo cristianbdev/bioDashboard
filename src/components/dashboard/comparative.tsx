@@ -20,6 +20,7 @@ import {
 } from "@/components/charts/chart-card";
 import { EmptyChartState } from "@/components/charts/empty-chart-state";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import { translateSectionLabel } from "@/lib/section-labels";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
@@ -68,7 +69,7 @@ function buildHeatmapOption(
       .filter((section) => section.side === side)
       .map((section) => ({
         facility: facility.name,
-        subcategory: section.section,
+        subcategory: translateSectionLabel(section.section, t),
         value: section.score >= 70 ? 1 : 0,
         score: section.score,
       })),
@@ -712,31 +713,31 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)} ariaLabel={`${t("comparative.scoreBySystem")}. ${charts.bySystem.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" />
+          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" t={t} />
         </ChartCard>
         <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)} ariaLabel={`${t("comparative.scoreByProductionType")}. ${charts.byProductionType.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" />
+          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" t={t} />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" />
+          <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" t={t} />
         </ChartCard>
         <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" />
+          <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" t={t} />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
         <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" />
+          <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" t={t} />
         </ChartCard>
         <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" />
+          <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" t={t} />
         </ChartCard>
         <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" />
+          <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" t={t} />
         </ChartCard>
       </div>
 
@@ -848,9 +849,11 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 function ComparisonBar({
   data,
   color,
+  t,
 }: {
   data: { name: string; avgScore: number; count: number }[];
   color: string;
+  t: (key: string) => string;
 }) {
   if (data.length === 0) {
     return <EmptyChartState />;
@@ -878,7 +881,7 @@ function ComparisonBar({
         <Tooltip
           contentStyle={CHART_TOOLTIP_STYLE}
           cursor={CHART_TOOLTIP_CURSOR}
-          formatter={(value, _name, props) => [`${value}/100 (${props.payload.count})`, "Score"]}
+          formatter={(value, _name, props) => [`${value}/100 (${props.payload.count})`, t("table.score")]}
         />
         <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} maxBarSize={50} barSize={barSize} />
       </BarChart>

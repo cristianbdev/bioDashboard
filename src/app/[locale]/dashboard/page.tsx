@@ -25,6 +25,17 @@ type ApiState =
   | { status: "error"; message: string }
   | { status: "loaded" };
 
+type KoboErrorCode = "missingUid" | "unauthorizedProject" | "missingToken" | "koboApiError" | "koboAssetApiError" | "unexpected";
+
+const KOBO_ERROR_KEYS: Record<KoboErrorCode, string> = {
+  missingUid: "errors.missingUid",
+  unauthorizedProject: "errors.unauthorizedProject",
+  missingToken: "errors.missingToken",
+  koboApiError: "errors.koboApiError",
+  koboAssetApiError: "errors.koboAssetApiError",
+  unexpected: "errors.unexpected",
+};
+
 // Navigation items for mobile bottom sheet
 const ADMIN_NAV_ITEMS: Array<{ id: DashboardTab; icon: typeof BarChart3; labelKey: string }> = [
   { id: "overview", icon: BarChart3, labelKey: "tabs.overview" },
@@ -118,10 +129,13 @@ export default function Home() {
     try {
       const params = new URLSearchParams({ uid: targetUid });
       const response = await fetch(`/api/kobo?${params.toString()}`, { cache: "no-store" });
-      const payload = (await response.json()) as { data?: DashboardData; error?: string };
+      const payload = (await response.json()) as { data?: DashboardData; errorCode?: KoboErrorCode };
 
       if (!response.ok || !payload.data) {
-        throw new Error(payload.error ?? t("errors.httpStatus").replace("{status}", String(response.status)));
+        const errorMessage = payload.errorCode
+          ? t(KOBO_ERROR_KEYS[payload.errorCode] ?? "errors.unknown")
+          : t("errors.httpStatus").replace("{status}", String(response.status));
+        throw new Error(errorMessage);
       }
 
       setData(payload.data);

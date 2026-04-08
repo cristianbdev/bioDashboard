@@ -9,7 +9,7 @@ type BottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  closeLabel?: string;
+  closeLabel: string;
   children: React.ReactNode;
 };
 
@@ -79,7 +79,7 @@ export function BottomSheet({ isOpen, onClose, title, closeLabel, children }: Bo
             size="icon"
             onClick={onClose}
             className="h-11 w-11 -mr-2 text-[var(--color-text-secondary)] sm:h-8 sm:w-8"
-            aria-label={closeLabel ?? "Close"}
+            aria-label={closeLabel}
           >
             <X className="h-5 w-5" />
           </Button>

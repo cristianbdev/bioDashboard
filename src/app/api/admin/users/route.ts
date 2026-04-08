@@ -43,19 +43,19 @@ async function isCurrentUserAdmin() {
 
 export async function POST(request: Request) {
   if (!(await isCurrentUserAdmin())) {
-    return NextResponse.json({ error: "Solo admin puede crear usuarios" }, { status: 403 });
+    return NextResponse.json({ errorCode: "unauthorized" }, { status: 403 });
   }
 
   let body: CreateManagedUserBody;
   try {
     body = (await request.json()) as CreateManagedUserBody;
   } catch {
-    return NextResponse.json({ error: "Body JSON invalido" }, { status: 400 });
+    return NextResponse.json({ errorCode: "invalidJson" }, { status: 400 });
   }
 
   const email = normalizeEmail(body.email);
   if (!email || !email.includes("@")) {
-    return NextResponse.json({ error: "Email invalido" }, { status: 400 });
+    return NextResponse.json({ errorCode: "invalidEmail" }, { status: 400 });
   }
 
   const role: ManagedRole = isManagedRole(body.role) ? body.role : "producer";
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   const facilityId = parseFacilityId(body.facilityId);
 
   if (role === "producer" && !facilityId) {
-    return NextResponse.json({ error: "facilityId es requerido para rol producer" }, { status: 400 });
+    return NextResponse.json({ errorCode: "facilityRequired" }, { status: 400 });
   }
 
   const password = buildDefaultPassword(email);
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
       password,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "No se pudo crear usuario";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Admin users API error", error);
+    return NextResponse.json({ errorCode: "generic" }, { status: 500 });
   }
 }

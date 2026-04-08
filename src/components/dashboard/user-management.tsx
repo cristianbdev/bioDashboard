@@ -18,6 +18,21 @@ type Props = {
 
 type ManagedRole = "producer" | "admin";
 
+type ApiErrorCode = "unauthorized" | "invalidJson" | "invalidEmail" | "facilityRequired" | "generic";
+
+const USER_ERROR_KEYS: Record<ApiErrorCode, string> = {
+  unauthorized: "users.error.unauthorized",
+  invalidJson: "users.error.invalidJson",
+  invalidEmail: "users.error.invalidEmail",
+  facilityRequired: "users.error.facilityRequired",
+  generic: "users.error.generic",
+};
+
+const ROLE_LABEL_KEYS: Record<ManagedRole, string> = {
+  producer: "role.producer",
+  admin: "role.admin",
+};
+
 type ApiResult = {
   status: "created" | "updated";
   email: string;
@@ -71,9 +86,10 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
         }),
       });
 
-      const payload = (await response.json()) as ApiResult & { error?: string };
+      const payload = (await response.json()) as ApiResult & { errorCode?: ApiErrorCode };
       if (!response.ok) {
-        throw new Error(payload.error || t("users.error.generic"));
+        const messageKey = payload.errorCode ? USER_ERROR_KEYS[payload.errorCode] ?? "users.error.generic" : "users.error.generic";
+        throw new Error(t(messageKey));
       }
 
       setResult(payload);
@@ -170,7 +186,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
           <CheckCircle2 className="h-4 w-4" />
           <AlertTitle>{t("users.success.title")}</AlertTitle>
           <AlertDescription>
-            {t("users.success.message")}: {result.email} ({result.role})
+            {t("users.success.message")}: {result.email} ({t(ROLE_LABEL_KEYS[result.role])})
             <br />
             {t("users.password")}: <span className="font-semibold">{result.password}</span>
             {result.facilityId ? (

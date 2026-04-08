@@ -12,7 +12,7 @@ const SCORE_CATALOG = scoreModel as QuantificationCatalog;
 function getKoboToken() {
   const token = process.env.KOBOTOOLBOX_TOKEN;
   if (!token) {
-    throw new Error("Missing KOBOTOOLBOX_TOKEN environment variable");
+    throw new Error("missingToken");
   }
   return token;
 }
@@ -28,7 +28,8 @@ async function fetchKoboData(uid: string, token: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Kobo API error ${response.status}`);
+    console.error("Kobo API error", { status: response.status, uid: url.split("/").at(-2) });
+    throw new Error("koboApiError");
   }
 
   return (await response.json()) as KoboApiResponse;
@@ -45,7 +46,8 @@ async function fetchKoboAsset(uid: string, token: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Kobo asset API error ${response.status}`);
+    console.error("Kobo asset API error", { status: response.status, uid: url.split("/").at(-2) });
+    throw new Error("koboAssetApiError");
   }
 
   return (await response.json()) as KoboAssetResponse;
@@ -169,7 +171,7 @@ export async function GET(request: Request) {
   const uid = searchParams.get("uid");
 
   if (!uid) {
-    return NextResponse.json({ error: "uid requerido" }, { status: 400 });
+    return NextResponse.json({ errorCode: "missingUid" }, { status: 400 });
   }
 
   try {
@@ -183,7 +185,7 @@ export async function GET(request: Request) {
         defaultProjectUid: DEFAULT_PROJECT_UID,
       })
     ) {
-      return NextResponse.json({ error: "No autorizado para consultar este proyecto" }, { status: 403 });
+      return NextResponse.json({ errorCode: "unauthorizedProject" }, { status: 403 });
     }
 
     const token = getKoboToken();
@@ -194,8 +196,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: scopedData, role: access.role });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error inesperado";
+    const code = error instanceof Error ? error.message : "unexpected";
     console.error("Kobo API error", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ errorCode: code }, { status: 500 });
   }
 }

@@ -24,6 +24,19 @@
     "operational": "Operational",
     "facilitiesSelect": "Select facility"
   },
+  "sections": {
+    "environment": "Environment",
+    "introduction": "Introduction",
+    "water": "Water",
+    "fomites": "Fomites",
+    "biovectors": "Biovectors",
+    "personnel": "Personnel",
+    "management": "Management",
+    "health": "Health",
+    "vmp": "VMP",
+    "equipment": "Equipment",
+    "sop": "SOP"
+  },
   "datasource": {
     "title": "Data source",
     "subtitle": "KoboToolbox UID",
@@ -198,6 +211,8 @@
     "title": "Score Methodology",
     "subtitle": "Formal scoring model derived from the instrument definition.",
     "info": "This view documents how scores are computed from question-level responses.",
+    "expertWeightsDecisionDescription": "Current expert weights are preserved: main score questions count as 1, and non-main questions are excluded from the main calculation.",
+    "noScoreDecisionDescription": "No-score responses are treated as not applicable: they do not add to the score or the maximum possible score in the subcategory.",
     "formulaA": "A) Subcategory score = SUM(response score x question weight) / maximum possible score in the subcategory.",
     "formulaB": "B) Category score (External/Internal) = SUM(subcategory score x subcategory weight).",
     "formulaC": "C) Overall score = (External score x External weight) + (Internal score x Internal weight).",
@@ -230,13 +245,23 @@
     "error": {
       "title": "User provisioning error",
       "generic": "Could not provision user",
+      "unauthorized": "Only admins can create users",
+      "invalidJson": "Invalid JSON body",
+      "invalidEmail": "Invalid email",
       "emailRequired": "Email is required",
       "facilityRequired": "Facility is required for producer role"
     },
     "emailPlaceholder": "producer@example.com"
   },
+  "locales": {
+    "en": "English",
+    "es": "Spanish",
+    "no": "Norwegian"
+  },
   "checklist": {
     "navigationHint": "Select a category to navigate to specific questions",
+    "questions": "questions",
+    "compliant": "compliant",
     "backToSections": "Back to top"
   },
   "table": {
@@ -295,7 +320,13 @@
   "errors": {
     "title": "Error",
     "unknown": "Unknown error",
-    "httpStatus": "Request failed (HTTP {status})"
+    "httpStatus": "Request failed (HTTP {status})",
+    "missingUid": "Project UID is required",
+    "unauthorizedProject": "You are not authorized to query this project",
+    "missingToken": "KoboToolbox token is not configured",
+    "koboApiError": "Unable to load Kobo data",
+    "koboAssetApiError": "Unable to load Kobo form metadata",
+    "unexpected": "Unexpected error"
   },
   "meta": {
     "title": "Biosecurity Dashboard",

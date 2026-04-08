@@ -184,8 +184,8 @@ export type DashboardData = {
       responses: { response: string; score: number | null; recommendation?: string }[];
     }[];
     decisions: {
-      expertWeights: { status: string; description: string };
-      noScore: { status: string; description: string };
+      expertWeights: { status: string };
+      noScore: { status: string };
     };
   };
 };
@@ -639,7 +639,7 @@ function buildQuestionStatus(
     compliant,
     score: evaluation.score,
     maxScore: evaluation.maxScore,
-    recommendation: !evaluation.applicable || compliant ? "-" : evaluation.recommendation ?? `Strengthen measure: ${idx.idToLabel[id] || id}`,
+    recommendation: !evaluation.applicable || compliant ? "" : evaluation.recommendation ?? "",
   };
 }
 
@@ -748,7 +748,7 @@ export function transformKoboData(raw: KoboApiResponse, asset?: KoboAssetRespons
 
     return {
       id: record._id,
-      name: getRaw(record, "Facility_Name", idx) || `Facility ${record._id}`,
+      name: getRaw(record, "Facility_Name", idx) || `#${record._id}`,
       location: cleanLabel(getRaw(record, "Location", idx)) || basedOn,
       species: speciesValues[0] || undefined,
       productionSystem: productionSystemValues[0] || undefined,
@@ -943,11 +943,9 @@ export function transformKoboData(raw: KoboApiResponse, asset?: KoboAssetRespons
       decisions: {
         expertWeights: {
           status: SCORING_POLICY.expertWeightsDecision.status,
-          description: SCORING_POLICY.expertWeightsDecision.description,
         },
         noScore: {
           status: SCORING_POLICY.noScoreDecision.status,
-          description: SCORING_POLICY.noScoreDecision.description,
         },
       },
     },

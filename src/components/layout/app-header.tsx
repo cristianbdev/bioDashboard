@@ -28,6 +28,18 @@ const ROLE_BADGE_STYLE: Record<AppRole, string> = {
   public: "border-[var(--color-muted)]/30 bg-[var(--color-muted)]/10 text-[var(--color-muted)]",
 };
 
+const ROLE_LABEL_KEYS = {
+  admin: "role.admin",
+  producer: "role.producer",
+  public: "role.public",
+} as const;
+
+const LOCALE_LABEL_KEYS = {
+  en: "locales.en",
+  es: "locales.es",
+  no: "locales.no",
+} as const;
+
 export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoading, onOpenNav }: AppHeaderProps) {
   const locale = useLocale();
   const t = useTranslations();
@@ -60,7 +72,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             </p>
           </div>
           <Badge variant="outline" className={cn("shrink-0 text-xs font-medium", ROLE_BADGE_STYLE[role])}>
-            {t(`role.${role}` as never)}
+            {t(ROLE_LABEL_KEYS[role])}
           </Badge>
         </div>
 
@@ -85,7 +97,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             <SelectContent position="popper" sideOffset={4} align="end" avoidCollisions>
               {routing.locales.map((entry) => (
                 <SelectItem key={entry} value={entry} className="uppercase">
-                  {entry}
+                  {t(LOCALE_LABEL_KEYS[entry])}
                 </SelectItem>
               ))}
             </SelectContent>
