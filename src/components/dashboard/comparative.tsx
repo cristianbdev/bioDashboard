@@ -1,9 +1,16 @@
+"use client";
+
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Filter, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { BottomSheet } from "@/components/layout/bottom-sheet";
+
 import {
   ChartCard,
   CHART_TOOLTIP_CURSOR,
@@ -15,6 +22,7 @@ import { EmptyChartState } from "@/components/charts/empty-chart-state";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
+import { DesktopFloatingFilter } from "./desktop-floating-filter";
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
 
@@ -130,6 +138,29 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
   const [systemFilter, setSystemFilter] = useState<string>("all");
   const [speciesFilter, setSpeciesFilter] = useState<string>("all");
   const [waterSourceFilter, setWaterSourceFilter] = useState<string>("all");
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [showFloatingFilters, setShowFloatingFilters] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingFilters(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "-50px 0px 0px 0px",
+      },
+    );
+
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
   const filteredFacilities = useMemo(() => {
     return data.facilities.filter((facility) => {
       const facilityLocation = facility.basedOn ?? facility.location;
@@ -170,111 +201,541 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
   const speciesOptions = data.operations.bySpecies.map((item) => item.species).filter(Boolean);
   const waterSourceOptions = data.operations.byWaterSource.map((item) => item.source).filter(Boolean);
 
+  const hasActiveFilters = locationFilter !== "all" || productionTypeFilter !== "all" || systemFilter !== "all" || speciesFilter !== "all" || waterSourceFilter !== "all";
+
+  const clearAllFilters = () => {
+    setLocationFilter("all");
+    setProductionTypeFilter("all");
+    setSystemFilter("all");
+    setSpeciesFilter("all");
+    setWaterSourceFilter("all");
+  };
+
   return (
     <div className="space-y-6 min-w-0">
-      <Card className="card-flat">
-        <CardHeader className="pb-2">
-          <InfoTitle title={t("comparative.filters")} info={t("info.comparativeFilters")} />
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <Select value={locationFilter} onValueChange={setLocationFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("overview.filterLocation")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {locationOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Section Header with Mobile Filter Button */}
+      <div ref={headerRef} className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
+        <div>
+          <h2 className="text-dashboard-title">{t("tabs.comparative")}</h2>
+          <p className="mt-1 text-dashboard-subtitle">{t("info.comparativeCharts")}</p>
+        </div>
+        {/* Mobile filter button removed - filters are now inline below */}
+      </div>
 
-          <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("table.productionType")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {productionTypeOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Mobile floating filter button - opens filter drawer when header not visible */}
+      <button
+        type="button"
+        onClick={() => setIsMobileFiltersOpen(true)}
+        className={`lg:hidden fixed right-4 z-40 flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg transition-all duration-300 ${
+          showFloatingFilters ? "bottom-6 translate-y-0 opacity-100" : "bottom-6 pointer-events-none translate-y-4 opacity-0"
+        }`}
+        aria-label={t("comparative.openFilters")}
+      >
+        <Filter className="h-4 w-4" />
+        <span className="text-sm font-medium">{t("comparative.filters")}</span>
+        {hasActiveFilters && (
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+            {[locationFilter, productionTypeFilter, systemFilter, speciesFilter, waterSourceFilter].filter((f) => f !== "all").length}
+          </span>
+        )}
+      </button>
 
-          <Select value={systemFilter} onValueChange={setSystemFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("table.system")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {systemOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Mobile Filters - Always visible on mobile (inline at top) */}
+      <div className="lg:hidden">
+        <Card className="card-flat">
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
+              <Filter className="h-4 w-4" />
+              <span>{t("comparative.filters")}</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {/* Location Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("overview.filterLocation")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {locationOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("table.species")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {speciesOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              {/* Production Type Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</label>
+                <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.productionType")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {productionTypeOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("table.water")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-              {waterSourceOptions.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+              {/* System Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</label>
+                <Select value={systemFilter} onValueChange={setSystemFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.system")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {systemOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Species Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</label>
+                <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.species")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {speciesOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Water Source Filter */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</label>
+                <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.water")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {waterSourceOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Active Filters Summary */}
+            {hasActiveFilters && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-3">
+                {locationFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("overview.filterLocation")}: {locationFilter}
+                    <button onClick={() => setLocationFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {productionTypeFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.productionType")}: {productionTypeFilter}
+                    <button onClick={() => setProductionTypeFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {systemFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.system")}: {systemFilter}
+                    <button onClick={() => setSystemFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {speciesFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.species")}: {speciesFilter}
+                    <button onClick={() => setSpeciesFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {waterSourceFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.water")}: {waterSourceFilter}
+                    <button onClick={() => setWaterSourceFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-xs text-[var(--color-brand)]"
+                  onClick={clearAllFilters}
+                >
+                  {t("overview.clearAll")}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Desktop Filters - Always visible on desktop */}
+      <div className="hidden lg:block">
+        <Card className="card-flat">
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
+              <Filter className="h-4 w-4" />
+              <span>{t("comparative.filters")}</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {/* Location Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("overview.filterLocation")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {locationOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Production Type Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</label>
+                <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.productionType")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {productionTypeOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* System Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</label>
+                <Select value={systemFilter} onValueChange={setSystemFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.system")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {systemOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Species Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</label>
+                <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.species")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {speciesOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Water Source Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</label>
+                <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectValue placeholder={t("table.water")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                    {waterSourceOptions.map((value) => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Active Filters Summary */}
+            {hasActiveFilters && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-3">
+                {locationFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("overview.filterLocation")}: {locationFilter}
+                    <button onClick={() => setLocationFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {productionTypeFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.productionType")}: {productionTypeFilter}
+                    <button onClick={() => setProductionTypeFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {systemFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.system")}: {systemFilter}
+                    <button onClick={() => setSystemFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {speciesFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.species")}: {speciesFilter}
+                    <button onClick={() => setSpeciesFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {waterSourceFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    {t("table.water")}: {waterSourceFilter}
+                    <button onClick={() => setWaterSourceFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-xs text-[var(--color-brand)]"
+                  onClick={clearAllFilters}
+                >
+                  {t("overview.clearAll")}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mobile Filters Bottom Sheet */}
+      <BottomSheet
+        isOpen={isMobileFiltersOpen}
+        onClose={() => setIsMobileFiltersOpen(false)}
+        title={t("comparative.filters")}
+        closeLabel={t("navigation.closeMenu")}
+      >
+        <div className="space-y-4">
+          {/* Location Filter */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</p>
+            <Select value={locationFilter} onValueChange={setLocationFilter}>
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                {locationOptions.map((value) => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Production Type Filter */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</p>
+            <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                {productionTypeOptions.map((value) => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* System Filter */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</p>
+            <Select value={systemFilter} onValueChange={setSystemFilter}>
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                {systemOptions.map((value) => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Species Filter */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</p>
+            <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                {speciesOptions.map((value) => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Water Source Filter */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</p>
+            <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
+                {waterSourceOptions.map((value) => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Active filters summary */}
+          {hasActiveFilters && (
+            <div className="border-t border-[var(--color-border-subtle)] pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{t("overview.activeFilters")}</p>
+              <div className="flex flex-wrap gap-2">
+                {locationFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
+                    {t("overview.filterLocation")}: {locationFilter}
+                    <button onClick={() => setLocationFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {productionTypeFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
+                    {t("table.productionType")}: {productionTypeFilter}
+                    <button onClick={() => setProductionTypeFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {systemFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
+                    {t("table.system")}: {systemFilter}
+                    <button onClick={() => setSystemFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {speciesFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
+                    {t("table.species")}: {speciesFilter}
+                    <button onClick={() => setSpeciesFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {waterSourceFilter !== "all" && (
+                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
+                    {t("table.water")}: {waterSourceFilter}
+                    <button onClick={() => setWaterSourceFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={clearAllFilters}
+                className="mt-3 text-xs text-[var(--color-brand)]"
+              >
+                {t("overview.clearAll")}
+              </Button>
+            </div>
+          )}
+        </div>
+      </BottomSheet>
+
+      <DesktopFloatingFilter
+        isVisible={showFloatingFilters}
+        filters={[
+          { label: t("overview.filterLocation"), activeValue: locationFilter, allValue: "all", onClear: () => setLocationFilter("all") },
+          { label: t("table.productionType"), activeValue: productionTypeFilter, allValue: "all", onClear: () => setProductionTypeFilter("all") },
+          { label: t("table.system"), activeValue: systemFilter, allValue: "all", onClear: () => setSystemFilter("all") },
+          { label: t("table.species"), activeValue: speciesFilter, allValue: "all", onClear: () => setSpeciesFilter("all") },
+          { label: t("table.water"), activeValue: waterSourceFilter, allValue: "all", onClear: () => setWaterSourceFilter("all") },
+        ]}
+        selectControls={[
+          { id: "location", value: locationFilter, options: locationOptions, placeholder: t("overview.filterLocation"), onChange: setLocationFilter },
+          { id: "productionType", value: productionTypeFilter, options: productionTypeOptions, placeholder: t("table.productionType"), onChange: setProductionTypeFilter },
+          { id: "system", value: systemFilter, options: systemOptions, placeholder: t("table.system"), onChange: setSystemFilter },
+          { id: "species", value: speciesFilter, options: speciesOptions, placeholder: t("table.species"), onChange: setSpeciesFilter },
+          { id: "waterSource", value: waterSourceFilter, options: waterSourceOptions, placeholder: t("table.water"), onChange: setWaterSourceFilter },
+        ]}
+        onClearAll={clearAllFilters}
+        activeCount={[locationFilter, productionTypeFilter, systemFilter, speciesFilter, waterSourceFilter].filter((f) => f !== "all").length}
+        labels={{
+          title: t("comparative.filters"),
+          openButton: t("comparative.filters"),
+          openButtonAria: t("comparative.openFilters"),
+          activeFilters: t("overview.activeFilters"),
+          filterAll: t("overview.filterAll"),
+          close: t("navigation.closeMenu"),
+          clearAll: t("overview.clearAll"),
+        }}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)} ariaLabel={`${t("comparative.scoreBySystem")}. ${charts.bySystem.length} groups.`}>
+        <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)} ariaLabel={`${t("comparative.scoreBySystem")}. ${charts.bySystem.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)} ariaLabel={`${t("comparative.scoreByProductionType")}. ${charts.byProductionType.length} groups.`}>
+        <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)} ariaLabel={`${t("comparative.scoreByProductionType")}. ${charts.byProductionType.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} groups.`}>
+        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} groups.`}>
+        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
-        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} groups.`}>
+        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} groups.`}>
+        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" />
         </ChartCard>
-        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} groups.`}>
+        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} ${t("comparative.groupsAriaSuffix")}`}>
           <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" />
         </ChartCard>
       </div>
@@ -287,7 +748,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </CardHeader>
           <CardContent className="h-[460px]">
             {externalHeatmap ? (
-              <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. Heatmap of facilities by subcategory.`} className="h-full w-full">
+              <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
                 <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
               </div>
             ) : (
@@ -303,7 +764,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </CardHeader>
           <CardContent className="h-[460px]">
             {internalHeatmap ? (
-              <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. Heatmap of facilities by subcategory.`} className="h-full w-full">
+              <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
                 <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
               </div>
             ) : (

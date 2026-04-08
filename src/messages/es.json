@@ -1,0 +1,304 @@
+{
+  "header": {
+    "title": "Tablero de Bioseguridad",
+    "subtitle": "Monitoreo de bioseguridad acuícola",
+    "lastUpdated": "Última actualización"
+  },
+  "actions": {
+    "refresh": "Actualizar",
+    "load": "Cargar",
+    "demo": "UID por defecto",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "show": "Mostrar",
+    "hide": "Ocultar"
+  },
+  "tabs": {
+    "overview": "Resumen",
+    "facilities": "Instalaciones",
+    "comparative": "Comparativo",
+    "methodology": "Metodología",
+    "users": "Usuarios",
+    "risk": "Riesgo",
+    "practices": "Prácticas",
+    "operational": "Operativo",
+    "facilitiesSelect": "Seleccionar instalación"
+  },
+  "datasource": {
+    "title": "Fuente de datos",
+    "subtitle": "UID de KoboToolbox",
+    "lockedByRole": "Tu rol solo puede consultar el UID asignado o el UID por defecto.",
+    "projectUidPlaceholder": "UID del proyecto",
+    "locked": "Bloqueado"
+  },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signUp": "Crear cuenta"
+  },
+  "role": {
+    "public": "Público",
+    "producer": "Productor",
+    "admin": "Administrador"
+  },
+  "producer": {
+    "myFacility": "Mi instalación",
+    "myFacilityShort": "Mi predio",
+    "globalOverview": "Resumen global"
+  },
+  "theme": {
+    "toggle": "Cambiar tema",
+    "dark": "Oscuro",
+    "light": "Claro"
+  },
+  "overview": {
+    "filters": "Filtros del resumen",
+    "filterAll": "Todos",
+    "filterSpecies": "Especie",
+    "filterSystem": "Sistema productivo",
+    "filterLocation": "Ubicación del predio",
+    "clearAll": "Limpiar filtros",
+    "external": "Bioseguridad externa",
+    "internal": "Bioseguridad interna",
+    "subtitle": "Resumen global de bioseguridad y analítica para todas las instalaciones registradas.",
+    "openFilters": "Abrir filtros",
+    "activeFilters": "Filtros activos"
+  },
+  "metrics": {
+    "total": {
+      "title": "Total de instalaciones",
+      "subtitle": "Registros filtrados"
+    },
+    "avg": {
+      "title": "Puntaje promedio",
+      "subtitle": {
+        "good": "Aceptable",
+        "bad": "Requiere mejora"
+      }
+    },
+    "high": {
+      "title": "Riesgo alto",
+      "subtitle": "Instalaciones en categoría alta"
+    },
+    "low": {
+      "title": "Riesgo bajo/despreciable",
+      "subtitle": "Instalaciones más seguras"
+    },
+    "medium": {
+      "title": "Riesgo medio"
+    }
+  },
+  "charts": {
+    "mapCoverage": "Mapa de cobertura geográfica",
+    "mapCoverageSubtitle": "Coordenadas reportadas por instalaciones",
+    "practiceCoverage": "Cobertura de prácticas (prácticas clave de bioseguridad)",
+    "externalInternalCompliance": "Cumplimiento externo vs interno",
+    "scoreDistribution": "Distribución de puntajes",
+    "sectionDetail": "Detalle por sección",
+    "highRiskFactors": "Factores de riesgo alto",
+    "positiveFactors": "Prácticas positivas",
+    "waterMonitoring": "Frecuencia de monitoreo de agua",
+    "mortalityDisposal": "Disposición de mortalidades",
+    "intakeWaterTreatmentApplied": "Tratamiento aplicado al agua de ingreso",
+    "waterParametersMeasured": "Parámetros de agua medidos",
+    "personalTraining": "Capacitación de personal",
+    "records": "Registros",
+    "sops": "POEs",
+    "noData": "No hay datos disponibles",
+    "tryFilters": "Ajusta los filtros o vuelve a intentarlo luego"
+  },
+  "map": {
+    "dark": "Oscuro",
+    "terrain": "Terreno",
+    "riskHigh": "Riesgo alto",
+    "riskMedium": "Riesgo medio",
+    "riskLow": "Riesgo bajo",
+    "riskNegligible": "Despreciable",
+    "fullscreen": "Pantalla completa",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "noGeo": "No hay instalaciones con datos de geolocalización"
+  },
+  "coverage": {
+    "quarantine": "Cuarentena al ingreso",
+    "biosecurityPlan": "Plan escrito de bioseguridad",
+    "noSharedEquipment": "No compartir equipos con otros predios",
+    "equipmentDisinfection": "Desinfección de equipos",
+    "waterTreatment": "Tratamiento de agua (si aplica)",
+    "biovectorInspection": "Inspección de biovectores"
+  },
+  "facilities": {
+    "information": "Información del predio",
+    "quickInfo": "Información rápida",
+    "scoreBySection": "Puntaje por sección",
+    "benchmark": "Comparación vs. promedio",
+    "keyPractices": "Prácticas clave de bioseguridad",
+    "animalHealthMonitoring": "Monitoreo de salud animal",
+    "subcategoryChecklist": "Lista de verificación de preguntas por subcategoría",
+    "networkAverage": "Promedio de la red",
+    "yearsOperation": "Tiempo de operación del predio",
+    "species": "Especie",
+    "waterSource": "Fuente de agua",
+    "waterMonitoring": "Monitoreo de agua",
+    "noData": "Sin datos",
+    "risks": {
+      "high": "Factores de riesgo alto",
+      "medium": "Factores de riesgo moderado",
+      "positive": "Prácticas positivas"
+    },
+    "riskAndSuggestions": "Riesgo y sugerencias",
+    "benchmarkAriaSuffix": "secciones comparadas con el promedio de la red.",
+    "selector": {
+      "show": "Mostrar selector",
+      "hide": "Ocultar selector",
+      "selected": "Predio seleccionado"
+    }
+  },
+  "comparative": {
+    "filters": "Filtros comparativos",
+    "openFilters": "Abrir filtros",
+    "scoreBySystem": "Puntaje por sistema productivo",
+    "scoreByProductionType": "Puntaje por tipo de producción",
+    "scoreByEducation": "Puntaje por educación",
+    "scoreByMarket": "Puntaje por mercado",
+    "scoreByYears": "Puntaje por años de operación",
+    "scoreBySpecies": "Puntaje por especie",
+    "scoreByWater": "Puntaje por fuente de agua",
+    "riskMatrixExternal": "Matriz de riesgo - subcategorías externas",
+    "riskMatrixInternal": "Matriz de riesgo - subcategorías internas",
+    "riskMatrixLegend": "Verde = medida aplicada, Rojo = riesgo",
+    "tableTitle": "Tabla comparativa",
+    "groupsAriaSuffix": "grupos.",
+    "heatmapAriaSuffix": "Mapa de calor de instalaciones por subcategoría."
+  },
+  "info": {
+    "overviewFilters": "Filtra el resumen por especie, sistema productivo y ubicación.",
+    "mapCoverage": "Mapa de países/regiones con base en coordenadas reportadas.",
+    "practiceCoverage": "Tasa de adopción de prácticas clave de bioseguridad.",
+    "externalInternalCompliance": "Promedio de cumplimiento en medidas externas e internas.",
+    "scoreDistribution": "Distribución de puntajes en rangos fijos.",
+    "sectionDetail": "Puntaje promedio por subcategoría.",
+    "topRiskFactors": "Factores de alto riesgo y prácticas positivas más frecuentes.",
+    "waterMonitoring": "Frecuencia reportada para monitoreo de agua.",
+    "mortalityDisposal": "Métodos reportados para disposición de mortalidades.",
+    "intakeWaterTreatmentApplied": "Tratamientos reportados para agua de entrada.",
+    "waterParametersMeasured": "Parámetros medidos en controles de calidad de agua.",
+    "personalTraining": "Temas incluidos en capacitación del personal.",
+    "records": "Tipos de registros disponibles por predio.",
+    "sops": "Cobertura de POEs reportada por instalaciones.",
+    "facilityDiagnostics": "Información clave de la instalación seleccionada.",
+    "facilityBenchmark": "Comparación del predio frente al promedio por subcategoría.",
+    "animalHealthMonitoring": "Frecuencia de monitoreo de comportamiento, necropsias y diagnósticos.",
+    "subcategoryChecklist": "Preguntas incluidas por subcategoría con estado de cumplimiento.",
+    "comparativeCharts": "Puntaje promedio agrupado por categoría.",
+    "comparativeFilters": "Filtra matrices, gráficos y tabla por atributos operativos.",
+    "riskMatrix": "El rojo indica riesgo de introducción/dispersión de enfermedades.",
+    "table": "Comparación de instalaciones para los filtros aplicados."
+  },
+  "methodology": {
+    "title": "Metodología de puntaje",
+    "subtitle": "Modelo formal de cálculo basado en la definición del instrumento.",
+    "info": "Esta vista documenta cómo se calcula el puntaje a partir de las respuestas.",
+    "formulaA": "A) Puntaje de subcategoría = SUM(puntaje de respuesta x peso de pregunta) / puntaje máximo posible de la subcategoría.",
+    "formulaB": "B) Puntaje de categoría (Externa/Interna) = SUM(puntaje de subcategoría x peso de subcategoría).",
+    "formulaC": "C) Puntaje global = (puntaje externo x peso externo) + (puntaje interno x peso interno).",
+    "sideWeights": "Pesos por categoría principal",
+    "subcategoryWeights": "Pesos por subcategoría",
+    "subcategoryWeightsInfo": "Pesos usados en la agregación por categoría.",
+    "rulesTitle": "Reglas Pregunta-Respuesta",
+    "rulesSubtitle": "Cada fila indica el puntaje asignado a cada opción de respuesta.",
+    "rulesInfo": "Reglas importadas desde el archivo de modelo de scoring del proyecto.",
+    "mainScore": "Puntaje principal",
+    "expertWeightsDecision": "Decisión de pesos de expertos",
+    "noScoreDecision": "Decisión de política de no puntaje",
+    "noResponseRules": "No hay reglas explícitas de puntaje por respuesta."
+  },
+  "users": {
+    "title": "Provisionamiento de usuarios",
+    "subtitle": "Crea y actualiza usuarios administrador/productor con rol y asociación a instalación.",
+    "email": "Correo",
+    "role": "Rol",
+    "facility": "Instalación",
+    "facilityPlaceholder": "Selecciona una instalación",
+    "password": "Contraseña por defecto",
+    "passwordPolicyHint": "Patrón de contraseña: correo + .bioDash",
+    "create": "Crear o actualizar usuario",
+    "creating": "Creando...",
+    "success": {
+      "title": "Usuario guardado",
+      "message": "Usuario creado/actualizado"
+    },
+    "error": {
+      "title": "Error al provisionar usuario",
+      "generic": "No se pudo provisionar el usuario",
+      "emailRequired": "El correo es obligatorio",
+      "facilityRequired": "La instalación es obligatoria para el rol productor"
+    },
+    "emailPlaceholder": "productor@ejemplo.com"
+  },
+  "checklist": {
+    "navigationHint": "Seleccione una categoría para navegar a preguntas específicas",
+    "backToSections": "Volver arriba"
+  },
+  "table": {
+    "facility": "Instalación",
+    "facilities": "Instalaciones",
+    "section": "Sección",
+    "side": "Dimensión",
+    "score": "Puntaje",
+    "risk": "Riesgo",
+    "weight": "Peso",
+    "system": "Sistema",
+    "species": "Especie",
+    "productionType": "Tipo de producción",
+    "facilityLocation": "Ubicación del predio",
+    "water": "Fuente de agua",
+    "question": "Pregunta",
+    "answer": "Respuesta",
+    "status": "Estado",
+    "recommendation": "Recomendación"
+  },
+  "risk": {
+    "negligible": "Despreciable",
+    "low": "Bajo",
+    "medium": "Medio",
+    "high": "Alto"
+  },
+  "status": {
+    "yes": "Sí",
+    "no": "No",
+    "notApplicable": "No aplica",
+    "compliant": "Cumple",
+    "nonCompliant": "No cumple"
+  },
+  "footer": {
+    "developed": "Desarrollado por y propiedad de",
+    "usage": "Uso autorizado exclusivamente para el Instituto Veterinario Noruego con fines de investigación.",
+    "inquiries": "Consultas",
+    "copyright": "Todos los derechos reservados.",
+    "links": {
+      "title": "Recursos",
+      "methodology": "Metodología",
+      "contact": "Soporte",
+      "terms": "Términos de uso"
+    }
+  },
+  "navigation": {
+    "title": "Navegación",
+    "openMenu": "Abrir menú de navegación",
+    "closeMenu": "Cerrar menú de navegación",
+    "groupMain": "Principal",
+    "groupAnalysis": "Análisis",
+    "groupAdmin": "Administración",
+    "collapse": "Colapsar barra lateral",
+    "expandSidebar": "Expandir barra lateral"
+  },
+  "errors": {
+    "title": "Error",
+    "unknown": "Error desconocido",
+    "httpStatus": "Error de solicitud (HTTP {status})"
+  },
+  "meta": {
+    "title": "Tablero de Bioseguridad",
+    "description": "Tablero para visualizar resultados de bioseguridad acuícola desde KoboToolbox."
+  }
+}

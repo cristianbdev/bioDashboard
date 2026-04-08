@@ -76,14 +76,14 @@ export function ChartCard({
   ariaLabel,
 }: ChartCardProps) {
   return (
-    <Card className={cn("card-flat", className)}>
+    <Card className={cn("card-flat min-w-0", className)}>
       <CardHeader className="border-b border-[var(--color-border-subtle)] pb-3">
         <div className="flex items-center justify-between gap-3">
           <InfoTitle title={title} info={info} />
           {icon ? <div className="text-[var(--color-text-secondary)]">{icon}</div> : null}
         </div>
       </CardHeader>
-      <CardContent className={cn("p-3 sm:p-4 lg:p-5", contentClassName)}>
+      <CardContent className={cn("min-w-0 p-3 sm:p-4 lg:p-5", contentClassName)}>
         <div className={cn("chart-container", HEIGHT_CLASSES[height])} role={ariaLabel ? "img" : undefined} aria-label={ariaLabel}>
           {children}
         </div>

@@ -9,10 +9,11 @@ type BottomSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  closeLabel?: string;
   children: React.ReactNode;
 };
 
-export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({ isOpen, onClose, title, closeLabel, children }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -42,7 +43,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center md:hidden"
+      className="fixed inset-0 z-50 md:hidden"
       onClick={handleBackdropClick}
       aria-modal="true"
       role="dialog"
@@ -55,9 +56,10 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
       <div
         ref={sheetRef}
         className={cn(
-          "relative w-full max-w-lg rounded-t-2xl bg-white shadow-xl",
+          "fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white shadow-xl",
           "max-h-[85vh] overflow-y-auto",
           "animate-in slide-in-from-bottom-full duration-300",
+          "md:left-auto md:right-auto md:w-full md:max-w-lg md:mx-auto",
         )}
       >
         {/* Handle */}
@@ -77,7 +79,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
             size="icon"
             onClick={onClose}
             className="h-11 w-11 -mr-2 text-[var(--color-text-secondary)] sm:h-8 sm:w-8"
-            aria-label="Close navigation"
+            aria-label={closeLabel ?? "Close"}
           >
             <X className="h-5 w-5" />
           </Button>

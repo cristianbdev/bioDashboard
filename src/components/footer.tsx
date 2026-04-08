@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useLocaleContext } from "@/context/LocaleContext";
-import { t } from "@/lib/i18n";
+import { useTranslations } from "next-intl";
 
 export function Footer() {
-  const { locale } = useLocaleContext();
+  const t = useTranslations();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -28,11 +27,11 @@ export function Footer() {
           {/* Center: Authorization text */}
           <div className="flex-1 text-center text-xs leading-relaxed text-[var(--color-text-secondary)]">
             <p>
-              Developed by and property of{" "}
+              {t("footer.developed")}{" "}
               <span className="font-medium text-[var(--color-text-primary)]">CristianBDev</span>.
             </p>
             <p className="mt-0.5">
-              Authorized exclusively for the Norwegian Veterinary Institute for research purposes.
+              {t("footer.usage")}
             </p>
           </div>
 
@@ -60,11 +59,11 @@ export function Footer() {
           />
           <div className="text-center text-[11px] leading-relaxed text-[var(--color-text-secondary)]">
             <p>
-              Developed by and property of{" "}
+              {t("footer.developed")}{" "}
               <span className="font-medium text-[var(--color-text-primary)]">CristianBDev</span>.
             </p>
             <p className="mt-0.5">
-              Authorized exclusively for the Norwegian Veterinary Institute for research purposes.
+              {t("footer.usage")}
             </p>
           </div>
           <div className="text-center text-[11px] text-[var(--color-text-muted)]">

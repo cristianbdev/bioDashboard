@@ -1,0 +1,304 @@
+{
+  "header": {
+    "title": "Biosecurity Dashboard",
+    "subtitle": "Aquaculture biosecurity monitoring",
+    "lastUpdated": "Last updated"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "load": "Load",
+    "demo": "Default UID",
+    "close": "Close",
+    "search": "Search",
+    "show": "Show",
+    "hide": "Hide"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "facilities": "Facilities",
+    "comparative": "Comparative",
+    "methodology": "Methodology",
+    "users": "Users",
+    "risk": "Risk",
+    "practices": "Practices",
+    "operational": "Operational",
+    "facilitiesSelect": "Select facility"
+  },
+  "datasource": {
+    "title": "Data source",
+    "subtitle": "KoboToolbox UID",
+    "lockedByRole": "Your role can only query the assigned/default project UID.",
+    "projectUidPlaceholder": "Project UID",
+    "locked": "Locked"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up"
+  },
+  "role": {
+    "public": "Public",
+    "producer": "Producer",
+    "admin": "Admin"
+  },
+  "producer": {
+    "myFacility": "My Facility",
+    "myFacilityShort": "Facility",
+    "globalOverview": "Overview (Global)"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "overview": {
+    "filters": "Overview filters",
+    "filterAll": "All",
+    "filterSpecies": "Species",
+    "filterSystem": "Production system",
+    "filterLocation": "Facility location",
+    "clearAll": "Clear all",
+    "external": "External biosecurity",
+    "internal": "Internal biosecurity",
+    "subtitle": "Global biosecurity overview and analytics for all registered facilities.",
+    "openFilters": "Open filters",
+    "activeFilters": "Active filters"
+  },
+  "metrics": {
+    "total": {
+      "title": "Total Facilities",
+      "subtitle": "Filtered records"
+    },
+    "avg": {
+      "title": "Average Score",
+      "subtitle": {
+        "good": "Acceptable",
+        "bad": "Needs improvement"
+      }
+    },
+    "high": {
+      "title": "High Risk",
+      "subtitle": "Facilities in high category"
+    },
+    "low": {
+      "title": "Low/Negligible Risk",
+      "subtitle": "Safer facilities"
+    },
+    "medium": {
+      "title": "Medium Risk"
+    }
+  },
+  "charts": {
+    "mapCoverage": "Geographic Coverage Map",
+    "mapCoverageSubtitle": "Coordinates reported by facilities",
+    "practiceCoverage": "Practice Coverage (Key Biosecurity Practices)",
+    "externalInternalCompliance": "External vs Internal Compliance",
+    "scoreDistribution": "Score Distribution",
+    "sectionDetail": "Section Detail",
+    "highRiskFactors": "High Risk Factors",
+    "positiveFactors": "Positive Practices",
+    "waterMonitoring": "Water Monitoring Frequency",
+    "mortalityDisposal": "Mortality Disposal",
+    "intakeWaterTreatmentApplied": "Intake Water Treatment Applied",
+    "waterParametersMeasured": "Water Parameters Measured",
+    "personalTraining": "Personnel Training",
+    "records": "Records",
+    "sops": "SOPs",
+    "noData": "No data available",
+    "tryFilters": "Adjust your filters or check back later"
+  },
+  "map": {
+    "dark": "Dark",
+    "terrain": "Terrain",
+    "riskHigh": "High Risk",
+    "riskMedium": "Medium Risk",
+    "riskLow": "Low Risk",
+    "riskNegligible": "Negligible",
+    "fullscreen": "Fullscreen",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "noGeo": "No facilities with geolocation data"
+  },
+  "coverage": {
+    "quarantine": "Quarantine on arrival",
+    "biosecurityPlan": "Written biosecurity plan",
+    "noSharedEquipment": "No shared equipment with other farms",
+    "equipmentDisinfection": "Equipment disinfection",
+    "waterTreatment": "Treatment of water (if applicable)",
+    "biovectorInspection": "Inspection of biovectors"
+  },
+  "facilities": {
+    "information": "Facility information",
+    "quickInfo": "Quick info",
+    "scoreBySection": "Section Score",
+    "benchmark": "Benchmark vs average",
+    "keyPractices": "Key Biosecurity Practices",
+    "animalHealthMonitoring": "Animal Health Monitoring",
+    "subcategoryChecklist": "Question Checklist by Subcategory",
+    "networkAverage": "Network average",
+    "yearsOperation": "How long has the facility been in operation",
+    "species": "Species",
+    "waterSource": "Water source",
+    "waterMonitoring": "Water monitoring",
+    "noData": "No data",
+    "risks": {
+      "high": "High Risk Factors",
+      "medium": "Moderate Risk Factors",
+      "positive": "Positive Practices"
+    },
+    "riskAndSuggestions": "Risk & Suggestions",
+    "benchmarkAriaSuffix": "sections compared against the network average.",
+    "selector": {
+      "show": "Show selector",
+      "hide": "Hide selector",
+      "selected": "Selected facility"
+    }
+  },
+  "comparative": {
+    "filters": "Comparative filters",
+    "openFilters": "Open filters",
+    "scoreBySystem": "Score by Production System",
+    "scoreByProductionType": "Score by Type of Production",
+    "scoreByEducation": "Score by Education",
+    "scoreByMarket": "Score by Market",
+    "scoreByYears": "Score by Years of Operation",
+    "scoreBySpecies": "Score by Species",
+    "scoreByWater": "Score by Water Source",
+    "riskMatrixExternal": "Risk Matrix - External Subcategories",
+    "riskMatrixInternal": "Risk Matrix - Internal Subcategories",
+    "riskMatrixLegend": "Green = biosecurity measure applied, Red = risk",
+    "tableTitle": "Comparative Table",
+    "groupsAriaSuffix": "groups.",
+    "heatmapAriaSuffix": "Heatmap of facilities by subcategory."
+  },
+  "info": {
+    "overviewFilters": "Filter overview by species, production system and location.",
+    "mapCoverage": "Map of countries/regions based on facility coordinates.",
+    "practiceCoverage": "Adoption rate of key biosecurity practices.",
+    "externalInternalCompliance": "Average compliance score split by external and internal measures.",
+    "scoreDistribution": "Distribution of overall scores in fixed ranges.",
+    "sectionDetail": "Average score per subcategory.",
+    "topRiskFactors": "Most frequent high-risk and positive factors.",
+    "waterMonitoring": "Reported frequency of water monitoring.",
+    "mortalityDisposal": "Reported mortality disposal methods.",
+    "intakeWaterTreatmentApplied": "Reported intake water treatment approaches.",
+    "waterParametersMeasured": "Parameters monitored in water quality checks.",
+    "personalTraining": "Topics covered in personnel training.",
+    "records": "Types of records available in facilities.",
+    "sops": "SOP coverage reported by facilities.",
+    "facilityDiagnostics": "Core information for the selected facility.",
+    "facilityBenchmark": "Facility score compared to network average by subcategory.",
+    "animalHealthMonitoring": "Monitoring frequency for behaviour, necropsy and diagnostics.",
+    "subcategoryChecklist": "Questions included per subcategory with compliance status.",
+    "comparativeCharts": "Average score grouped by selected category.",
+    "comparativeFilters": "Filter matrices, charts and table by operational attributes.",
+    "riskMatrix": "Red cells indicate risk of disease introduction/spread.",
+    "table": "Facility-level comparison for filtered records."
+  },
+  "methodology": {
+    "title": "Score Methodology",
+    "subtitle": "Formal scoring model derived from the instrument definition.",
+    "info": "This view documents how scores are computed from question-level responses.",
+    "formulaA": "A) Subcategory score = SUM(response score x question weight) / maximum possible score in the subcategory.",
+    "formulaB": "B) Category score (External/Internal) = SUM(subcategory score x subcategory weight).",
+    "formulaC": "C) Overall score = (External score x External weight) + (Internal score x Internal weight).",
+    "sideWeights": "Category side weights",
+    "subcategoryWeights": "Subcategory Weights",
+    "subcategoryWeightsInfo": "Weights used in the category-level aggregation step.",
+    "rulesTitle": "Question-Response Rules",
+    "rulesSubtitle": "Each row indicates the score assigned to each response option.",
+    "rulesInfo": "Rules imported from the project scoring model file.",
+    "mainScore": "Main score",
+    "expertWeightsDecision": "Expert weights decision",
+    "noScoreDecision": "No-score policy decision",
+    "noResponseRules": "No explicit response scoring rules."
+  },
+  "users": {
+    "title": "User provisioning",
+    "subtitle": "Create and update admin/producer users with role and facility association.",
+    "email": "Email",
+    "role": "Role",
+    "facility": "Facility",
+    "facilityPlaceholder": "Select facility",
+    "password": "Default password",
+    "passwordPolicyHint": "Password pattern: email + .bioDash",
+    "create": "Create or update user",
+    "creating": "Creating...",
+    "success": {
+      "title": "User saved",
+      "message": "User created/updated"
+    },
+    "error": {
+      "title": "User provisioning error",
+      "generic": "Could not provision user",
+      "emailRequired": "Email is required",
+      "facilityRequired": "Facility is required for producer role"
+    },
+    "emailPlaceholder": "producer@example.com"
+  },
+  "checklist": {
+    "navigationHint": "Select a category to navigate to specific questions",
+    "backToSections": "Back to top"
+  },
+  "table": {
+    "facility": "Facility",
+    "facilities": "Facilities",
+    "section": "Section",
+    "side": "Side",
+    "score": "Score",
+    "risk": "Risk",
+    "weight": "Weight",
+    "system": "System",
+    "species": "Species",
+    "productionType": "Type production",
+    "facilityLocation": "Facility located",
+    "water": "Water source",
+    "question": "Question",
+    "answer": "Answer",
+    "status": "Status",
+    "recommendation": "Recommendation"
+  },
+  "risk": {
+    "negligible": "Negligible",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "status": {
+    "yes": "Yes",
+    "no": "No",
+    "notApplicable": "N/A",
+    "compliant": "Compliant",
+    "nonCompliant": "Non-compliant"
+  },
+  "footer": {
+    "developed": "Developed by and property of",
+    "usage": "Authorized exclusively for the Norwegian Veterinary Institute for research purposes.",
+    "inquiries": "Inquiries",
+    "copyright": "All rights reserved.",
+    "links": {
+      "title": "Resources",
+      "methodology": "Methodology",
+      "contact": "Support",
+      "terms": "Terms of Use"
+    }
+  },
+  "navigation": {
+    "title": "Navigation",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "groupMain": "Main",
+    "groupAnalysis": "Analysis",
+    "groupAdmin": "Administration",
+    "collapse": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
+  },
+  "errors": {
+    "title": "Error",
+    "unknown": "Unknown error",
+    "httpStatus": "Request failed (HTTP {status})"
+  },
+  "meta": {
+    "title": "Biosecurity Dashboard",
+    "description": "Dashboard for visualizing aquaculture biosecurity results from KoboToolbox."
+  }
+}

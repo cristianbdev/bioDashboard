@@ -107,7 +107,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
               id="user-email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="producer@example.com"
+              placeholder={t("users.emailPlaceholder")}
               autoComplete="email"
             />
           </div>

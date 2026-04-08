@@ -5,7 +5,7 @@ import Map, { FullscreenControl, MapRef, Marker, NavigationControl, Popup, Scale
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 import Supercluster from "supercluster";
-import type { Locale } from "@/lib/i18n";
+import type { AppLocale } from "@/i18n/routing";
 import type { FacilitySummary } from "@/lib/kobo";
 import { cn } from "@/lib/utils";
 
@@ -17,18 +17,18 @@ type PointProperties = {
 type Props = {
   filteredFacilities: FacilitySummary[];
   t: (key: string) => string;
-  locale?: Locale;
+  locale?: AppLocale;
   className?: string;
 };
 
 const MAP_STYLES = {
-  cartoDark: {
-    url: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  dark: {
+    url: "https://tiles.openfreemap.org/styles/dark",
     key: "map.dark",
     icon: "🌙",
   },
-  stadiaOutdoors: {
-    url: "https://tiles.stadiamaps.com/styles/outdoors.json",
+  liberty: {
+    url: "https://tiles.openfreemap.org/styles/liberty",
     key: "map.terrain",
     icon: "🗻",
   },
@@ -55,7 +55,7 @@ function formatNumber(n: number): string {
 
 export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", className }: Props) {
   const mapRef = useRef<MapRef>(null);
-  const [mapStyle, setMapStyle] = useState<string>(MAP_STYLES.cartoDark.url);
+  const [mapStyle, setMapStyle] = useState<string>(MAP_STYLES.dark.url);
   const [selectedFacility, setSelectedFacility] = useState<FacilitySummary | null>(null);
   const [bounds, setBounds] = useState<[number, number, number, number]>([-180, -85, 180, 85]);
   const [zoom, setZoom] = useState(4);
@@ -319,7 +319,7 @@ function FacilityPopup({
   facility: FacilitySummary;
   onClose: () => void;
   t: (key: string) => string;
-  locale: Locale;
+  locale: AppLocale;
 }) {
   const color = markerColorByRisk(facility.riskLevel);
   const Icon = facility.riskLevel === "HIGH" ? AlertTriangle : facility.riskLevel === "LOW" || facility.riskLevel === "NEGLIGIBLE" ? CheckCircle : Info;
@@ -333,7 +333,7 @@ function FacilityPopup({
           onClose();
         }}
         className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]"
-        aria-label="Close"
+        aria-label={t("actions.close")}
       >
         ×
       </button>

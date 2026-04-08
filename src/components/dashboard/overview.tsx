@@ -1,29 +1,39 @@
-import { useMemo, useState } from "react";
+"use client";
+
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { BarChart3, ClipboardList, DoorOpen, Droplets, Filter, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
+import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
 import { MapLibreFacilitiesMap } from "./MapLibreFacilitiesMap";
 import { CoveragePill, MetricCard } from "./cards";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  ChartCard,
-  CHART_TOOLTIP_CURSOR,
-  CHART_TOOLTIP_STYLE,
-  getAdaptiveChartHeight,
-  getAdaptiveVerticalBarLayout,
-  truncateChartLabel,
-  type ChartCardHeight,
-} from "@/components/charts/chart-card";
+import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
 import { EmptyChartState } from "@/components/charts/empty-chart-state";
-import { useLocaleContext } from "@/context/LocaleContext";
+import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { FloatingFilters } from "./floating-filters";
+import { BottomSheet } from "@/components/layout/bottom-sheet";
+
+export type FilterState = {
+  speciesFilter: string;
+  systemFilter: string;
+  locationFilter: string;
+  setSpeciesFilter: (value: string) => void;
+  setSystemFilter: (value: string) => void;
+  setLocationFilter: (value: string) => void;
+  hasActiveFilters: boolean;
+  clearAllFilters: () => void;
+  speciesOptions: string[];
+  systemOptions: string[];
+  locationOptions: string[];
+};
 
 type Props = {
   data: DashboardData;
   t: (key: string) => string;
+  locale: AppLocale;
+  externalFilters?: FilterState;
 };
 
 const CHART_PALETTE = [
@@ -94,15 +104,80 @@ function riskLabelToBarColor(kind: "high" | "positive") {
   return kind === "high" ? "var(--color-danger)" : "var(--color-success)";
 }
 
-export function Overview({ data, t }: Props) {
-  const { locale } = useLocaleContext();
-
+export function useOverviewFilters(data: DashboardData): FilterState {
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const [systemFilter, setSystemFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const hasActiveFilters = speciesFilter !== "all" || systemFilter !== "all" || locationFilter !== "all";
+
+  const clearAllFilters = useCallback(() => {
+    setSpeciesFilter("all");
+    setSystemFilter("all");
+    setLocationFilter("all");
+  }, []);
+
+  const speciesOptions = useMemo(() => data.operations.bySpecies.map((item) => item.species).filter(Boolean), [data]);
+  const systemOptions = useMemo(() => data.operations.bySystem.map((item) => item.system).filter(Boolean), [data]);
+  const locationOptions = useMemo(() => data.operations.byLocation.map((item) => item.location).filter(Boolean), [data]);
+
+  return {
+    speciesFilter,
+    systemFilter,
+    locationFilter,
+    setSpeciesFilter,
+    setSystemFilter,
+    setLocationFilter,
+    hasActiveFilters,
+    clearAllFilters,
+    speciesOptions,
+    systemOptions,
+    locationOptions,
+  };
+}
+
+export function Overview({ data, t, locale, externalFilters }: Props) {
+  // Use external filters if provided (from parent), otherwise use internal state
+  const internalFilters = useOverviewFilters(data);
+  const filters = externalFilters ?? internalFilters;
+
+  const {
+    speciesFilter,
+    systemFilter,
+    locationFilter,
+    setSpeciesFilter,
+    setSystemFilter,
+    setLocationFilter,
+    hasActiveFilters,
+    clearAllFilters,
+    speciesOptions,
+    systemOptions,
+    locationOptions,
+  } = filters;
+
+  const [showDesktopFloating, setShowDesktopFloating] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  // Detect when header is not visible to show floating filter
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Show floating filter when header is not intersecting (not visible)
+        setShowDesktopFloating(!entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "-50px 0px 0px 0px", // Trigger when header is 50px above viewport
+      }
+    );
+
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
 
   const filteredFacilities = useMemo(() => {
     return data.facilities.filter((facility) => {
@@ -187,71 +262,30 @@ export function Overview({ data, t }: Props) {
     ? aggregateFactors(filteredFacilities, "positivePractices").slice(0, 5)
     : data.positivePractices.slice(0, 5);
 
-  const speciesOptions = data.operations.bySpecies.map((item) => item.species).filter(Boolean);
-  const systemOptions = data.operations.bySystem.map((item) => item.system).filter(Boolean);
-  const locationOptions = data.operations.byLocation.map((item) => item.location).filter(Boolean);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-8 pb-6">
-      {/* Section 1: Filters + KPIs */}
-      <section className="space-y-4">
+      {/* Section 1: Header + KPIs - This ref is used to detect scroll */}
+      <section ref={headerRef} className="space-y-4">
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
           <div>
             <h2 className="text-dashboard-title">{t("tabs.overview")}</h2>
-            <p className="mt-1 text-dashboard-subtitle">Global biosecurity overview and analytics for all registered facilities.</p>
+            <p className="mt-1 text-dashboard-subtitle">{t("overview.subtitle")}</p>
           </div>
-          {/* Desktop filters */}
-          <div className="hidden lg:block rounded-xl border-2 border-[var(--color-brand)]/20 bg-gradient-to-br from-white to-[var(--color-surface-base)] p-4 shadow-md">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
-              <Filter className="h-4 w-4" />
-              <span>{t("overview.filters") || "Filters"}</span>
-            </div>
-            <div className="grid gap-3 lg:grid-cols-3">
-              <FilterSelect value={speciesFilter} onChange={setSpeciesFilter} options={speciesOptions} placeholder={t("overview.filterSpecies")} label={t("overview.filterSpecies")} t={t} />
-              <FilterSelect value={systemFilter} onChange={setSystemFilter} options={systemOptions} placeholder={t("overview.filterSystem")} label={t("overview.filterSystem")} t={t} />
-              <FilterSelect value={locationFilter} onChange={setLocationFilter} options={locationOptions} placeholder={t("overview.filterLocation")} label={t("overview.filterLocation")} t={t} />
-            </div>
+          {/* Mobile floating filters button */}
+          <button
+            type="button"
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="lg:hidden flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg"
+          >
+            <span className="text-sm font-medium">{t("overview.filters")}</span>
             {hasActiveFilters && (
-              <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-2">
-                {speciesFilter !== "all" && <FilterPill label={`${t("overview.filterSpecies")}: ${speciesFilter}`} />}
-                {systemFilter !== "all" && <FilterPill label={`${t("overview.filterSystem")}: ${systemFilter}`} />}
-                {locationFilter !== "all" && <FilterPill label={`${t("overview.filterLocation")}: ${locationFilter}`} />}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 text-xs text-[var(--color-brand)]"
-                  onClick={() => { setSpeciesFilter("all"); setSystemFilter("all"); setLocationFilter("all"); }}
-                >
-                  {t("overview.clearAll")}
-                </Button>
-              </div>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+                {[speciesFilter, systemFilter, locationFilter].filter(f => f !== "all").length}
+              </span>
             )}
-          </div>
-          {/* Mobile floating filters */}
-          <FloatingFilters
-            isOpen={isFiltersOpen}
-            onOpen={() => setIsFiltersOpen(true)}
-            onClose={() => setIsFiltersOpen(false)}
-            filters={[
-              { label: t("overview.filterSpecies"), activeValue: speciesFilter, allValue: "all", onClear: () => setSpeciesFilter("all") },
-              { label: t("overview.filterSystem"), activeValue: systemFilter, allValue: "all", onClear: () => setSystemFilter("all") },
-              { label: t("overview.filterLocation"), activeValue: locationFilter, allValue: "all", onClear: () => setLocationFilter("all") },
-            ]}
-            onClearAll={() => { setSpeciesFilter("all"); setSystemFilter("all"); setLocationFilter("all"); }}
-            speciesFilter={speciesFilter}
-            systemFilter={systemFilter}
-            locationFilter={locationFilter}
-            speciesOptions={speciesOptions}
-            systemOptions={systemOptions}
-            locationOptions={locationOptions}
-            speciesPlaceholder={t("overview.filterSpecies")}
-            systemPlaceholder={t("overview.filterSystem")}
-            locationPlaceholder={t("overview.filterLocation")}
-            setSpeciesFilter={setSpeciesFilter}
-            setSystemFilter={setSystemFilter}
-            setLocationFilter={setLocationFilter}
-            t={t}
-          />
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -363,34 +397,84 @@ export function Overview({ data, t }: Props) {
           <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" t={t} />
         </div>
       </section>
-    </div>
-  );
-}
 
-function FilterSelect({ value, onChange, options, placeholder, label, t }: { value: string; onChange: (value: string) => void; options: string[]; placeholder: string; label: string; t: (key: string) => string }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</label>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-          {options.map((option) => (
-            <SelectItem key={option} value={option}>{option}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
+      {/* Mobile floating filter button - shown on scroll when header not visible */}
+      <button
+        type="button"
+        onClick={() => setIsMobileFiltersOpen(true)}
+        className={`lg:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg transition-all duration-300 ${
+          showDesktopFloating ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+        }`}
+        aria-label={t("overview.openFilters")}
+      >
+        <span className="text-sm font-medium">{t("overview.filters")}</span>
+        {hasActiveFilters && (
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+            {[speciesFilter, systemFilter, locationFilter].filter((f) => f !== "all").length}
+          </span>
+        )}
+      </button>
 
-function FilterPill({ label }: { label: string }) {
-  return (
-    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)]">
-      {label}
-    </Badge>
+
+      {/* Mobile Filters Bottom Sheet */}
+      <BottomSheet
+        isOpen={isMobileFiltersOpen}
+        onClose={() => setIsMobileFiltersOpen(false)}
+        title={t("overview.filters")}
+        closeLabel={t("navigation.closeMenu")}
+      >
+        <FloatingFilters
+          isOpen={isMobileFiltersOpen}
+          onOpen={() => setIsMobileFiltersOpen(true)}
+          onClose={() => setIsMobileFiltersOpen(false)}
+          filters={[
+            { label: t("overview.filterSpecies"), activeValue: speciesFilter, allValue: "all", onClear: () => setSpeciesFilter("all") },
+            { label: t("overview.filterSystem"), activeValue: systemFilter, allValue: "all", onClear: () => setSystemFilter("all") },
+            { label: t("overview.filterLocation"), activeValue: locationFilter, allValue: "all", onClear: () => setLocationFilter("all") },
+          ]}
+          onClearAll={clearAllFilters}
+          speciesFilter={speciesFilter}
+          systemFilter={systemFilter}
+          locationFilter={locationFilter}
+          speciesOptions={speciesOptions}
+          systemOptions={systemOptions}
+          locationOptions={locationOptions}
+          speciesPlaceholder={t("overview.filterSpecies")}
+          systemPlaceholder={t("overview.filterSystem")}
+          locationPlaceholder={t("overview.filterLocation")}
+          setSpeciesFilter={setSpeciesFilter}
+          setSystemFilter={setSystemFilter}
+          setLocationFilter={setLocationFilter}
+          t={t}
+        />
+      </BottomSheet>
+
+      {/* Desktop Floating Filter */}
+      <DesktopFloatingFilter
+        isVisible={showDesktopFloating}
+        filters={[
+          { label: t("overview.filterSpecies"), activeValue: speciesFilter, allValue: "all", onClear: () => setSpeciesFilter("all") },
+          { label: t("overview.filterSystem"), activeValue: systemFilter, allValue: "all", onClear: () => setSystemFilter("all") },
+          { label: t("overview.filterLocation"), activeValue: locationFilter, allValue: "all", onClear: () => setLocationFilter("all") },
+        ]}
+        selectControls={[
+          { id: "species", value: speciesFilter, options: speciesOptions, placeholder: t("overview.filterSpecies"), onChange: setSpeciesFilter },
+          { id: "system", value: systemFilter, options: systemOptions, placeholder: t("overview.filterSystem"), onChange: setSystemFilter },
+          { id: "location", value: locationFilter, options: locationOptions, placeholder: t("overview.filterLocation"), onChange: setLocationFilter },
+        ]}
+        onClearAll={clearAllFilters}
+        activeCount={[speciesFilter, systemFilter, locationFilter].filter((f) => f !== "all").length}
+        labels={{
+          title: t("overview.filters"),
+          openButton: t("overview.filters"),
+          openButtonAria: t("overview.openFilters"),
+          activeFilters: t("overview.activeFilters"),
+          filterAll: t("overview.filterAll"),
+          close: t("navigation.closeMenu"),
+          clearAll: t("overview.clearAll"),
+        }}
+      />
+    </div>
   );
 }
 
@@ -504,47 +588,51 @@ function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle }: { d
   const total = data.reduce((sum, item) => sum + Number(item[valueKey] ?? 0), 0);
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius="55%"
-            outerRadius="80%"
-            paddingAngle={2}
-            dataKey={valueKey}
-            nameKey={labelKey}
-            stroke="none"
-          >
-            {data.map((_, index) => (
-              <Cell key={index} fill={CHART_PALETTE[index % CHART_PALETTE.length]} />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={CHART_TOOLTIP_STYLE}
-            cursor={CHART_TOOLTIP_CURSOR}
-            formatter={(value, name) => {
-              const numericValue = typeof value === "number" ? value : Number(value ?? 0);
-              return [`${numericValue} (${((numericValue / total) * 100).toFixed(1)}%)`, String(name)] as [string, string];
-            }}
-          />
-          {/* Center label */}
-          <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-primary)]" fontSize={28} fontWeight={700}>
-            {total}
-          </text>
-          <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-secondary)]" fontSize={12}>
-            Total
-          </text>
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="flex h-full w-full flex-col">
+      {/* Chart area */}
+      <div className="flex-1 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius="55%"
+              outerRadius="75%"
+              paddingAngle={2}
+              dataKey={valueKey}
+              nameKey={labelKey}
+              stroke="none"
+            >
+              {data.map((_, index) => (
+                <Cell key={index} fill={CHART_PALETTE[index % CHART_PALETTE.length]} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={CHART_TOOLTIP_STYLE}
+              cursor={CHART_TOOLTIP_CURSOR}
+              formatter={(value, name) => {
+                const numericValue = typeof value === "number" ? value : Number(value ?? 0);
+                return [`${numericValue} (${((numericValue / total) * 100).toFixed(1)}%)`, String(name)] as [string, string];
+              }}
+            />
+            {/* Center label */}
+            <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-primary)]" fontSize={24} fontWeight={700}>
+              {total}
+            </text>
+            <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-secondary)]" fontSize={11}>
+              Total
+            </text>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
       {/* Legend below chart */}
-      <div className="absolute bottom-2 left-0 right-0 flex flex-wrap justify-center gap-3 px-4">
+      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 px-2 py-2 shrink-0">
         {data.map((item, index) => (
           <div key={index} className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: CHART_PALETTE[index % CHART_PALETTE.length] }} />
-            <span className="text-xs text-[var(--color-text-secondary)]">{String(item[labelKey])}</span>
+            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_PALETTE[index % CHART_PALETTE.length] }} />
+            <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">{String(item[labelKey])}</span>
           </div>
         ))}
       </div>

@@ -4,12 +4,14 @@ import { BarChart3, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FacilitiesView } from "@/components/dashboard/facilities";
 import { Overview } from "@/components/dashboard/overview";
+import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { cn } from "@/lib/utils";
 
 type ProducerLayoutProps = {
   data: DashboardData;
   t: (key: string) => string;
+  locale: AppLocale;
   activeTab: "overview" | "facilities" | "comparative" | "methodology" | "users";
   setActiveTab: (tab: "overview" | "facilities" | "comparative" | "methodology" | "users") => void;
   facilitiesForRole: FacilitySummary[];
@@ -25,6 +27,7 @@ const PRODUCER_NAV_ITEMS = [
 export function ProducerLayout({
   data,
   t,
+  locale,
   activeTab,
   setActiveTab,
   facilitiesForRole,
@@ -85,7 +88,7 @@ export function ProducerLayout({
             sectionAverages={data.sectionAverages}
           />
         )}
-        {activeTab === "overview" && <Overview data={data} t={t} />}
+        {activeTab === "overview" && <Overview data={data} t={t} locale={locale} />}
       </div>
     </div>
   );

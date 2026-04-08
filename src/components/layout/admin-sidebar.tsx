@@ -169,7 +169,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
       {isOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-55 bg-black/40 md:hidden"
+          className="fixed inset-0 z-[55] bg-black/40 md:hidden"
           onClick={onClose}
           aria-label={t("navigation.closeMenu")}
         />
@@ -179,7 +179,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
       <aside
           ref={mobileDrawerRef}
           className={cn(
-            "fixed inset-y-0 left-0 z-60 flex w-[min(88vw,320px)] flex-col border-r border-(--color-border-subtle) bg-white shadow-2xl md:hidden",
+            "fixed inset-y-0 left-0 z-[60] flex w-[min(88vw,320px)] flex-col border-r border-(--color-border-subtle) bg-white shadow-2xl md:hidden",
             "animate-in slide-in-from-left-4 duration-300",
           )}
           role="dialog"

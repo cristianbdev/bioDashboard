@@ -22,21 +22,20 @@ export function MetricCard({ title, value, subtitle, icon: Icon, color = "sky" }
   const accentColor = METRIC_COLORS[color] ?? "#0F766E";
 
   return (
-    <Card className="card-flat">
-      <CardContent className="p-5 border-l-4" style={{ borderLeftColor: accentColor }}>
-        {/* Title first, reading order */}
-        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">{title}</p>
-        
-        {/* Value is the hero */}
-        <div className="mb-1 flex items-baseline gap-2">
-          <p className="font-scientific text-3xl font-bold text-[var(--color-text-primary)]">{value}</p>
-          {/* Subtle icon on the right, not competing */}
-          <div className="rounded-md p-1.5 opacity-50" style={{ backgroundColor: `${accentColor}10` }}>
-            <Icon className="h-3.5 w-3.5" style={{ color: accentColor }} />
+    <Card className="card-flat h-full">
+      <CardContent className="p-4 sm:p-5 border-l-4 h-full flex flex-col" style={{ borderLeftColor: accentColor }}>
+        {/* Mobile: Icon above title | Desktop: Icon left of title */}
+        <div className="mb-2 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+          <div className="rounded-md p-1.5 w-fit" style={{ backgroundColor: `${accentColor}15` }}>
+            <Icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" style={{ color: accentColor }} />
           </div>
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] leading-snug">{title}</p>
         </div>
-        
-        {subtitle && <p className="text-xs text-[var(--color-text-secondary)]">{subtitle}</p>}
+
+        {/* Value as hero */}
+        <p className="font-scientific text-[26px] sm:text-3xl font-bold text-[var(--color-text-primary)] mt-auto">{value}</p>
+
+        {subtitle && <p className="mt-1 text-xs text-[var(--color-text-secondary)] leading-snug">{subtitle}</p>}
       </CardContent>
     </Card>
   );

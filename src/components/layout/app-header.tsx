@@ -2,12 +2,13 @@
 
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { Clock, Languages, Loader2, Menu, RefreshCw, Shield } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLocaleContext } from "@/context/LocaleContext";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { routing, type AppLocale } from "@/i18n/routing";
 import { type AppRole } from "@/lib/access-control";
-import { supportedLocales, type Locale, t as translate } from "@/lib/i18n";
 import type { DashboardData } from "@/lib/kobo";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +29,14 @@ const ROLE_BADGE_STYLE: Record<AppRole, string> = {
 };
 
 export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoading, onOpenNav }: AppHeaderProps) {
-  const { locale, setLocale } = useLocaleContext();
-  const t = (key: string) => translate(locale, key);
+  const locale = useLocale();
+  const t = useTranslations();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const onLocaleChange = (value: string) => {
+    router.replace(pathname, { locale: value as AppLocale });
+  };
 
   const formattedUpdatedAt = (() => {
     if (!data?.stats.lastUpdated) return "-";
@@ -37,7 +44,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
   })();
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b border-[var(--color-border-subtle)] bg-white will-change-transform">
+    <header className="fixed inset-x-0 top-0 z-40 h-16 border-b border-[var(--color-border-subtle)] bg-white overflow-visible">
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
         {/* Left: Logo + Title + Badge */}
         <div className="flex min-w-0 items-center gap-3">
@@ -53,7 +60,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             </p>
           </div>
           <Badge variant="outline" className={cn("shrink-0 text-xs font-medium", ROLE_BADGE_STYLE[role])}>
-            {t(`role.${role}`)}
+            {t(`role.${role}` as never)}
           </Badge>
         </div>
 
@@ -66,7 +73,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
           </div>
 
           {/* Language selector */}
-          <Select value={locale} onValueChange={(value) => setLocale(value as Locale)}>
+          <Select value={locale} onValueChange={onLocaleChange}>
             <SelectTrigger
               className="h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)] sm:h-8 sm:min-w-[60px]"
             >
@@ -75,8 +82,8 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
                 <SelectValue />
               </div>
             </SelectTrigger>
-            <SelectContent>
-              {supportedLocales.map((entry) => (
+            <SelectContent position="popper" sideOffset={4} align="end" avoidCollisions>
+              {routing.locales.map((entry) => (
                 <SelectItem key={entry} value={entry} className="uppercase">
                   {entry}
                 </SelectItem>

@@ -1,0 +1,291 @@
+{
+  "header": {
+    "title": "Biosikkerhetsdashboard",
+    "subtitle": "Overvåking av biosikkerhet i akvakultur",
+    "lastUpdated": "Sist oppdatert"
+  },
+  "actions": {
+    "refresh": "Oppdater",
+    "load": "Last inn",
+    "demo": "Standard-UID",
+    "close": "Lukk"
+  },
+  "tabs": {
+    "overview": "Oversikt",
+    "facilities": "Anlegg",
+    "comparative": "Sammenligning",
+    "methodology": "Metodikk",
+    "users": "Brukere",
+    "risk": "Risiko",
+    "practices": "Praksiser",
+    "operational": "Drift",
+    "facilitiesSelect": "Velg anlegg"
+  },
+  "datasource": {
+    "title": "Datakilde",
+    "subtitle": "KoboToolbox UID",
+    "lockedByRole": "Rollen din kan bare spørre etter tildelt/standard prosjekt-UID.",
+    "projectUidPlaceholder": "Prosjekt-UID",
+    "locked": "Låst"
+  },
+  "auth": {
+    "signIn": "Logg inn",
+    "signUp": "Opprett konto"
+  },
+  "role": {
+    "public": "Offentlig",
+    "producer": "Produsent",
+    "admin": "Administrator"
+  },
+  "producer": {
+    "myFacility": "Mitt anlegg",
+    "myFacilityShort": "Anlegg",
+    "globalOverview": "Global oversikt"
+  },
+  "theme": {
+    "toggle": "Bytt tema",
+    "dark": "Mørk",
+    "light": "Lys"
+  },
+  "overview": {
+    "filters": "Filtre",
+    "filterAll": "Alle",
+    "filterSpecies": "Art",
+    "filterSystem": "Produksjonssystem",
+    "filterLocation": "Anleggslokasjon",
+    "clearAll": "Fjern alle",
+    "external": "Ekstern biosikkerhet",
+    "internal": "Intern biosikkerhet",
+    "subtitle": "Global oversikt og analyse av biosikkerhet for alle registrerte anlegg.",
+    "openFilters": "Åpne filtre",
+    "activeFilters": "Aktive filtre"
+  },
+  "metrics": {
+    "total": {
+      "title": "Totalt antall anlegg",
+      "subtitle": "Filtrerte poster"
+    },
+    "avg": {
+      "title": "Gjennomsnittsscore",
+      "subtitle": {
+        "good": "Akseptabelt",
+        "bad": "Bør forbedres"
+      }
+    },
+    "high": {
+      "title": "Høy risiko",
+      "subtitle": "Anlegg i høy risikokategori"
+    },
+    "low": {
+      "title": "Lav/ubetydelig risiko",
+      "subtitle": "Tryggere anlegg"
+    },
+    "medium": {
+      "title": "Middels risiko"
+    }
+  },
+  "charts": {
+    "mapCoverage": "Kart over geografisk dekning",
+    "mapCoverageSubtitle": "Koordinater rapportert av anlegg",
+    "practiceCoverage": "Dekning av praksiser (nøkkelpraksiser for biosikkerhet)",
+    "externalInternalCompliance": "Ekstern vs intern etterlevelse",
+    "scoreDistribution": "Poengfordeling",
+    "sectionDetail": "Detalj per seksjon",
+    "highRiskFactors": "Faktorer med høy risiko",
+    "positiveFactors": "Positive praksiser",
+    "waterMonitoring": "Frekvens for vannovervåking",
+    "mortalityDisposal": "Håndtering av dødelighet",
+    "intakeWaterTreatmentApplied": "Behandling av inntaksvann",
+    "waterParametersMeasured": "Målte vannparametere",
+    "personalTraining": "Opplæring av personell",
+    "records": "Registreringer",
+    "sops": "SOP-er",
+    "noData": "Ingen data tilgjengelig",
+    "tryFilters": "Juster filtrene eller prøv igjen senere"
+  },
+  "map": {
+    "dark": "Mørk",
+    "terrain": "Terreng",
+    "riskHigh": "Høy risiko",
+    "riskMedium": "Middels risiko",
+    "riskLow": "Lav risiko",
+    "riskNegligible": "Ubetydelig",
+    "fullscreen": "Fullskjerm",
+    "zoomIn": "Zoom inn",
+    "zoomOut": "Zoom ut",
+    "noGeo": "Ingen anlegg med geolokasjonsdata"
+  },
+  "coverage": {
+    "quarantine": "Karantene ved ankomst",
+    "biosecurityPlan": "Skriftlig biosikkerhetsplan",
+    "noSharedEquipment": "Ingen delt utstyr med andre gårder",
+    "equipmentDisinfection": "Desinfeksjon av utstyr",
+    "waterTreatment": "Behandling av vann (hvis aktuelt)",
+    "biovectorInspection": "Inspeksjon av biovektorer"
+  },
+  "facilities": {
+    "information": "Anleggsinformasjon",
+    "quickInfo": "Hurtiginfo",
+    "scoreBySection": "Poeng per seksjon",
+    "benchmark": "Sammenligning mot gjennomsnitt",
+    "keyPractices": "Nøkkelpraksiser for biosikkerhet",
+    "animalHealthMonitoring": "Overvåking av dyrehelse",
+    "subcategoryChecklist": "Spørsmålsliste per underkategori",
+    "networkAverage": "Nettverksgjennomsnitt",
+    "yearsOperation": "Hvor lenge anlegget har vært i drift",
+    "species": "Art",
+    "waterSource": "Vannkilde",
+    "waterMonitoring": "Vannovervåking",
+    "noData": "Ingen data",
+    "risks": {
+      "high": "Faktorer med høy risiko",
+      "medium": "Faktorer med moderat risiko",
+      "positive": "Positive praksiser"
+    },
+    "riskAndSuggestions": "Risiko og anbefalinger",
+    "benchmarkAriaSuffix": "seksjoner sammenlignet med nettverksgjennomsnittet."
+  },
+  "comparative": {
+    "filters": "Sammenligningsfiltre",
+    "openFilters": "Åpne filtre",
+    "scoreBySystem": "Poeng etter produksjonssystem",
+    "scoreByProductionType": "Poeng etter produksjonstype",
+    "scoreByEducation": "Poeng etter utdanning",
+    "scoreByMarket": "Poeng etter marked",
+    "scoreByYears": "Poeng etter driftsår",
+    "scoreBySpecies": "Poeng etter art",
+    "scoreByWater": "Poeng etter vannkilde",
+    "riskMatrixExternal": "Risikomatrise - eksterne underkategorier",
+    "riskMatrixInternal": "Risikomatrise - interne underkategorier",
+    "riskMatrixLegend": "Grønn = tiltak anvendt, Rød = risiko",
+    "tableTitle": "Sammenligningstabell",
+    "groupsAriaSuffix": "grupper.",
+    "heatmapAriaSuffix": "Varmekart over anlegg etter underkategori."
+  },
+  "info": {
+    "overviewFilters": "Filtrer oversikten etter art, produksjonssystem og lokasjon.",
+    "mapCoverage": "Kart over land/regioner basert på anleggskoordinater.",
+    "practiceCoverage": "Adopsjonsgrad for sentrale biosikkerhetspraksiser.",
+    "externalInternalCompliance": "Gjennomsnittlig etterlevelse fordelt på eksterne og interne tiltak.",
+    "scoreDistribution": "Fordeling av totalscore i faste intervaller.",
+    "sectionDetail": "Gjennomsnittsscore per underkategori.",
+    "topRiskFactors": "Hyppigste faktorer med høy risiko og positive praksiser.",
+    "waterMonitoring": "Rapportert frekvens for vannovervåking.",
+    "mortalityDisposal": "Rapporterte metoder for håndtering av dødelighet.",
+    "intakeWaterTreatmentApplied": "Rapporterte tilnærminger for behandling av inntaksvann.",
+    "waterParametersMeasured": "Parametere målt i vannkvalitetskontroller.",
+    "personalTraining": "Temaer dekket i opplæring av personell.",
+    "records": "Typer registreringer tilgjengelig i anlegg.",
+    "sops": "Rapportert dekning av SOP-er.",
+    "facilityDiagnostics": "Kjerneinformasjon for valgt anlegg.",
+    "facilityBenchmark": "Anleggets poeng sammenlignet med nettverksgjennomsnittet per underkategori.",
+    "animalHealthMonitoring": "Overvåkingsfrekvens for atferd, obduksjon og diagnostikk.",
+    "subcategoryChecklist": "Spørsmål per underkategori med etterlevelsesstatus.",
+    "comparativeCharts": "Gjennomsnittsscore gruppert etter valgt kategori.",
+    "comparativeFilters": "Filtrer matriser, grafer og tabell etter driftsattributter.",
+    "riskMatrix": "Røde celler indikerer risiko for introduksjon/spredning av sykdom.",
+    "table": "Sammenligning på anleggsnivå for filtrerte poster."
+  },
+  "methodology": {
+    "title": "Scoremetodikk",
+    "subtitle": "Formell scoremodell utledet fra instrumentdefinisjonen.",
+    "info": "Denne visningen dokumenterer hvordan poeng beregnes fra svar på spørsmålsnivå.",
+    "formulaA": "A) Underkategoripoeng = SUM(svarpoeng x spørsmålsvekt) / maksimal mulig poengsum i underkategorien.",
+    "formulaB": "B) Kategoriscore (Ekstern/Intern) = SUM(underkategoriscore x underkategorivekt).",
+    "formulaC": "C) Totalpoeng = (Ekstern poengsum x ekstern vekt) + (Intern poengsum x intern vekt).",
+    "sideWeights": "Vekter per kategoriside",
+    "subcategoryWeights": "Underkategorivekter",
+    "subcategoryWeightsInfo": "Vekter brukt i aggregering på kategorinivå.",
+    "rulesTitle": "Regler for spørsmål/svar",
+    "rulesSubtitle": "Hver rad viser poeng tildelt hvert svaralternativ.",
+    "rulesInfo": "Regler importert fra prosjektets scoremodellfil.",
+    "mainScore": "Hovedscore",
+    "expertWeightsDecision": "Beslutning om ekspertvekter",
+    "noScoreDecision": "Beslutning om policy for svar uten poengscore",
+    "noResponseRules": "Ingen eksplisitte scoringsregler for svar."
+  },
+  "users": {
+    "title": "Brukeroppsett",
+    "subtitle": "Opprett og oppdater administrator-/produsentbrukere med rolle og anleggstilknytning.",
+    "email": "E-post",
+    "role": "Rolle",
+    "facility": "Anlegg",
+    "facilityPlaceholder": "Velg anlegg",
+    "password": "Standardpassord",
+    "passwordPolicyHint": "Passordmønster: e-post + .bioDash",
+    "create": "Opprett eller oppdater bruker",
+    "creating": "Oppretter...",
+    "success": {
+      "title": "Bruker lagret",
+      "message": "Bruker opprettet/oppdatert"
+    },
+    "error": {
+      "title": "Feil ved brukeroppsett",
+      "generic": "Kunne ikke opprette bruker",
+      "emailRequired": "E-post er påkrevd",
+      "facilityRequired": "Anlegg er påkrevd for produsentrollen"
+    },
+    "emailPlaceholder": "produsent@eksempel.no"
+  },
+  "table": {
+    "facility": "Anlegg",
+    "section": "Seksjon",
+    "side": "Dimensjon",
+    "score": "Poeng",
+    "risk": "Risiko",
+    "weight": "Vekt",
+    "system": "Systemtype",
+    "species": "Art",
+    "productionType": "Produksjonstype",
+    "facilityLocation": "Anleggslokasjon",
+    "water": "Vannkilde",
+    "question": "Spørsmål",
+    "answer": "Svar",
+    "status": "Status",
+    "recommendation": "Anbefaling"
+  },
+  "risk": {
+    "negligible": "Ubetydelig",
+    "low": "Lav",
+    "medium": "Middels",
+    "high": "Høy"
+  },
+  "status": {
+    "yes": "Ja",
+    "no": "Nei",
+    "notApplicable": "Ikke relevant",
+    "compliant": "Etterlevd",
+    "nonCompliant": "Ikke etterlevd"
+  },
+  "footer": {
+    "developed": "Utviklet av og eies av",
+    "usage": "Kun autorisert for Norsk Veterinærinstitutt til forskningsformål.",
+    "inquiries": "Forespørsler",
+    "copyright": "Alle rettigheter forbeholdt.",
+    "links": {
+      "title": "Ressurser",
+      "methodology": "Metodikk",
+      "contact": "Kontakt",
+      "terms": "Bruksvilkår"
+    }
+  },
+  "navigation": {
+    "title": "Navigasjon",
+    "openMenu": "Åpne navigasjonsmeny",
+    "closeMenu": "Lukk navigasjonsmeny",
+    "groupMain": "Hoveddel",
+    "groupAnalysis": "Analyse",
+    "groupAdmin": "Administrasjon",
+    "collapse": "Skjul sidepanel",
+    "expandSidebar": "Utvid sidepanel"
+  },
+  "errors": {
+    "title": "Feil",
+    "unknown": "Ukjent feil",
+    "httpStatus": "Forespørselen mislyktes (HTTP {status})"
+  },
+  "meta": {
+    "title": "Biosikkerhetsdashboard",
+    "description": "Dashboard for å visualisere biosikkerhetsresultater i akvakultur fra KoboToolbox."
+  }
+}

@@ -68,10 +68,10 @@ export function FloatingFilters({
           "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90",
           "animate-in slide-in-from-bottom-4 duration-300",
         )}
-        aria-label="Open filters"
+        aria-label={t("overview.openFilters")}
       >
         <Filter className="h-4 w-4" />
-        <span className="text-sm font-medium">Filters</span>
+        <span className="text-sm font-medium">{t("overview.filters")}</span>
         {activeCount > 0 && (
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
             {activeCount}
@@ -83,7 +83,8 @@ export function FloatingFilters({
       <BottomSheet
         isOpen={isOpen}
         onClose={onClose}
-        title="Filters"
+        title={t("overview.filters")}
+        closeLabel={t("navigation.closeMenu")}
       >
         <div className="space-y-4">
           {/* Species filter */}
@@ -137,7 +138,7 @@ export function FloatingFilters({
           {/* Active filters summary */}
           {activeCount > 0 && (
             <div className="border-t border-[var(--color-border-subtle)] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">Active Filters</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{t("overview.activeFilters")}</p>
               <div className="flex flex-wrap gap-2">
                 {filters
                   .filter((f) => f.allValue ? f.activeValue !== f.allValue : f.activeValue !== "" && f.activeValue !== "all")
@@ -168,7 +169,7 @@ export function FloatingFilters({
                 }}
                 className="mt-3 text-xs text-[var(--color-brand)]"
               >
-                Clear all filters
+                {t("overview.clearAll")}
               </Button>
             </div>
           )}

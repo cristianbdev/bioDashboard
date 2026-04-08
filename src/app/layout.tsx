@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono, IBM_Plex_Mono } from "next/font/google";
-import { Footer } from "@/components/footer";
-import { LocaleProvider } from "@/context/LocaleContext";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,25 +24,20 @@ export const metadata: Metadata = {
   description: "Dashboard para visualizar resultados de bioseguridad acuicola desde KoboToolbox.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale().catch(() => "en");
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
-        <ClerkProvider>
-          <LocaleProvider>
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </LocaleProvider>
-        </ClerkProvider>
+        <ClerkProvider>{children}</ClerkProvider>
       </body>
     </html>
   );
