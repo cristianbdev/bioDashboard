@@ -101,7 +101,7 @@ export function DesktopFloatingFilter({
           <SlidersHorizontal className="h-5 w-5" />
           <span className="text-sm font-semibold">{labels.openButton}</span>
           {activeCount > 0 && (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)] shadow-sm">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)] shadow-sm">
               {activeCount}
             </span>
           )}
@@ -121,7 +121,7 @@ export function DesktopFloatingFilter({
           <div
             ref={panelRef}
             className={cn(
-              "relative w-full max-w-md rounded-2xl bg-white shadow-2xl",
+              "relative w-full max-w-md rounded-2xl bg-[var(--color-raised)] shadow-2xl",
               "max-h-[80vh] overflow-y-auto",
               "animate-in zoom-in-95 duration-200",
             )}
@@ -149,7 +149,7 @@ export function DesktopFloatingFilter({
                 <div key={control.id} className="space-y-2">
                   <p className="text-xs font-medium text-[var(--color-text-secondary)]">{control.placeholder}</p>
                   <Select value={control.value} onValueChange={control.onChange}>
-                    <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+                    <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

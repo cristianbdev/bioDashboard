@@ -1,11 +1,18 @@
 "use client";
 
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
-import { Clock, Languages, Loader2, Menu, RefreshCw, Shield } from "lucide-react";
+import { Clock, Languages, Loader2, Menu, MoreHorizontal, RefreshCw, Shield } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { type AppRole } from "@/lib/access-control";
@@ -56,12 +63,12 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
   })();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 h-16 border-b border-[var(--color-border-subtle)] bg-white overflow-visible">
+    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] overflow-visible">
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
         {/* Left: Logo + Title + Badge */}
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)] shadow-sm">
-            <Shield className="h-4 w-4 text-white" />
+            <Shield className="h-4 w-4 text-[var(--color-text-inverse)]" />
           </div>
           <div className="hidden min-w-0 sm:block">
             <p className="truncate text-base font-semibold leading-tight text-[var(--color-text-primary)]">
@@ -84,24 +91,26 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             <span>{formattedUpdatedAt}</span>
           </div>
 
-          {/* Language selector */}
-          <Select value={locale} onValueChange={onLocaleChange}>
-            <SelectTrigger
-              className="h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)] sm:h-8 sm:min-w-[60px]"
-            >
-              <div className="flex items-center gap-1">
-                <Languages className="h-3.5 w-3.5" />
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent position="popper" sideOffset={4} align="end" avoidCollisions>
-              {routing.locales.map((entry) => (
-                <SelectItem key={entry} value={entry} className="uppercase">
-                  {t(LOCALE_LABEL_KEYS[entry])}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Language selector - desktop only (>= lg) */}
+          <div className="hidden lg:block">
+            <Select value={locale} onValueChange={onLocaleChange}>
+              <SelectTrigger
+                className="h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)] sm:h-8 sm:min-w-[60px]"
+              >
+                <div className="flex items-center gap-1">
+                  <Languages className="h-3.5 w-3.5" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent position="popper" sideOffset={4} align="end" avoidCollisions>
+                {routing.locales.map((entry) => (
+                  <SelectItem key={entry} value={entry} className="uppercase">
+                    {t(LOCALE_LABEL_KEYS[entry])}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Refresh */}
           <Button
@@ -115,6 +124,11 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           </Button>
+
+          {/* Theme toggle - desktop only (>= lg) */}
+          <div className="hidden lg:block">
+            <ThemeToggle />
+          </div>
 
           {/* Sign in - ghost, no fill */}
           {isLoaded ? (
@@ -137,6 +151,45 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
               />
             </Show>
           ) : null}
+
+          {/* Mobile overflow menu - contains ThemeToggle and Language selector (< lg) */}
+          <div className="lg:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)] sm:h-8 sm:w-8"
+                  aria-label={t("navigation.more")}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={4} className="w-48">
+                {/* Language options */}
+                {routing.locales.map((entry) => (
+                  <DropdownMenuItem
+                    key={entry}
+                    onClick={() => onLocaleChange(entry)}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
+                      locale === entry && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <Languages className="h-4 w-4" />
+                    <span className="flex-1 uppercase">{entry}</span>
+                    {locale === entry && <span className="ml-auto">✓</span>}
+                  </DropdownMenuItem>
+                ))}
+                <div className="my-1 h-px bg-[var(--color-border-subtle)]" />
+                {/* Theme toggle item - opens theme menu */}
+                <div className="px-2 py-1">
+                  <ThemeToggle />
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           {/* Mobile nav hamburger - only admin & producer */}
           {role !== "public" && onOpenNav && (

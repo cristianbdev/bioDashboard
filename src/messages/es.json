@@ -61,7 +61,8 @@
   "theme": {
     "toggle": "Cambiar tema",
     "dark": "Oscuro",
-    "light": "Claro"
+    "light": "Claro",
+    "system": "Sistema"
   },
   "overview": {
     "filters": "Filtros del resumen",
@@ -315,7 +316,8 @@
     "groupAnalysis": "Análisis",
     "groupAdmin": "Administración",
     "collapse": "Colapsar barra lateral",
-    "expandSidebar": "Expandir barra lateral"
+    "expandSidebar": "Expandir barra lateral",
+    "more": "Más opciones"
   },
   "errors": {
     "title": "Error",

@@ -73,7 +73,7 @@ export function FloatingFilters({
         <Filter className="h-4 w-4" />
         <span className="text-sm font-medium">{t("overview.filters")}</span>
         {activeCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
             {activeCount}
           </span>
         )}
@@ -91,7 +91,7 @@ export function FloatingFilters({
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{speciesPlaceholder}</p>
             <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -107,7 +107,7 @@ export function FloatingFilters({
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{systemPlaceholder}</p>
             <Select value={systemFilter} onValueChange={setSystemFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -123,7 +123,7 @@ export function FloatingFilters({
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{locationPlaceholder}</p>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

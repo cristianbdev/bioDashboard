@@ -61,7 +61,8 @@
   "theme": {
     "toggle": "Toggle theme",
     "dark": "Dark",
-    "light": "Light"
+    "light": "Light",
+    "system": "System"
   },
   "overview": {
     "filters": "Overview filters",
@@ -315,7 +316,8 @@
     "groupAnalysis": "Analysis",
     "groupAdmin": "Administration",
     "collapse": "Collapse sidebar",
-    "expandSidebar": "Expand sidebar"
+    "expandSidebar": "Expand sidebar",
+    "more": "More options"
   },
   "errors": {
     "title": "Error",

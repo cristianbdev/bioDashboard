@@ -56,7 +56,7 @@ export function BottomSheet({ isOpen, onClose, title, closeLabel, children }: Bo
       <div
         ref={sheetRef}
         className={cn(
-          "fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white shadow-xl",
+          "fixed bottom-0 left-0 right-0 rounded-t-2xl bg-[var(--color-raised)] shadow-xl",
           "max-h-[85vh] overflow-y-auto",
           "animate-in slide-in-from-bottom-full duration-300",
           "md:left-auto md:right-auto md:w-full md:max-w-lg md:mx-auto",

@@ -126,7 +126,7 @@ export function AdminLayout({
         <Card className="card-flat mb-6">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl border border-[var(--color-border-subtle)] bg-white p-2.5 shadow-sm">
+              <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-2.5 shadow-sm">
                 <DbIcon className="h-5 w-5 text-[var(--color-brand)]" />
               </div>
               <div>
@@ -141,7 +141,7 @@ export function AdminLayout({
                   value={uid}
                   onChange={(event) => setUid(event.target.value)}
                   placeholder={t("datasource.projectUidPlaceholder")}
-                  className="h-10 border-[var(--color-border-subtle)] bg-white text-sm font-scientific text-[var(--color-text-primary)] shadow-sm"
+                  className="h-10 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-sm font-scientific text-[var(--color-text-primary)] shadow-sm"
                   disabled={!canUseCustomUid}
                 />
                 {!canUseCustomUid ? (
@@ -165,7 +165,7 @@ export function AdminLayout({
                   size="sm"
                   variant="outline"
                   onClick={() => fetchData(DEFAULT_PROJECT_UID)}
-                  className="h-10 flex-1 border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] sm:flex-none"
+                  className="h-10 flex-1 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] sm:flex-none"
                 >
                   {t("actions.demo")}
                 </Button>
@@ -186,7 +186,7 @@ export function AdminLayout({
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSpecies")}</label>
                   <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSpecies")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -200,7 +200,7 @@ export function AdminLayout({
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSystem")}</label>
                   <Select value={systemFilter} onValueChange={setSystemFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSystem")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -214,7 +214,7 @@ export function AdminLayout({
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
                   <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterLocation")} />
                     </SelectTrigger>
                     <SelectContent>

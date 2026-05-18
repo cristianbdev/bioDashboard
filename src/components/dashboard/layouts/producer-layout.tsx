@@ -39,7 +39,7 @@ export function ProducerLayout({
   return (
     <div className="flex flex-col gap-6">
       {/* Desktop navigation */}
-      <nav className="hidden w-full items-center gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-white p-2 shadow-sm md:flex">
+      <nav className="hidden w-full items-center gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-2 shadow-sm md:flex">
         {PRODUCER_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

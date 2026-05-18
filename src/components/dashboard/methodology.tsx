@@ -19,15 +19,15 @@ export function MethodologyView({ data, t }: Props) {
           <InfoTitle title={t("methodology.title")} info={t("methodology.info")} />
           <CardDescription>{t("methodology.subtitle")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-slate-700">
+        <CardContent className="space-y-3 text-sm text-[var(--color-text-secondary)]">
           <p>{t("methodology.formulaA")}</p>
           <p>{t("methodology.formulaB")}</p>
           <p>{t("methodology.formulaC")}</p>
-          <p className="text-slate-500">
+          <p className="text-[var(--color-text-muted)]">
             {t("methodology.sideWeights")}: {t("overview.external")}={model.sideWeights.external * 100}% |{" "}
             {t("overview.internal")}={model.sideWeights.internal * 100}%
           </p>
-          <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-slate-700">
+          <div className="rounded-md border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] p-3 text-[var(--color-text-secondary)]">
             <p>
               <span className="font-semibold">{t("methodology.expertWeightsDecision")}:</span>{" "}
               {t("methodology.expertWeightsDecisionDescription")}
@@ -73,15 +73,15 @@ export function MethodologyView({ data, t }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           {model.questionRules.map((rule) => (
-            <div key={`${rule.section}-${rule.id}`} className="rounded-md border border-slate-200 p-3">
+            <div key={`${rule.section}-${rule.id}`} className="rounded-md border border-[var(--color-border-subtle)] p-3">
               <div className="mb-2 flex flex-col gap-1 text-sm">
-                <p className="font-semibold text-slate-900">
+                <p className="font-semibold text-[var(--color-text-primary)]">
                   {rule.id} - {rule.question}
                 </p>
-                <p className="text-slate-600">
+                <p className="text-[var(--color-text-secondary)]">
                   {translateSectionLabel(rule.section, t)} | {rule.side === "external" ? t("overview.external") : t("overview.internal")}
                 </p>
-                <p className="text-slate-600">
+                <p className="text-[var(--color-text-secondary)]">
                   {t("table.weight")}: {rule.questionWeight} | {t("methodology.mainScore")}: {rule.mainScore ? t("status.yes") : t("status.no")}
                 </p>
               </div>
@@ -105,7 +105,7 @@ export function MethodologyView({ data, t }: Props) {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-sm text-slate-500">{t("methodology.noResponseRules")}</p>
+                <p className="text-sm text-[var(--color-text-muted)]">{t("methodology.noResponseRules")}</p>
               )}
             </div>
           ))}

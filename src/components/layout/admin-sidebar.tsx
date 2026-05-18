@@ -139,9 +139,9 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
         aria-current={isActive ? "page" : undefined}
         title={isCollapsed ? t(item.labelKey) : undefined}
         className={cn(
-          "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-brand) focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+          "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-brand) focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface-base)]",
           isActive
-            ? "bg-(--color-brand) text-white shadow-sm"
+            ? "bg-(--color-brand) text-[var(--color-text-inverse)] shadow-sm"
             : "text-(--color-text-secondary) hover:bg-(--color-surface-base) hover:text-(--color-brand)",
           isCollapsed && "md:justify-center md:px-2.5",
         )}
@@ -179,7 +179,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
       <aside
           ref={mobileDrawerRef}
           className={cn(
-            "fixed inset-y-0 left-0 z-[60] flex w-[min(88vw,320px)] flex-col border-r border-(--color-border-subtle) bg-white shadow-2xl md:hidden",
+            "fixed inset-y-0 left-0 z-[60] flex w-[min(88vw,320px)] flex-col border-r border-(--color-border-subtle) bg-[var(--color-surface-base)] shadow-2xl md:hidden",
             "animate-in slide-in-from-left-4 duration-300",
           )}
           role="dialog"
@@ -195,7 +195,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-(--color-text-secondary) transition-colors hover:bg-(--color-surface-base) hover:text-(--color-text-primary) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-brand) focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-(--color-text-secondary) transition-colors hover:bg-(--color-surface-base) hover:text-(--color-text-primary) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-brand) focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface-base)]"
               aria-label={t("navigation.closeMenu")}
             >
               <X className="h-5 w-5" />
@@ -210,8 +210,8 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
 
       <aside
         className={cn(
-          "hidden md:flex md:flex-col md:shrink-0 md:sticky md:z-40 md:h-[calc(100vh-4rem)] md:top-16",
-          "md:border-r md:border-(--color-border-subtle) md:bg-white md:shadow-none",
+          "hidden md:flex md:flex-col md:shrink-0 md:sticky md:z-30 md:h-[calc(100vh-4rem)] md:top-16",
+          "md:border-r md:border-(--color-border-subtle) md:bg-[var(--color-surface-base)] md:shadow-none",
           isCollapsed ? "md:w-22" : "md:w-70",
         )}
         aria-label={t("navigation.title")}

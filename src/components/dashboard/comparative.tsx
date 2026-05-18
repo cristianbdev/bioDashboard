@@ -21,6 +21,7 @@ import {
 import { EmptyChartState } from "@/components/charts/empty-chart-state";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
+import { useChartColors, type ChartColors } from "@/hooks/useChartColors";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
@@ -59,6 +60,7 @@ function buildHeatmapOption(
   side: "external" | "internal",
   title: string,
   t: (key: string) => string,
+  colors: ChartColors,
 ) {
   type HeatmapTooltipParam = {
     data: [number, number, number, number];
@@ -84,10 +86,14 @@ function buildHeatmapOption(
     title: {
       text: title,
       left: "center",
-      textStyle: { fontSize: 14, fontWeight: 600, color: "#334155" },
+      textStyle: { fontSize: 14, fontWeight: 600, color: colors.textPrimary },
     },
+    backgroundColor: "transparent",
     tooltip: {
       position: "top",
+      backgroundColor: colors.raised,
+      borderColor: colors.borderSubtle,
+      textStyle: { color: colors.textPrimary },
       formatter: (params: HeatmapTooltipParam) => {
         const facility = facilitiesAxis[params.data[0]];
         const subcategory = subcategoriesAxis[params.data[1]];
@@ -96,18 +102,23 @@ function buildHeatmapOption(
         return `${facility}<br/>${subcategory}<br/>${t("table.score")}: ${score}/100<br/>${status}`;
       },
     },
+    textStyle: { color: colors.textPrimary },
     grid: { top: 56, left: 90, right: 20, bottom: 80 },
     xAxis: {
       type: "category",
       data: facilitiesAxis,
-      axisLabel: { rotate: 40, fontSize: 10, color: "#475569" },
-      splitArea: { show: true },
+      axisLabel: { rotate: 40, fontSize: 10, color: colors.textSecondary },
+      axisLine: { lineStyle: { color: colors.borderDefault } },
+      splitArea: { show: true, areaStyle: { color: [colors.surfaceBase, colors.surfaceElevated] } },
+      splitLine: { lineStyle: { color: colors.borderSubtle } },
     },
     yAxis: {
       type: "category",
       data: subcategoriesAxis,
-      axisLabel: { fontSize: 11, color: "#475569" },
-      splitArea: { show: true },
+      axisLabel: { fontSize: 11, color: colors.textSecondary },
+      axisLine: { lineStyle: { color: colors.borderDefault } },
+      splitArea: { show: true, areaStyle: { color: [colors.surfaceBase, colors.surfaceElevated] } },
+      splitLine: { lineStyle: { color: colors.borderSubtle } },
     },
     visualMap: {
       min: 0,
@@ -117,7 +128,8 @@ function buildHeatmapOption(
       bottom: 12,
       precision: 0,
       text: [t("status.compliant"), t("status.nonCompliant")],
-      inRange: { color: ["#ef4444", "#16a34a"] },
+      textStyle: { color: colors.textPrimary },
+      inRange: { color: [colors.danger, colors.success] },
     },
     series: [
       {
@@ -134,6 +146,7 @@ function buildHeatmapOption(
 }
 
 export function ComparativeView({ data, t, onSelectFacility }: Props) {
+  const colors = useChartColors();
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [productionTypeFilter, setProductionTypeFilter] = useState<string>("all");
   const [systemFilter, setSystemFilter] = useState<string>("all");
@@ -188,12 +201,12 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
   );
 
   const externalHeatmap = useMemo(
-    () => buildHeatmapOption(filteredFacilities, "external", t("comparative.riskMatrixExternal"), t),
-    [filteredFacilities, t],
+    () => buildHeatmapOption(filteredFacilities, "external", t("comparative.riskMatrixExternal"), t, colors),
+    [filteredFacilities, t, colors],
   );
   const internalHeatmap = useMemo(
-    () => buildHeatmapOption(filteredFacilities, "internal", t("comparative.riskMatrixInternal"), t),
-    [filteredFacilities, t],
+    () => buildHeatmapOption(filteredFacilities, "internal", t("comparative.riskMatrixInternal"), t, colors),
+    [filteredFacilities, t, colors],
   );
 
   const locationOptions = data.operations.byLocation.map((item) => item.location).filter(Boolean);
@@ -235,7 +248,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
         <Filter className="h-4 w-4" />
         <span className="text-sm font-medium">{t("comparative.filters")}</span>
         {hasActiveFilters && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
             {[locationFilter, productionTypeFilter, systemFilter, speciesFilter, waterSourceFilter].filter((f) => f !== "all").length}
           </span>
         )}
@@ -254,7 +267,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
                 <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("overview.filterLocation")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -270,7 +283,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</label>
                 <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.productionType")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -286,7 +299,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</label>
                 <Select value={systemFilter} onValueChange={setSystemFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.system")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -302,7 +315,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</label>
                 <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.species")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -318,7 +331,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</label>
                 <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.water")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -401,7 +414,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
                 <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("overview.filterLocation")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -417,7 +430,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</label>
                 <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.productionType")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -433,7 +446,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</label>
                 <Select value={systemFilter} onValueChange={setSystemFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.system")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -449,7 +462,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</label>
                 <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.species")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -465,7 +478,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</label>
                 <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                     <SelectValue placeholder={t("table.water")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -547,7 +560,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</p>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -563,7 +576,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</p>
             <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -579,7 +592,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</p>
             <Select value={systemFilter} onValueChange={setSystemFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -595,7 +608,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</p>
             <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -611,7 +624,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</p>
             <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-white">
+              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

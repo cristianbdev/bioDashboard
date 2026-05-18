@@ -108,7 +108,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
     <div className="space-y-6">
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-slate-900">
+          <div className="flex items-center gap-2 text-[var(--color-text-primary)]">
             <UserPlus className="h-4 w-4" />
             <h3 className="text-base font-semibold">{t("users.title")}</h3>
           </div>
@@ -116,7 +116,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="user-email" className="text-sm font-medium text-slate-700">
+            <label htmlFor="user-email" className="text-sm font-medium text-[var(--color-text-secondary)]">
               {t("users.email")}
             </label>
             <Input
@@ -130,7 +130,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label htmlFor="user-role" className="text-sm font-medium text-slate-700">
+              <label htmlFor="user-role" className="text-sm font-medium text-[var(--color-text-secondary)]">
                 {t("users.role")}
               </label>
               <Select value={role} onValueChange={(value) => setRole(value as ManagedRole)}>
@@ -146,7 +146,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
             {role === "producer" && (
               <div className="space-y-2">
-                <label htmlFor="user-facility" className="text-sm font-medium text-slate-700">
+                <label htmlFor="user-facility" className="text-sm font-medium text-[var(--color-text-secondary)]">
                   {t("users.facility")}
                 </label>
                 <Select value={facilityId} onValueChange={setFacilityId}>
@@ -165,7 +165,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
             )}
           </div>
 
-          <p className="text-xs text-slate-500">{t("users.passwordPolicyHint")}</p>
+          <p className="text-xs text-[var(--color-text-muted)]">{t("users.passwordPolicyHint")}</p>
 
           <Button onClick={onCreateUser} disabled={loading} className="h-11 sm:h-9">
             {loading ? t("users.creating") : t("users.create")}

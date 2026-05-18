@@ -286,7 +286,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           >
             <span className="text-sm font-medium">{t("overview.filters")}</span>
             {hasActiveFilters && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
                 {[speciesFilter, systemFilter, locationFilter].filter(f => f !== "all").length}
               </span>
             )}
@@ -414,7 +414,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       >
         <span className="text-sm font-medium">{t("overview.filters")}</span>
         {hasActiveFilters && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
             {[speciesFilter, systemFilter, locationFilter].filter((f) => f !== "all").length}
           </span>
         )}
@@ -596,7 +596,7 @@ function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle }: { d
     <div className="flex h-full w-full flex-col">
       {/* Chart area */}
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
           <PieChart>
             <Pie
               data={data}

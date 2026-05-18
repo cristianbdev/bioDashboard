@@ -59,10 +59,10 @@ export function ComplianceBar({ label, value, color }: { label: string; value: n
 
 export function RiskBadge({ level, label }: { level: "NEGLIGIBLE" | "LOW" | "MEDIUM" | "HIGH"; label: string }) {
   const config = {
-    NEGLIGIBLE: { color: "#15803D", border: "#BBF7D0", bg: "#F0FDF4", Icon: CheckCircle2 },
-    LOW: { color: "#15803D", border: "#BBF7D0", bg: "#F0FDF4", Icon: CheckCircle2 },
-    MEDIUM: { color: "#B7791F", border: "#FDE68A", bg: "#FFFBEB", Icon: AlertCircle },
-    HIGH: { color: "#B42318", border: "#FECACA", bg: "#FEF2F2", Icon: AlertTriangle },
+    NEGLIGIBLE: { color: "var(--color-success)", border: "color-mix(in srgb, var(--color-success) 30%, transparent)", bg: "color-mix(in srgb, var(--color-success) 10%, transparent)", Icon: CheckCircle2 },
+    LOW: { color: "var(--color-success)", border: "color-mix(in srgb, var(--color-success) 30%, transparent)", bg: "color-mix(in srgb, var(--color-success) 10%, transparent)", Icon: CheckCircle2 },
+    MEDIUM: { color: "var(--color-warning)", border: "color-mix(in srgb, var(--color-warning) 30%, transparent)", bg: "color-mix(in srgb, var(--color-warning) 10%, transparent)", Icon: AlertCircle },
+    HIGH: { color: "var(--color-danger)", border: "color-mix(in srgb, var(--color-danger) 30%, transparent)", bg: "color-mix(in srgb, var(--color-danger) 10%, transparent)", Icon: AlertTriangle },
   };
   const c = config[level];
 

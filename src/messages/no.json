@@ -61,7 +61,8 @@
   "theme": {
     "toggle": "Bytt tema",
     "dark": "Mørk",
-    "light": "Lys"
+    "light": "Lys",
+    "system": "System"
   },
   "overview": {
     "filters": "Filtre",
@@ -315,7 +316,8 @@
     "groupAnalysis": "Analyse",
     "groupAdmin": "Administrasjon",
     "collapse": "Skjul sidepanel",
-    "expandSidebar": "Utvid sidepanel"
+    "expandSidebar": "Utvid sidepanel",
+    "more": "Flere alternativer"
   },
   "errors": {
     "title": "Feil",

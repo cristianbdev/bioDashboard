@@ -123,37 +123,78 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Brand - Adjusted for dark mode */
+  --color-brand: #14b8a6;
+  --color-brand-light: #5eead4;
+  --color-brand-dark: #0d9488;
+
+  /* Semantic status - Keep same but could be adjusted */
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+  --color-muted: #64748b;
+
+  /* Surfaces - Dark mode */
+  --color-surface-base: #0f172a;
+  --color-surface-elevated: #1e293b;
+  --color-raised: #334155;
+
+  /* Typography - Dark mode */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Borders - Dark mode */
+  --color-border-subtle: #334155;
+  --color-border-default: #475569;
+
+  /* Chart palette - Dark mode (brighter for visibility) */
+  --color-chart-1: #2dd4bf;
+  --color-chart-2: #93c5fd;
+  --color-chart-3: #fcd34d;
+  --color-chart-4: #c4b5fd;
+  --color-chart-5: #67e8f9;
+  --color-chart-6: #fca5a5;
+  --color-chart-7: #6ee7b7;
+  --color-chart-8: #94a3b8;
+
+  /* shadcn/ui mapped variables - Dark mode */
+  --radius: 0.75rem;
+  --background: var(--color-surface-base);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-raised);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-raised);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-brand);
+  --primary-foreground: #0f172a;
+  --secondary: #475569;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: var(--color-text-secondary);
+  --accent: #334155;
+  --accent-foreground: var(--color-text-primary);
+  --destructive: var(--color-danger);
+  --border: var(--color-border-subtle);
+  --input: var(--color-border-subtle);
+  --ring: var(--color-brand);
+  --warning: var(--color-warning);
+  --critical: var(--color-danger);
+  --success: var(--color-success);
+  --chart-1: var(--color-chart-1);
+  --chart-2: var(--color-chart-2);
+  --chart-3: var(--color-chart-3);
+  --chart-4: var(--color-chart-4);
+  --chart-5: var(--color-chart-5);
+  --sidebar: var(--color-raised);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border-subtle);
+  --sidebar-ring: var(--color-brand);
 }
 
 @layer base {
@@ -171,8 +212,14 @@
 }
 
 .card-flat {
-  @apply rounded-xl border bg-white shadow-sm transition-shadow duration-200;
+  @apply rounded-xl border shadow-sm transition-shadow duration-200;
   border-color: var(--color-border-subtle);
+  background-color: var(--color-raised);
+}
+
+.dark .card-flat {
+  border-color: var(--color-border-subtle);
+  background-color: var(--color-raised);
 }
 
 .card-flat:hover {
@@ -243,7 +290,7 @@
   line-height: 1.3;
   border-radius: 8px;
   border: 1px solid var(--color-border-subtle);
-  background: #ffffff;
+  background-color: var(--color-raised);
   color: var(--color-text-primary);
   opacity: 0;
   visibility: hidden;
@@ -275,7 +322,7 @@
   padding: 0 !important;
   border-radius: 12px !important;
   border: 1px solid var(--color-border-subtle) !important;
-  background: #ffffff !important;
+  background-color: var(--color-raised) !important;
   overflow: visible !important;
 }
 
@@ -304,5 +351,84 @@
 }
 
 .maplibregl-ctrl-group button {
-  background-color: #ffffff !important;
+  background-color: var(--color-raised) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background-color: var(--color-surface-elevated) !important;
+}
+
+.maplibregl-ctrl-icon {
+  filter: none;
+}
+
+.dark .maplibregl-ctrl-group {
+  border-color: var(--color-border-subtle) !important;
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.4) !important;
+}
+
+.dark .maplibregl-ctrl-group button {
+  background-color: var(--color-raised) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.dark .maplibregl-ctrl-group button:hover {
+  background-color: var(--color-surface-elevated) !important;
+}
+
+/* MapLibre Popup Dark Mode Styles */
+.dark .maplibregl-popup-content {
+  border-color: var(--color-border-subtle) !important;
+  background-color: var(--color-raised) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Popup tip/arrow styling for dark mode */
+.dark .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--color-raised) !important;
+}
+
+.dark .maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--color-raised) !important;
+}
+
+.dark .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--color-raised) !important;
+}
+
+.dark .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--color-raised) !important;
+}
+
+/* Scale control dark mode */
+.dark .maplibregl-ctrl-scale {
+  background-color: var(--color-raised) !important;
+  border-color: var(--color-border-subtle) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Attribution control dark mode */
+.dark .maplibregl-ctrl-attrib {
+  background-color: var(--color-surface-base) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .maplibregl-ctrl-attrib a {
+  color: var(--color-brand) !important;
+}
+
+/* Geolocate control icon color fix */
+.maplibregl-ctrl button .maplibregl-ctrl-icon {
+  filter: none;
+}
+
+/* Maplibre logo control dark mode */
+.dark .maplibregl-ctrl-logo {
+  filter: invert(1) grayscale(1) brightness(1.2);
+}
+
+/* Canvas attribution for dark tiles */
+.dark .maplibregl-canvas-container canvas {
+  filter: none;
 }

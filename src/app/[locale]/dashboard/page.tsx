@@ -200,7 +200,7 @@ export default function Home() {
   const isSidebarLayout = role === "admin";
 
   return (
-    <div className="min-h-screen bg-[#F5F7F6] flex flex-col">
+    <div className="min-h-screen bg-[var(--color-surface-base)] flex flex-col">
       <AppHeader
         role={role}
         data={data}
@@ -274,15 +274,15 @@ export default function Home() {
               />
             ) : (
               <main className="flex-1 px-6 py-6">
-                <Card className="card-flat mb-6 transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+                <Card className="card-flat mb-6 transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
                   <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-lg border border-[#E2E8E5] bg-[#F5F7F6] p-2">
-                        <Database className="h-4 w-4 text-[#5E7A8A]" />
+                      <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] p-2">
+                        <Database className="h-4 w-4 text-[var(--color-text-secondary)]" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#1F2A2A]">{t("datasource.title")}</p>
-                        <p className="text-xs text-[#6B7C72]">{t("datasource.subtitle")}</p>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">{t("datasource.title")}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">{t("datasource.subtitle")}</p>
                       </div>
                     </div>
 
@@ -291,21 +291,21 @@ export default function Home() {
                         value={uid}
                         onChange={(event) => setUid(event.target.value)}
                         placeholder={t("datasource.projectUidPlaceholder")}
-                        className="h-9 border-[#E2E8E5] bg-white text-sm text-[#1F2A2A] font-scientific shadow-sm"
+                        className="h-9 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-sm text-[var(--color-text-primary)] font-scientific shadow-sm"
                         disabled={!canUseCustomUid}
                       />
                       <div className="flex gap-2 w-full sm:w-auto">
-                        <Button size="sm" onClick={() => fetchData(uid)} disabled={!uid || state.status === "loading"} className="flex-1 sm:flex-none bg-[#0F766E] text-white hover:bg-[#0F766E]/90 shadow-sm transition-all duration-200 hover:shadow-md">
+                        <Button size="sm" onClick={() => fetchData(uid)} disabled={!uid || state.status === "loading"} className="flex-1 sm:flex-none bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 shadow-sm transition-all duration-200 hover:shadow-md">
                           {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => fetchData(DEFAULT_PROJECT_UID)} className="flex-1 sm:flex-none border-[#E2E8E5] bg-white text-[#1F2A2A] shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+                        <Button size="sm" variant="outline" onClick={() => fetchData(DEFAULT_PROJECT_UID)} className="flex-1 sm:flex-none border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] shadow-sm transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
                           {t("actions.demo")}
                         </Button>
                       </div>
                     </div>
                   </CardContent>
                   {!canUseCustomUid && (
-                    <p className="px-4 pb-4 text-xs text-[#6B7C72]">{t("datasource.lockedByRole")}</p>
+                    <p className="px-4 pb-4 text-xs text-[var(--color-text-secondary)]">{t("datasource.lockedByRole")}</p>
                   )}
                 </Card>
 

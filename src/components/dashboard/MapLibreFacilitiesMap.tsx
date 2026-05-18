@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { FullscreenControl, MapRef, Marker, NavigationControl, Popup, ScaleControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { useTheme } from "next-themes";
 import Supercluster from "supercluster";
 import type { AppLocale } from "@/i18n/routing";
 import type { FacilitySummary } from "@/lib/kobo";
@@ -48,6 +49,49 @@ function markerColorByRisk(level?: FacilitySummary["riskLevel"]) {
   return RISK_LEVELS.find((entry) => entry.level === level)?.color ?? FALLBACK_MARKER_COLOR;
 }
 
+function createFallbackCircleImage(size: number = 22): ImageData {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return new ImageData(size, size);
+  }
+
+  const center = size / 2;
+  const radius = center - 1;
+
+  // Create gradient for nicer appearance
+  const gradient = ctx.createRadialGradient(center, center, 0, center, center, radius);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+  gradient.addColorStop(0.7, "rgba(220, 220, 220, 1)");
+  gradient.addColorStop(1, "rgba(180, 180, 180, 1)");
+
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, Math.PI * 2);
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  return ctx.getImageData(0, 0, size, size);
+}
+
+// Pre-defined fallback images for common sprite patterns
+function getPreloadedImages(): Array<{ id: string; width: number; height: number; data: Uint8ClampedArray }> {
+  // Include more sizes to cover various sprite patterns
+  const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 40];
+  const images: Array<{ id: string; width: number; height: number; data: Uint8ClampedArray }> = [];
+
+  for (const size of sizes) {
+    const imageData = createFallbackCircleImage(size);
+    // Common circle sprite patterns - extract .data from ImageData
+    images.push({ id: `circle-${size}`, width: size, height: size, data: imageData.data });
+    // Also add variations like circle-stroked, circle-11, etc.
+    images.push({ id: `circle-stroked-${size}`, width: size, height: size, data: imageData.data });
+  }
+
+  return images;
+}
+
 function formatNumber(n: number): string {
   if (n >= 1000) return `${Math.floor(n / 1000)}k`;
   return n.toString();
@@ -55,6 +99,8 @@ function formatNumber(n: number): string {
 
 export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", className }: Props) {
   const mapRef = useRef<MapRef>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [mapStyle, setMapStyle] = useState<string>(MAP_STYLES.dark.url);
   const [selectedFacility, setSelectedFacility] = useState<FacilitySummary | null>(null);
   const [bounds, setBounds] = useState<[number, number, number, number]>([-180, -85, 180, 85]);
@@ -103,6 +149,15 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
     if (points.length <= 5) return 6;
     return 4;
   }, [points.length]);
+
+  // Auto-switch map style based on theme
+  useEffect(() => {
+    if (isDark) {
+      setMapStyle(MAP_STYLES.dark.url);
+    } else {
+      setMapStyle(MAP_STYLES.liberty.url);
+    }
+  }, [isDark]);
 
   const updateViewportState = useCallback(() => {
     if (!mapRef.current) return;
@@ -162,7 +217,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                 "whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm transition-colors",
                 mapStyle === style.url
                   ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
-                  : "border-[var(--color-border-subtle)] bg-white/95 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]",
+                  : "border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]",
               )}
             >
               <span className="mr-1.5">{style.icon}</span>
@@ -182,7 +237,59 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
           style={{ width: "100%", height: "100%" }}
           onMove={updateViewportState}
           onZoom={updateViewportState}
-          onLoad={updateViewportState}
+          onLoad={(event) => {
+            updateViewportState();
+
+            const map = event.target;
+
+            // Pre-load fallback circle images to prevent missing sprite warnings
+            const preloadedImages = getPreloadedImages();
+            for (const img of preloadedImages) {
+              if (!map.hasImage(img.id)) {
+                map.addImage(img.id, {
+                  width: img.width,
+                  height: img.height,
+                  data: img.data,
+                });
+              }
+            }
+
+            // Add specific missing circle-11 immediately if not present
+            if (!map.hasImage('circle-11')) {
+              map.addImage('circle-11', {
+                width: 11,
+                height: 11,
+                data: createFallbackCircleImage(11).data,
+              });
+            }
+
+            // Track processed images to avoid duplicate processing
+            const processedImages = new Set<string>();
+
+            // Handle any remaining missing images (fallback for dynamic requests)
+            map.on('styleimagemissing', (e: { image?: { toString: () => string } }) => {
+              // Safely get image name, with fallback for undefined
+              const missingImageId = e.image?.toString() ?? 'unknown';
+
+              if (processedImages.has(missingImageId)) return;
+              processedImages.add(missingImageId);
+
+              // Only handle circle-related sprites
+              if (missingImageId.includes('circle')) {
+                if (!map.hasImage(missingImageId)) {
+                  // Extract size from pattern like "circle-11" or create default
+                  const sizeMatch = missingImageId.match(/circle.*-(\d+)/);
+                  const size = sizeMatch ? parseInt(sizeMatch[1], 10) : 20;
+
+                  map.addImage(missingImageId, {
+                    width: size,
+                    height: size,
+                    data: createFallbackCircleImage(size).data,
+                  });
+                }
+              }
+            });
+          }}
           onClick={() => setSelectedFacility(null)}
           dragRotate={false}
           touchPitch={false}
@@ -269,7 +376,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
       </div>
 
       {/* Legend and Controls */}
-      <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-white px-3 py-3 sm:px-4">
+      <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-3 py-3 sm:px-4">
         {/* Map controls for mobile - ABOVE legend */}
         <div className="flex items-center justify-between gap-2 md:hidden">
           <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] shadow-sm">
@@ -286,7 +393,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                   "flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium shadow-sm transition-colors",
                   mapStyle === style.url
                     ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
-                    : "border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]",
+                    : "border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]",
                 )}
               >
                 <span className="text-sm">{style.icon}</span>
@@ -325,21 +432,21 @@ function FacilityPopup({
   const Icon = facility.riskLevel === "HIGH" ? AlertTriangle : facility.riskLevel === "LOW" || facility.riskLevel === "NEGLIGIBLE" ? CheckCircle : Info;
 
   return (
-    <div className="relative min-w-[260px] overflow-hidden rounded-lg border border-[var(--color-border-subtle)] bg-white shadow-xl">
+    <div className="relative min-w-[260px] overflow-hidden rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-raised)] shadow-xl">
       <button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
           onClose();
         }}
-        className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]"
+        className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]"
         aria-label={t("actions.close")}
       >
         ×
       </button>
 
-      <div className="flex items-center gap-3 border-b border-[var(--color-border-subtle)] px-4 py-4" style={{ backgroundColor: "color-mix(in oklab, white 82%, var(--color-surface-base))" }}>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: "white", color }}>
+      <div className="flex items-center gap-3 border-b border-[var(--color-border-subtle)] px-4 py-4" style={{ backgroundColor: "color-mix(in oklab, var(--color-raised) 82%, var(--color-surface-base))" }}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-surface-base)]" style={{ color }}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 pr-6">
@@ -350,7 +457,7 @@ function FacilityPopup({
         </div>
       </div>
 
-      <div className="space-y-2 px-4 py-3 text-xs">
+      <div className="space-y-2 px-4 py-3 text-xs bg-[var(--color-surface-base)]">
         <PopupRow label={t("overview.filterLocation")} value={facility.location || facility.basedOn || "-"} />
         <PopupRow label={t("table.score")} value={`${facility.score}/100`} />
         <PopupRow label={t("table.species")} value={facility.species || "-"} />

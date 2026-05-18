@@ -25,15 +25,15 @@ type Props = {
   readOnlySelection?: boolean;
 };
 
-// Update to theme colors
+// Update to theme colors - use CSS variables for dark mode support
 const FACILITY_COLORS = {
   external: "var(--color-brand)",
   internal: "var(--color-chart-8)",
 };
 
 const AVERAGE_COLORS = {
-  external: "color-mix(in srgb, var(--color-brand) 40%, white)",
-  internal: "color-mix(in srgb, var(--color-chart-8) 40%, white)",
+  external: "color-mix(in srgb, var(--color-brand) 60%, transparent)",
+  internal: "color-mix(in srgb, var(--color-chart-8) 60%, transparent)",
 };
 
 export function FacilitiesView({
@@ -71,8 +71,8 @@ export function FacilitiesView({
       )}
 
       {/* Hero Facility Details */}
-      <Card className="card-flat overflow-hidden transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
-        <div className="h-2 w-full bg-gradient-to-r from-[#0F766E] to-[#5E7A8A]" />
+      <Card className="card-flat overflow-hidden transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+        <div className="h-2 w-full bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-chart-8)]" />
         <CardHeader className="pb-2">
           <InfoTitle title={t("facilities.information")} info={t("info.facilityDiagnostics")} />
         </CardHeader>
@@ -80,37 +80,37 @@ export function FacilitiesView({
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3 flex-1">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-2xl font-bold tracking-tight text-[#1F2A2A]">{currentFacility.name}</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">{currentFacility.name}</h2>
                 <RiskBadge level={currentFacility.riskLevel} label={t(`risk.${currentFacility.riskLevel.toLowerCase()}`)} />
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-[#6B7C72]">
-                <span className="flex items-center gap-1.5 bg-[#F5F7F6] px-2.5 py-1 rounded-md">
-                  <MapPin className="h-4 w-4 text-[#0F766E]" />
+              <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                <span className="flex items-center gap-1.5 bg-[var(--color-surface-base)] px-2.5 py-1 rounded-md">
+                  <MapPin className="h-4 w-4 text-[var(--color-brand)]" />
                   {currentFacility.basedOn ?? currentFacility.location ?? t("facilities.noData")}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
-                <Badge variant="secondary" className="bg-[#E2E8E5]/50 text-[#1F2A2A]">{currentFacility.species ?? t("facilities.noData")}</Badge>
-                <Badge variant="outline" className="border-[#E2E8E5] text-[#6B7C72]">{currentFacility.productionSystem ?? t("facilities.noData")}</Badge>
-                <Badge variant="outline" className="border-[#E2E8E5] text-[#6B7C72]">{currentFacility.productionType ?? t("facilities.noData")}</Badge>
+                <Badge variant="secondary" className="bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)]">{currentFacility.species ?? t("facilities.noData")}</Badge>
+                <Badge variant="outline" className="border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]">{currentFacility.productionSystem ?? t("facilities.noData")}</Badge>
+                <Badge variant="outline" className="border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]">{currentFacility.productionType ?? t("facilities.noData")}</Badge>
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-[#F5F7F6] border border-[#E2E8E5] px-8 py-6 shrink-0">
-              <span className="text-sm font-medium uppercase tracking-wider text-[#6B7C72] mb-1">{t("table.score")}</span>
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-[var(--color-surface-base)] border border-[var(--color-border-subtle)] px-8 py-6 shrink-0">
+              <span className="text-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-1">{t("table.score")}</span>
               <div className="flex items-baseline gap-1">
                 <span
                   className={`text-5xl font-black font-scientific ${
                     currentFacility.score >= 70
-                      ? "text-[#15803D]"
+                      ? "text-[var(--color-success)]"
                       : currentFacility.score >= 50
-                      ? "text-[#B7791F]"
-                      : "text-[#BE123C]"
+                      ? "text-[var(--color-warning)]"
+                      : "text-[var(--color-danger)]"
                   }`}
                 >
                   {currentFacility.score}
                 </span>
-                <span className="text-lg font-medium text-[#6B7C72]">/100</span>
+                <span className="text-lg font-medium text-[var(--color-text-secondary)]">/100</span>
               </div>
             </div>
           </div>
@@ -120,7 +120,7 @@ export function FacilitiesView({
       {/* Core Insights */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Benchmark against average */}
-        <Card className="card-flat lg:col-span-2 transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+        <Card className="card-flat lg:col-span-2 transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.benchmark")} info={t("info.facilityBenchmark")} />
           </CardHeader>
@@ -153,7 +153,7 @@ export function FacilitiesView({
                   {benchmarkData.map((entry) => (
                     <Cell key={`${entry.section}-facility`} fill={entry.side === "external" ? FACILITY_COLORS.external : FACILITY_COLORS.internal} />
                   ))}
-                  <LabelList dataKey="facility" position="right" fontSize={10} fill="#1F2A2A" fontWeight={600} />
+                  <LabelList dataKey="facility" position="right" fontSize={10} fill="var(--color-text-primary)" fontWeight={600} />
                 </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -162,42 +162,42 @@ export function FacilitiesView({
         </Card>
 
         {/* Quick Info */}
-        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.quickInfo")} info={t("info.facilityDiagnostics")} />
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <InfoRow label={t("facilities.yearsOperation")} value={currentFacility.yearsOperation ?? t("facilities.noData")} />
-            <Separator className="bg-[#E2E8E5]" />
+            <Separator className="bg-[var(--color-border-subtle)]" />
             <InfoRow label={t("facilities.species")} value={currentFacility.species ?? t("facilities.noData")} />
-            <Separator className="bg-[#E2E8E5]" />
+            <Separator className="bg-[var(--color-border-subtle)]" />
             <InfoRow label={t("facilities.waterSource")} value={currentFacility.waterSource ?? t("facilities.noData")} />
-            <Separator className="bg-[#E2E8E5]" />
+            <Separator className="bg-[var(--color-border-subtle)]" />
             <InfoRow label={t("facilities.waterMonitoring")} value={currentFacility.waterMonitoringFrequency ?? t("facilities.noData")} />
           </CardContent>
         </Card>
       </div>
 
       {/* Risks & Suggestions (Prioritized for Producer) */}
-      <h3 className="text-xl font-semibold text-[#1F2A2A] tracking-tight pt-4">{t("facilities.riskAndSuggestions")}</h3>
+      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight pt-4">{t("facilities.riskAndSuggestions")}</h3>
       <div className="grid gap-6 lg:grid-cols-3">
         <RiskCard
           color="rose"
-          icon={<AlertTriangle className="h-5 w-5 text-[#BE123C]" />}
+          icon={<AlertTriangle className="h-5 w-5 text-[var(--color-danger)]" />}
           title={t("facilities.risks.high")}
           items={currentFacility.highRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="amber"
-          icon={<AlertCircle className="h-5 w-5 text-[#B7791F]" />}
+          icon={<AlertCircle className="h-5 w-5 text-[var(--color-warning)]" />}
           title={t("facilities.risks.medium")}
           items={currentFacility.moderateRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="emerald"
-          icon={<CheckCircle2 className="h-5 w-5 text-[#15803D]" />}
+          icon={<CheckCircle2 className="h-5 w-5 text-[var(--color-success)]" />}
           title={t("facilities.risks.positive")}
           items={currentFacility.positivePractices}
           emptyLabel={t("facilities.noData")}
@@ -205,9 +205,9 @@ export function FacilitiesView({
       </div>
 
       {/* Operational Details */}
-      <h3 className="text-xl font-semibold text-[#1F2A2A] tracking-tight pt-4">{t("tabs.operational")}</h3>
+      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight pt-4">{t("tabs.operational")}</h3>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.keyPractices")} info={t("info.practiceCoverage")} />
           </CardHeader>
@@ -218,7 +218,7 @@ export function FacilitiesView({
           </CardContent>
         </Card>
 
-        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
+        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.animalHealthMonitoring")} info={t("info.animalHealthMonitoring")} />
           </CardHeader>
@@ -231,10 +231,10 @@ export function FacilitiesView({
       </div>
 
       {/* Full Checklist - Redesigned with Sticky Navigation and Cards */}
-      <div className="rounded-xl border border-[#E2E8E5] bg-white overflow-hidden transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/30">
-        <div className="px-5 py-4 border-b border-[#E2E8E5] bg-[#F5F7F6]/50">
+      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] overflow-hidden transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+        <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-[#6B7C72]" />
+            <ClipboardList className="h-5 w-5 text-[var(--color-text-secondary)]" />
             <InfoTitle title={t("facilities.subcategoryChecklist")} info={t("info.subcategoryChecklist")} />
           </div>
         </div>
@@ -303,14 +303,14 @@ function ChecklistView({
   return (
     <div ref={containerRef} className="relative">
       {/* Section Header with Navigation Hint */}
-      <div className="bg-[#F5F7F6] px-4 py-3 border-b border-[#E2E8E5]">
-        <p className="text-sm text-[#6B7C72]">
+      <div className="bg-[var(--color-surface-base)] px-4 py-3 border-b border-[var(--color-border-subtle)]">
+        <p className="text-sm text-[var(--color-text-secondary)]">
           {t("checklist.navigationHint")}
         </p>
       </div>
 
       {/* Horizontal Scrollable Navigation */}
-      <div id="checklist-nav-bar" className="bg-white border-b border-[#E2E8E5] sticky top-0 z-30 shadow-sm">
+      <div id="checklist-nav-bar" className="bg-[var(--color-raised)] border-b border-[var(--color-border-subtle)] sticky top-0 z-30 shadow-sm">
         <div className="flex gap-3 p-4 overflow-x-auto scroll-smooth snap-x">
           {sectionStats.map((stats) => {
             const isActive = activeSection === stats.section;
@@ -325,23 +325,23 @@ function ChecklistView({
                   "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2",
                   isActive 
                     ? isExternal 
-                      ? "border-[#0F766E] bg-[#0F766E]/10 shadow-md" 
-                      : "border-[#5E7A8A] bg-[#5E7A8A]/10 shadow-md"
-                    : "border-[#E2E8E5] bg-white hover:border-[#0F766E]/60 hover:bg-[#F5F7F6]",
-                  isExternal ? "focus:ring-[#0F766E]/50" : "focus:ring-[#5E7A8A]/50"
+                      ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10 shadow-md" 
+                      : "border-[var(--color-chart-8)] bg-[var(--color-chart-8)]/10 shadow-md"
+                    : "border-[var(--color-border-subtle)] bg-[var(--color-raised)] hover:border-[var(--color-brand)]/60 hover:bg-[var(--color-surface-base)]",
+                  isExternal ? "focus:ring-[var(--color-brand)]/50" : "focus:ring-[var(--color-chart-8)]/50"
                 )}
               >
                 {/* Side indicator dot */}
                 <div className={cn(
                   "w-3 h-3 rounded-full shrink-0",
-                  isExternal ? "bg-[#0F766E]" : "bg-[#5E7A8A]",
-                  isActive && "ring-2 ring-offset-1 ring-[#1F2A2A]/20"
+                  isExternal ? "bg-[var(--color-brand)]" : "bg-[var(--color-chart-8)]",
+                  isActive && "ring-2 ring-offset-1 ring-[var(--color-text-primary)]/20"
                 )} />
                 
                 <div className="flex flex-col items-start">
                   <span className={cn(
                     "text-sm font-semibold leading-tight whitespace-nowrap",
-                    isActive ? "text-[#1F2A2A]" : "text-[#6B7C72] group-hover:text-[#1F2A2A]"
+                    isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)]"
                   )}>
                     {translateSectionLabel(stats.section, t)}
                   </span>
@@ -349,13 +349,13 @@ function ChecklistView({
                     <span className={cn(
                       "font-medium",
                       stats.compliant === (stats.total - stats.notApplicable) 
-                        ? "text-[#15803D]" 
-                        : isActive ? "text-[#1F2A2A]" : "text-[#6B7C72]"
+                        ? "text-[var(--color-success)]" 
+                        : isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"
                     )}>
                       {stats.compliant}/{stats.total - stats.notApplicable}
                     </span>
                     {stats.nonCompliant > 0 && (
-                      <span className="text-[#BE123C] font-semibold flex items-center gap-0.5">
+                      <span className="text-[var(--color-danger)] font-semibold flex items-center gap-0.5">
                         <AlertCircle className="h-3 w-3" />
                         {stats.nonCompliant}
                       </span>
@@ -369,30 +369,30 @@ function ChecklistView({
       </div>
 
       {/* Section Content with Cards Grid */}
-      <div className="bg-white px-4 py-6 space-y-10">
+      <div className="bg-[var(--color-raised)] px-4 py-6 space-y-10">
         {checklist.map((subcategory, index) => (
           <section
             key={subcategory.section}
             ref={setSectionRef(subcategory.section)}
             data-section={subcategory.section}
             className={cn(
-              index > 0 && "pt-8 border-t-2 border-[#E2E8E5]"
+              index > 0 && "pt-8 border-t-2 border-[var(--color-border-subtle)]"
             )}
           >
             {/* Section Header - Prominent */}
             <div className={cn(
               "flex items-center gap-3 mb-6 p-4 rounded-xl",
               subcategory.side === "external" 
-                ? "bg-[#0F766E]/8 border border-[#0F766E]/20" 
-                : "bg-[#5E7A8A]/8 border border-[#5E7A8A]/20"
+                ? "bg-[var(--color-brand)]/8 border border-[var(--color-brand)]/20" 
+                : "bg-[var(--color-chart-8)]/8 border border-[var(--color-chart-8)]/20"
             )}>
               <div className={cn(
                 "w-1.5 h-8 rounded-full",
-                subcategory.side === "external" ? "bg-[#0F766E]" : "bg-[#5E7A8A]"
+                subcategory.side === "external" ? "bg-[var(--color-brand)]" : "bg-[var(--color-chart-8)]"
               )} />
               <div className="flex-1">
-                <h4 className="text-lg font-bold text-[#1F2A2A]">{translateSectionLabel(subcategory.section, t)}</h4>
-                <p className="text-xs text-[#6B7C72] mt-0.5">
+                <h4 className="text-lg font-bold text-[var(--color-text-primary)]">{translateSectionLabel(subcategory.section, t)}</h4>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                   {subcategory.items.length} {t("checklist.questions")} • {subcategory.items.filter((i) => i.compliant).length} {t("checklist.compliant")}
                 </p>
               </div>
@@ -401,8 +401,8 @@ function ChecklistView({
                 className={cn(
                   "text-xs px-2 py-1",
                   subcategory.side === "external" 
-                    ? "border-[#0F766E] text-[#0F766E] bg-white font-semibold" 
-                    : "border-[#5E7A8A] text-[#5E7A8A] bg-white font-semibold"
+                    ? "border-[var(--color-brand)] text-[var(--color-brand)] bg-[var(--color-raised)] font-semibold" 
+                    : "border-[var(--color-chart-8)] text-[var(--color-chart-8)] bg-[var(--color-raised)] font-semibold"
                 )}
               >
                 {subcategory.side === "external" ? t("overview.external") : t("overview.internal")}
@@ -514,9 +514,9 @@ function ChecklistBackToTopButton({
       onClick={scrollToTop}
       className={cn(
         "fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full",
-        "bg-[#0F766E] text-white shadow-lg hover:bg-[#0F766E]/90",
+        "bg-[var(--color-brand)] text-white shadow-lg hover:bg-[var(--color-brand)]/90",
         "transition-all duration-300 hover:shadow-xl hover:scale-105",
-        "focus:outline-none focus:ring-2 focus:ring-[#0F766E]/50 focus:ring-offset-2"
+        "focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 focus:ring-offset-2"
       )}
       aria-label={t("checklist.backToSections")}
     >
@@ -543,30 +543,30 @@ function ChecklistCard({
   t: (key: string) => string;
 }) {
   return (
-    <div className="rounded-xl border border-[#E2E8E5] bg-white p-4 transition-all duration-200 hover:shadow-md hover:border-[#0F766E]/20">
+    <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-4 transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/20">
       {/* Question */}
-      <h5 className="text-sm font-medium text-[#1F2A2A] leading-relaxed mb-3">
+      <h5 className="text-sm font-medium text-[var(--color-text-primary)] leading-relaxed mb-3">
         {item.label}
       </h5>
 
       {/* Answer & Status Row */}
-      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-[#E2E8E5]/60">
+      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-[var(--color-border-subtle)]/60">
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-[#6B7C72]">{t("table.answer")}:</span>
-          <span className="font-medium text-[#1F2A2A]">{item.answer}</span>
+          <span className="text-[var(--color-text-secondary)]">{t("table.answer")}:</span>
+          <span className="font-medium text-[var(--color-text-primary)]">{item.answer}</span>
         </div>
         
         {!item.applicable ? (
-          <Badge variant="secondary" className="bg-[#E2E8E5]/50 text-[#6B7C72] text-xs">
+          <Badge variant="secondary" className="bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] text-xs">
             {t("status.notApplicable")}
           </Badge>
         ) : item.compliant ? (
-          <Badge variant="secondary" className="bg-[#F0FDF4] text-[#15803D] border border-[#15803D]/20 text-xs">
+          <Badge variant="secondary" className="bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/20 text-xs">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             {t("status.compliant")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="bg-[#FEF2F2] text-[#BE123C] border border-[#BE123C]/20 text-xs">
+          <Badge variant="secondary" className="bg-[var(--color-danger)]/10 text-[var(--color-danger)] border border-[var(--color-danger)]/20 text-xs">
             <AlertCircle className="h-3 w-3 mr-1" />
             {t("status.nonCompliant")}
           </Badge>
@@ -576,12 +576,12 @@ function ChecklistCard({
       {/* Recommendation */}
       {item.recommendation && (
         <div className="flex items-start gap-2 text-sm">
-          <Lightbulb className="h-4 w-4 text-[#B7791F] shrink-0 mt-0.5" />
+          <Lightbulb className="h-4 w-4 text-[var(--color-warning)] shrink-0 mt-0.5" />
           <div>
-            <span className="text-[#B7791F] font-medium text-xs uppercase tracking-wide">
+            <span className="text-[var(--color-warning)] font-medium text-xs uppercase tracking-wide">
               {t("table.recommendation")}
             </span>
-            <p className="text-[#6B7C72] mt-0.5 leading-relaxed">
+            <p className="text-[var(--color-text-secondary)] mt-0.5 leading-relaxed">
               {item.recommendation}
             </p>
           </div>
@@ -594,31 +594,31 @@ function ChecklistCard({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 items-center">
-      <span className="text-[#6B7C72] text-sm">{label}</span>
-      <span className="text-right font-medium text-[#1F2A2A]">{value}</span>
+      <span className="text-[var(--color-text-secondary)] text-sm">{label}</span>
+      <span className="text-right font-medium text-[var(--color-text-primary)]">{value}</span>
     </div>
   );
 }
 
 function RuleRow({ rule, t }: { rule: RuleStatus; t: (key: string) => string }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl border border-[#E2E8E5] px-4 py-3 bg-[#F5F7F6]/30">
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl border border-[var(--color-border-subtle)] px-4 py-3 bg-[var(--color-surface-base)]">
       <div className="space-y-1.5 flex-1">
-        <p className="text-sm font-medium text-[#1F2A2A]">{rule.label}</p>
-        <p className="text-xs text-[#6B7C72] flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#5E7A8A]" />
+        <p className="text-sm font-medium text-[var(--color-text-primary)]">{rule.label}</p>
+        <p className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-chart-8)]" />
           {t("table.answer")}: <span className="font-medium">{rule.answer}</span>
         </p>
       </div>
       <div className="shrink-0 mt-2 sm:mt-0">
         {!rule.applicable ? (
-          <Badge variant="secondary" className="bg-[#E2E8E5]/50 text-[#6B7C72]">{t("status.notApplicable")}</Badge>
+          <Badge variant="secondary" className="bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)]">{t("status.notApplicable")}</Badge>
         ) : rule.matched ? (
-          <Badge variant="secondary" className="bg-[#F0FDF4] text-[#15803D] border border-[#15803D]/20">
+          <Badge variant="secondary" className="bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/20">
             {t("status.yes")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="bg-[#FEF2F2] text-[#BE123C] border border-[#BE123C]/20">
+          <Badge variant="secondary" className="bg-[var(--color-danger)]/10 text-[var(--color-danger)] border border-[var(--color-danger)]/20">
             {t("status.no")}
           </Badge>
         )}
@@ -641,33 +641,33 @@ function RiskCard({
   emptyLabel: string;
 }) {
   const border = {
-    rose: "border-t-4 border-t-[#BE123C]",
-    amber: "border-t-4 border-t-[#B7791F]",
-    emerald: "border-t-4 border-t-[#15803D]",
+    rose: "border-t-4 border-t-[var(--color-danger)]",
+    amber: "border-t-4 border-t-[var(--color-warning)]",
+    emerald: "border-t-4 border-t-[var(--color-success)]",
   }[color];
   const IconBullet = color === "rose" ? AlertTriangle : color === "amber" ? AlertCircle : CheckCircle2;
-  const iconColor = color === "rose" ? "text-[#BE123C]" : color === "amber" ? "text-[#B7791F]" : "text-[#15803D]";
-  const bgClass = color === "rose" ? "hover:border-[#BE123C]/30" : color === "amber" ? "hover:border-[#B7791F]/30" : "hover:border-[#15803D]/30";
+  const iconColor = color === "rose" ? "text-[var(--color-danger)]" : color === "amber" ? "text-[var(--color-warning)]" : "text-[var(--color-success)]";
+  const bgClass = color === "rose" ? "hover:border-[var(--color-danger)]/30" : color === "amber" ? "hover:border-[var(--color-warning)]/30" : "hover:border-[var(--color-success)]/30";
   return (
     <Card className={`card-flat transition-all duration-200 hover:shadow-md ${border} ${bgClass}`}>
-      <CardHeader className="pb-3 bg-[#F5F7F6]/50 rounded-t-xl">
+      <CardHeader className="pb-3 bg-[var(--color-raised)] rounded-t-xl">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-white rounded-lg shadow-sm border border-[#E2E8E5]">{icon}</div>
-          <CardTitle className="text-base font-semibold text-[#1F2A2A]">{title}</CardTitle>
+          <div className="p-2 bg-[var(--color-raised)] rounded-lg shadow-sm border border-[var(--color-border-subtle)]">{icon}</div>
+          <CardTitle className="text-base font-semibold text-[var(--color-text-primary)]">{title}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
         {items.length > 0 ? (
           <ul className="space-y-3">
             {items.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-sm text-[#1F2A2A]">
+              <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--color-text-primary)]">
                 <IconBullet className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
                 <span className="leading-snug">{item}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-[#6B7C72] italic">{emptyLabel}</p>
+          <p className="text-sm text-[var(--color-text-secondary)] italic">{emptyLabel}</p>
         )}
       </CardContent>
     </Card>
@@ -786,7 +786,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`${t("actions.search")} ${t("table.facilities")}...`}
-              className="pl-10 bg-white border-[var(--color-border-subtle)]"
+              className="pl-10 bg-[var(--color-raised)] border-[var(--color-border-subtle)]"
             />
             {searchQuery && (
               <button

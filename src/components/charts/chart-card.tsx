@@ -15,8 +15,8 @@ const HEIGHT_CLASSES: Record<ChartCardHeight, string> = {
 export const CHART_TOOLTIP_STYLE: CSSProperties = {
   borderRadius: "12px",
   border: "1px solid var(--color-border-subtle)",
-  backgroundColor: "white",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  backgroundColor: "var(--color-raised)",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.2)",
   fontSize: "12px",
 };
 

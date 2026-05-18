@@ -8,7 +8,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto w-full border-t border-[var(--color-border-subtle)] bg-white">
+    <footer className="mt-auto w-full border-t border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
       <div className="mx-auto max-w-[1600px] px-6 py-6">
         {/* Desktop layout */}
         <div className="hidden items-center justify-between gap-8 sm:flex">

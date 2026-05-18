@@ -905,8 +905,8 @@ export function transformKoboData(raw: KoboApiResponse, asset?: KoboAssetRespons
       byLocation: countByField(facilities.map((f) => ({ location: f.basedOn ?? f.location })), "location").map((x) => ({ location: x.name, count: x.count })),
     },
     complianceMix: [
-      { name: "External", value: avgExternalScore, color: "#16a34a" },
-      { name: "Internal", value: avgInternalScore, color: "#2563eb" },
+      { name: "External", value: avgExternalScore, color: "var(--color-chart-2)" },
+      { name: "Internal", value: avgInternalScore, color: "var(--color-chart-1)" },
     ],
     distribution,
     sectionAverages,
