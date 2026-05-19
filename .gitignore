@@ -44,3 +44,5 @@ skills-lock.json
 
 # Limux
 squashfs-root/
+# clerk configuration (can include secrets)
+/.clerk/
