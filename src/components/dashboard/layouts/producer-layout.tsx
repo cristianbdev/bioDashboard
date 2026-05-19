@@ -1,19 +1,22 @@
 "use client";
 
-import { BarChart3, Building2 } from "lucide-react";
+import { BarChart3, Building2, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FacilitiesView } from "@/components/dashboard/facilities";
 import { Overview } from "@/components/dashboard/overview";
+import { SummaryView } from "@/components/dashboard/summary-view";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
+import type { DashboardTab } from "@/lib/access-control";
+import { translateSectionLabel } from "@/lib/section-labels";
 import { cn } from "@/lib/utils";
 
 type ProducerLayoutProps = {
   data: DashboardData;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   locale: AppLocale;
-  activeTab: "overview" | "facilities" | "comparative" | "methodology" | "users";
-  setActiveTab: (tab: "overview" | "facilities" | "comparative" | "methodology" | "users") => void;
+  activeTab: DashboardTab;
+  setActiveTab: (tab: DashboardTab) => void;
   facilitiesForRole: FacilitySummary[];
   currentFacilityForRole?: FacilitySummary;
   setSelectedFacility: (id: number | null) => void;
@@ -22,6 +25,7 @@ type ProducerLayoutProps = {
 const PRODUCER_NAV_ITEMS = [
   { id: "facilities" as const, icon: Building2, labelKey: "producer.myFacility" },
   { id: "overview" as const, icon: BarChart3, labelKey: "producer.globalOverview" },
+  { id: "summary" as const, icon: ClipboardList, labelKey: "producer.summary" },
 ];
 
 export function ProducerLayout({
@@ -34,8 +38,6 @@ export function ProducerLayout({
   currentFacilityForRole,
   setSelectedFacility,
 }: ProducerLayoutProps) {
-  const activeItem = PRODUCER_NAV_ITEMS.find((item) => item.id === activeTab);
-
   return (
     <div className="flex flex-col gap-6">
       {/* Desktop navigation */}
@@ -84,11 +86,24 @@ export function ProducerLayout({
             currentFacility={currentFacilityForRole}
             onSelect={setSelectedFacility}
             readOnlySelection={true}
+            isProducerView={true}
             t={t}
             sectionAverages={data.sectionAverages}
           />
         )}
         {activeTab === "overview" && <Overview data={data} t={t} locale={locale} />}
+        {activeTab === "summary" && currentFacilityForRole && (
+          <SummaryView
+            facility={currentFacilityForRole}
+            peerAverage={data.sectionAverages.length > 0 ? Math.round(data.sectionAverages.reduce((acc, s) => acc + s.score, 0) / data.sectionAverages.length) : undefined}
+            topActions={currentFacilityForRole.subcategoryChecklist
+              .flatMap((s) => s.items.map((i) => ({ ...i, section: s.section })))
+              .filter((i) => i.applicable && !i.compliant && i.recommendation)
+              .slice(0, 3)
+              .map((i) => ({ label: i.label, section: translateSectionLabel(i.section, t) }))}
+            t={t}
+          />
+        )}
       </div>
     </div>
   );

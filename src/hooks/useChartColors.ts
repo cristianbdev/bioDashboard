@@ -11,6 +11,7 @@ export interface ChartColors {
   surfaceBase: string;
   surfaceElevated: string;
   danger: string;
+  warning: string;
   success: string;
 }
 
@@ -28,6 +29,7 @@ export function useChartColors(): ChartColors {
     surfaceBase: isDark ? "#0f172a" : "#f5f7f6",
     surfaceElevated: isDark ? "#1e293b" : "#fbfcfc",
     danger: isDark ? "#ef4444" : "#b42318",
+    warning: isDark ? "#eab308" : "#a16207",
     success: isDark ? "#22c55e" : "#15803d",
   };
 }

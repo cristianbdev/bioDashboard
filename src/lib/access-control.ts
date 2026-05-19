@@ -1,6 +1,6 @@
 export type AppRole = "public" | "producer" | "admin";
 
-export type DashboardTab = "overview" | "facilities" | "comparative" | "methodology" | "users";
+export type DashboardTab = "overview" | "facilities" | "comparative" | "methodology" | "users" | "summary";
 
 export const DEFAULT_PROJECT_UID = "atWJrmvMK43Gtr6zny6vs7";
 

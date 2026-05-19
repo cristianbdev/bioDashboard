@@ -13,7 +13,7 @@ import { ProducerLayout } from "@/components/dashboard/layouts/producer-layout";
 import { PublicLayout } from "@/components/dashboard/layouts/public-layout";
 import { AppHeader } from "@/components/layout/app-header";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
-import { Activity, BarChart3, Building2, Database as DbIcon, Users } from "lucide-react";
+import { Activity, BarChart3, Building2, ClipboardList, Database as DbIcon, Users } from "lucide-react";
 import type { AppRole, DashboardTab } from "@/lib/access-control";
 import { canAccessTab, DEFAULT_PROJECT_UID, normalizeRole, parseFacilityId, ROLE_ACCESS_MATRIX } from "@/lib/access-control";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
@@ -45,9 +45,10 @@ const ADMIN_NAV_ITEMS: Array<{ id: DashboardTab; icon: typeof BarChart3; labelKe
   { id: "users", icon: Users, labelKey: "tabs.users" },
 ];
 
-const PRODUCER_NAV_ITEMS: Array<{ id: "overview" | "facilities"; icon: typeof BarChart3; labelKey: string }> = [
+const PRODUCER_NAV_ITEMS: Array<{ id: "overview" | "facilities" | "summary"; icon: typeof BarChart3; labelKey: string }> = [
   { id: "facilities", icon: Building2, labelKey: "producer.myFacility" },
   { id: "overview", icon: BarChart3, labelKey: "producer.globalOverview" },
+  { id: "summary", icon: ClipboardList, labelKey: "producer.summary" },
 ];
 
 function NavigationContent({
@@ -104,7 +105,7 @@ export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [state, setState] = useState<ApiState>({ status: "idle" });
   const [selectedFacility, setSelectedFacility] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology" | "users">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "facilities" | "comparative" | "methodology" | "users" | "summary">("overview");
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   const openNav = useCallback(() => setIsNavOpen(true), []);
