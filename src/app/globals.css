@@ -67,8 +67,8 @@
 
   /* Typography */
   --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-text-muted: #94a3b8;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
 
   /* Borders */
   --color-border-subtle: #e2e8e5;
@@ -143,7 +143,7 @@
   /* Typography - Dark mode */
   --color-text-primary: #f1f5f9;
   --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  --color-text-muted: #94a3b8;
 
   /* Borders - Dark mode */
   --color-border-subtle: #334155;
@@ -212,18 +212,21 @@
 }
 
 .card-flat {
+  @apply rounded-xl border shadow-sm;
+  border-color: var(--color-border-subtle);
+  background-color: var(--color-raised);
+}
+
+/* NEW: interactive variant for clickable cards */
+.card-flat-interactive {
   @apply rounded-xl border shadow-sm transition-shadow duration-200;
   border-color: var(--color-border-subtle);
   background-color: var(--color-raised);
 }
 
-.dark .card-flat {
-  border-color: var(--color-border-subtle);
-  background-color: var(--color-raised);
-}
-
-.card-flat:hover {
+.card-flat-interactive:hover {
   @apply shadow-md;
+  border-color: color-mix(in srgb, var(--color-brand) 30%, var(--color-border-subtle));
 }
 
 .font-scientific {
@@ -431,4 +434,20 @@
 /* Canvas attribution for dark tiles */
 .dark .maplibregl-canvas-container canvas {
   filter: none;
+}
+
+/* Slice 8 — Polish: respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card-flat-interactive:hover {
+    transition: none;
+  }
 }

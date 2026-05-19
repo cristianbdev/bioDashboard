@@ -8,13 +8,14 @@ import { CoveragePill, MetricCard } from "./cards";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
-import { EmptyChartState } from "@/components/charts/empty-chart-state";
+import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { FloatingFilters } from "./floating-filters";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
+import { CollapsibleSection } from "@/components/ui/collapsible-section";
 
 export type FilterState = {
   speciesFilter: string;
@@ -267,6 +268,17 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     ? aggregateFactors(filteredFacilities, "positivePractices").slice(0, 5)
     : data.positivePractices.slice(0, 5);
 
+  const emptyStateProps: EmptyChartStateProps = filteredFacilities.length === 0 ? {
+    title: t("charts.noData"),
+    subtitle: t("charts.tryFilters"),
+    blockingFilters: [
+      ...(speciesFilter !== "all" ? [{ label: t("overview.filterSpecies"), value: speciesFilter, onClear: () => setSpeciesFilter("all") }] : []),
+      ...(systemFilter !== "all" ? [{ label: t("overview.filterSystem"), value: systemFilter, onClear: () => setSystemFilter("all") }] : []),
+      ...(locationFilter !== "all" ? [{ label: t("overview.filterLocation"), value: locationFilter, onClear: () => setLocationFilter("all") }] : []),
+    ],
+    onClearAll: clearAllFilters,
+  } : { title: t("charts.noData"), subtitle: t("charts.tryFilters") };
+
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   return (
@@ -328,8 +340,10 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
               data={scoreDistribution}
               labelKey="bucket"
               valueKey="count"
-              emptyTitle={t("charts.noData")}
-              emptySubtitle={t("charts.tryFilters")}
+              emptyTitle={emptyStateProps.title}
+              emptySubtitle={emptyStateProps.subtitle}
+              blockingFilters={emptyStateProps.blockingFilters}
+              onClearAll={emptyStateProps.onClearAll}
             />
           </div>
         </ChartCard>
@@ -345,7 +359,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           ariaLabel={`${t("charts.sectionDetail")}. ${sectionAverages.length} sections.`}
         >
           {translatedSectionAverages.length === 0 ? (
-            <EmptyChartState title={t("charts.noData")} subtitle={t("charts.tryFilters")} />
+            <EmptyChartState {...emptyStateProps} />
           ) : (
             <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
               <BarChart data={translatedSectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
@@ -374,8 +388,8 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
 
       {/* Section 4: Risk Analysis */}
       <section className="grid gap-6 lg:grid-cols-2">
-        <FactorList title={t("charts.highRiskFactors")} factors={topRiskFactors} color="high" t={t} />
-        <FactorList title={t("charts.positiveFactors")} factors={topPositiveFactors} color="positive" t={t} />
+        <FactorList title={t("charts.highRiskFactors")} factors={topRiskFactors} color="high" emptyStateProps={emptyStateProps} t={t} />
+        <FactorList title={t("charts.positiveFactors")} factors={topPositiveFactors} color="positive" emptyStateProps={emptyStateProps} t={t} />
       </section>
 
       {/* Section 5: Practice Coverage */}
@@ -390,17 +404,17 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
 
       {/* Section 6: Operational Charts */}
       <section className="space-y-4">
-        <h3 className="text-dashboard-section">{t("tabs.operational")}</h3>
-        <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
-          <ChartBlock title={t("charts.scoreDistribution")} info={t("info.scoreDistribution")} data={scoreDistribution} labelKey="bucket" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.waterMonitoring")} info={t("info.waterMonitoring")} data={waterMonitoring} labelKey="label" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.mortalityDisposal")} info={t("info.mortalityDisposal")} data={mortalityDisposal} labelKey="method" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.intakeWaterTreatmentApplied")} info={t("info.intakeWaterTreatmentApplied")} data={intakeWaterTreatmentApplied} labelKey="label" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.waterParametersMeasured")} info={t("info.waterParametersMeasured")} data={waterParametersMeasured} labelKey="label" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.personalTraining")} info={t("info.personalTraining")} data={personnelTrainingTopics} labelKey="label" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.records")} info={t("info.records")} data={recordsCoverage} labelKey="label" valueKey="count" t={t} />
-          <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" t={t} />
-        </div>
+        <CollapsibleSection title={t("tabs.operational")} defaultOpen={false}>
+          <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+            <ChartBlock title={t("charts.waterMonitoring")} info={t("info.waterMonitoring")} data={waterMonitoring} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+            <ChartBlock title={t("charts.mortalityDisposal")} info={t("info.mortalityDisposal")} data={mortalityDisposal} labelKey="method" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+            <ChartBlock title={t("charts.intakeWaterTreatmentApplied")} info={t("info.intakeWaterTreatmentApplied")} data={intakeWaterTreatmentApplied} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+            <ChartBlock title={t("charts.waterParametersMeasured")} info={t("info.waterParametersMeasured")} data={waterParametersMeasured} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+            <ChartBlock title={t("charts.personalTraining")} info={t("info.personalTraining")} data={personnelTrainingTopics} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+            <ChartBlock title={t("charts.records")} info={t("info.records")} data={recordsCoverage} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+            <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+          </div>
+        </CollapsibleSection>
       </section>
 
       {/* Mobile floating filter button - shown on scroll when header not visible */}
@@ -483,14 +497,14 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
   );
 }
 
-function FactorList({ title, factors, color, t }: { title: string; factors: { factor: string; count: number }[]; color: "high" | "positive"; t: (key: string) => string }) {
+function FactorList({ title, factors, color, emptyStateProps, t }: { title: string; factors: { factor: string; count: number }[]; color: "high" | "positive"; emptyStateProps?: EmptyChartStateProps; t: (key: string) => string }) {
   const barColor = riskLabelToBarColor(color);
   return (
     <Card className="card-flat">
       <CardContent className="space-y-4 p-5">
         <h4 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h4>
         {factors.length === 0 ? (
-          <EmptyChartState title={t("charts.noData")} subtitle={t("charts.tryFilters")} />
+          <EmptyChartState title={emptyStateProps?.title ?? t("charts.noData")} subtitle={emptyStateProps?.subtitle ?? t("charts.tryFilters")} blockingFilters={emptyStateProps?.blockingFilters} onClearAll={emptyStateProps?.onClearAll} />
         ) : (
           factors.map((item) => (
             <div key={item.factor} className="space-y-2">
@@ -512,7 +526,7 @@ function FactorList({ title, factors, color, t }: { title: string; factors: { fa
   );
 }
 
-function ChartBlock({ title, info, data, labelKey, valueKey, height, t }: { title: string; info?: string; data: Record<string, string | number>[]; labelKey: string; valueKey: string; height?: ChartCardHeight; t: (key: string) => string }) {
+function ChartBlock({ title, info, data, labelKey, valueKey, height, emptyStateProps, t }: { title: string; info?: string; data: Record<string, string | number>[]; labelKey: string; valueKey: string; height?: ChartCardHeight; emptyStateProps?: EmptyChartStateProps; t: (key: string) => string }) {
   const nonZeroCount = data.filter((item) => Number(item[valueKey] ?? 0) > 0).length;
   const effectiveCount = nonZeroCount > 0 ? nonZeroCount : data.length;
 
@@ -528,16 +542,18 @@ function ChartBlock({ title, info, data, labelKey, valueKey, height, t }: { titl
         data={data}
         labelKey={labelKey}
         valueKey={valueKey}
-        emptyTitle={t("charts.noData")}
-        emptySubtitle={t("charts.tryFilters")}
+        emptyTitle={emptyStateProps?.title ?? t("charts.noData")}
+        emptySubtitle={emptyStateProps?.subtitle ?? t("charts.tryFilters")}
+        blockingFilters={emptyStateProps?.blockingFilters}
+        onClearAll={emptyStateProps?.onClearAll}
       />
     </ChartCard>
   );
 }
 
-function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emptySubtitle }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; barColor?: string; emptyTitle: string; emptySubtitle: string }) {
+function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; barColor?: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
   if (data.length === 0) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
   const nonZeroData = data.filter((item) => Number(item[valueKey] ?? 0) > 0);
@@ -545,7 +561,7 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
   const hasAnyValue = chartData.some((item) => Number(item[valueKey] ?? 0) > 0);
 
   if (!hasAnyValue) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
   const longestLabel = chartData.reduce((max, item) => {
@@ -580,14 +596,14 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
   );
 }
 
-function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle: string; emptySubtitle: string }) {
+function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
   if (data.length === 0) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
   const hasAnyValue = data.some((item) => Number(item[valueKey] ?? 0) > 0);
   if (!hasAnyValue) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} />;
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
   const total = data.reduce((sum, item) => sum + Number(item[valueKey] ?? 0), 0);

@@ -18,13 +18,14 @@ import {
   getAdaptiveChartHeight,
   truncateChartLabel,
 } from "@/components/charts/chart-card";
-import { EmptyChartState } from "@/components/charts/empty-chart-state";
+import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
 import { useChartColors, type ChartColors } from "@/hooks/useChartColors";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
+import { MobileHeatmapTable } from "./mobile-heatmap-table";
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
 
@@ -129,7 +130,7 @@ function buildHeatmapOption(
       precision: 0,
       text: [t("status.compliant"), t("status.nonCompliant")],
       textStyle: { color: colors.textPrimary },
-      inRange: { color: [colors.danger, colors.success] },
+      inRange: { color: [colors.danger, colors.warning, colors.success] },
     },
     series: [
       {
@@ -224,6 +225,22 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
     setSpeciesFilter("all");
     setWaterSourceFilter("all");
   };
+
+  const [showAllCharts, setShowAllCharts] = useState(false);
+  const [showHeatmapAsList, setShowHeatmapAsList] = useState(false);
+
+  const emptyStateProps: EmptyChartStateProps = filteredFacilities.length === 0 ? {
+    title: t("charts.noData"),
+    subtitle: t("charts.tryFilters"),
+    blockingFilters: [
+      ...(locationFilter !== "all" ? [{ label: t("overview.filterLocation"), value: locationFilter, onClear: () => setLocationFilter("all") }] : []),
+      ...(productionTypeFilter !== "all" ? [{ label: t("table.productionType"), value: productionTypeFilter, onClear: () => setProductionTypeFilter("all") }] : []),
+      ...(systemFilter !== "all" ? [{ label: t("table.system"), value: systemFilter, onClear: () => setSystemFilter("all") }] : []),
+      ...(speciesFilter !== "all" ? [{ label: t("table.species"), value: speciesFilter, onClear: () => setSpeciesFilter("all") }] : []),
+      ...(waterSourceFilter !== "all" ? [{ label: t("table.water"), value: waterSourceFilter, onClear: () => setWaterSourceFilter("all") }] : []),
+    ],
+    onClearAll: clearAllFilters,
+  } : { title: t("charts.noData"), subtitle: t("charts.tryFilters") };
 
   return (
     <div className="space-y-6 min-w-0">
@@ -726,35 +743,49 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)} ariaLabel={`${t("comparative.scoreBySystem")}. ${charts.bySystem.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" t={t} />
+          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" emptyStateProps={emptyStateProps} t={t} />
         </ChartCard>
         <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)} ariaLabel={`${t("comparative.scoreByProductionType")}. ${charts.byProductionType.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" t={t} />
+          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" emptyStateProps={emptyStateProps} t={t} />
         </ChartCard>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" t={t} />
-        </ChartCard>
-        <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" t={t} />
-        </ChartCard>
+      {showAllCharts && (
+        <>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} ${t("comparative.groupsAriaSuffix")}`}>
+              <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" emptyStateProps={emptyStateProps} t={t} />
+            </ChartCard>
+            <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} ${t("comparative.groupsAriaSuffix")}`}>
+              <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" emptyStateProps={emptyStateProps} t={t} />
+            </ChartCard>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
+            <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} ${t("comparative.groupsAriaSuffix")}`}>
+              <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" emptyStateProps={emptyStateProps} t={t} />
+            </ChartCard>
+            <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} ${t("comparative.groupsAriaSuffix")}`}>
+              <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" emptyStateProps={emptyStateProps} t={t} />
+            </ChartCard>
+            <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} ${t("comparative.groupsAriaSuffix")}`}>
+              <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" emptyStateProps={emptyStateProps} t={t} />
+            </ChartCard>
+          </div>
+        </>
+      )}
+
+      <div className="flex justify-center">
+        <button
+          onClick={() => setShowAllCharts(!showAllCharts)}
+          className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-base)] hover:border-[var(--color-brand)]/40"
+        >
+          {showAllCharts ? t("comparative.hideAnalysis") : t("comparative.addAnalysis")}
+        </button>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
-        <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" t={t} />
-        </ChartCard>
-        <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" t={t} />
-        </ChartCard>
-        <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" t={t} />
-        </ChartCard>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Desktop heatmaps (md+ always visible via ECharts) */}
+      <div className="hidden md:grid gap-6 lg:grid-cols-2">
         <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("comparative.riskMatrixExternal")} info={t("info.riskMatrix")} />
@@ -766,7 +797,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                 <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
               </div>
             ) : (
-              <EmptyChartState />
+              <EmptyChartState {...emptyStateProps} />
             )}
           </CardContent>
         </Card>
@@ -782,10 +813,62 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                 <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
               </div>
             ) : (
-              <EmptyChartState />
+              <EmptyChartState {...emptyStateProps} />
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Mobile: toggle between chart and scrollable table */}
+      <div className="md:hidden space-y-4">
+        <div className="flex justify-center">
+          <button
+            onClick={() => setShowHeatmapAsList(!showHeatmapAsList)}
+            className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-base)]"
+          >
+            {showHeatmapAsList ? t("comparative.viewAsChart") : t("comparative.viewAsList")}
+          </button>
+        </div>
+        {showHeatmapAsList ? (
+          <>
+            <MobileHeatmapTable facilities={filteredFacilities} side="external" title={t("comparative.riskMatrixExternal")} t={t} />
+            <MobileHeatmapTable facilities={filteredFacilities} side="internal" title={t("comparative.riskMatrixInternal")} t={t} />
+          </>
+        ) : (
+          <div className="grid gap-6">
+            <Card className="card-flat">
+              <CardHeader className="pb-2">
+                <InfoTitle title={t("comparative.riskMatrixExternal")} info={t("info.riskMatrix")} />
+                <CardDescription>{t("comparative.riskMatrixLegend")}</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[460px]">
+                {externalHeatmap ? (
+                  <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
+                    <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+                  </div>
+                ) : (
+                  <EmptyChartState {...emptyStateProps} />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="card-flat">
+              <CardHeader className="pb-2">
+                <InfoTitle title={t("comparative.riskMatrixInternal")} info={t("info.riskMatrix")} />
+                <CardDescription>{t("comparative.riskMatrixLegend")}</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[460px]">
+                {internalHeatmap ? (
+                  <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
+                    <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+                  </div>
+                ) : (
+                  <EmptyChartState {...emptyStateProps} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       <Card className="card-flat">
@@ -817,7 +900,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                       tabIndex={0}
                       role="button"
                       aria-label={`${t("table.facility")}: ${facility.name}. ${t("table.score")}: ${facility.score}. ${t("table.risk")}: ${t(`risk.${facility.riskLevel.toLowerCase()}`)}`}
-                      className="cursor-pointer hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)]"
+                      className="cursor-pointer hover:bg-[var(--color-surface-elevated)] focus-visible:bg-[var(--color-surface-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)]"
                       onClick={() => onSelectFacility(facility.id)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
@@ -831,10 +914,10 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                         <span
                           className={`font-semibold ${
                             facility.score >= 70
-                              ? "text-emerald-600"
+                              ? "text-[var(--color-success)]"
                               : facility.score >= 50
-                              ? "text-amber-600"
-                              : "text-rose-600"
+                              ? "text-[var(--color-warning)]"
+                              : "text-[var(--color-danger)]"
                           }`}
                         >
                           {facility.score}
@@ -862,14 +945,16 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 function ComparisonBar({
   data,
   color,
+  emptyStateProps,
   t,
 }: {
   data: { name: string; avgScore: number; count: number }[];
   color: string;
+  emptyStateProps?: EmptyChartStateProps;
   t: (key: string) => string;
 }) {
   if (data.length === 0) {
-    return <EmptyChartState />;
+    return <EmptyChartState {...(emptyStateProps ?? {})} />;
   }
 
   const isDense = data.length > 4;

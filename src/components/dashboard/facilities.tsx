@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
-import { AlertCircle, AlertTriangle, CheckCircle2, ClipboardList, MapPin, Search, Filter, X, Building2, Lightbulb } from "lucide-react";
+import { AlertCircle, AlertTriangle, ArrowUp, CheckCircle2, ClipboardList, MapPin, Search, Filter, X, Building2, Lightbulb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -15,14 +15,16 @@ import type { DashboardData, FacilitySummary, RuleStatus, SubcategoryChecklist }
 import { translateSectionLabel } from "@/lib/section-labels";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
+import { ActionPlanCard } from "./action-plan-card";
 
 type Props = {
   facilities: FacilitySummary[];
   currentFacility?: FacilitySummary;
   onSelect: (id: number) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   sectionAverages: DashboardData["sectionAverages"];
   readOnlySelection?: boolean;
+  isProducerView?: boolean;
 };
 
 // Update to theme colors - use CSS variables for dark mode support
@@ -43,7 +45,27 @@ export function FacilitiesView({
   t,
   sectionAverages,
   readOnlySelection = false,
+  isProducerView = false,
 }: Props) {
+  const peerAverage = useMemo(() => {
+    if (sectionAverages.length === 0) return undefined;
+    return Math.round(sectionAverages.reduce((acc, s) => acc + s.score, 0) / sectionAverages.length);
+  }, [sectionAverages]);
+
+  const actionItems = useMemo(() => {
+    if (!currentFacility) return [];
+    return currentFacility.subcategoryChecklist
+      .flatMap((sub) => sub.items.map((item) => ({ ...item, section: sub.section })))
+      .filter((item) => item.applicable && !item.compliant && item.recommendation)
+      .map((item, index) => ({
+        priority: index + 1,
+        label: item.label,
+        section: translateSectionLabel(item.section, t),
+        recommendation: item.recommendation,
+      }))
+      .slice(0, 3);
+  }, [currentFacility, t]);
+
   if (!currentFacility) return null;
 
   const benchmarkData = currentFacility.sectionScores.map((section) => {
@@ -71,7 +93,7 @@ export function FacilitiesView({
       )}
 
       {/* Hero Facility Details */}
-      <Card className="card-flat overflow-hidden transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+      <Card className="card-flat overflow-hidden">
         <div className="h-2 w-full bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-chart-8)]" />
         <CardHeader className="pb-2">
           <InfoTitle title={t("facilities.information")} info={t("info.facilityDiagnostics")} />
@@ -112,6 +134,19 @@ export function FacilitiesView({
                 </span>
                 <span className="text-lg font-medium text-[var(--color-text-secondary)]">/100</span>
               </div>
+              {isProducerView && (
+                <p className="mt-2 text-xs text-[var(--color-text-secondary)] text-center max-w-[200px]">
+                  {currentFacility.score < 50
+                    ? t("facilities.scoreHero.below50", { score: currentFacility.score })
+                    : currentFacility.score < 70
+                    ? t("facilities.scoreHero.below70", { score: currentFacility.score })
+                    : t("facilities.scoreHero.good", { score: currentFacility.score })}
+                </p>
+              )}
+              {isProducerView && peerAverage !== undefined && (
+                <p className="mt-2 text-xs text-[var(--color-text-muted)] text-center max-w-[200px]">
+                  {t("facilities.peerComparison", { score: currentFacility.score, peerAverage, species: currentFacility.species ?? "", region: currentFacility.basedOn ?? currentFacility.location ?? "" })}</p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -120,7 +155,7 @@ export function FacilitiesView({
       {/* Core Insights */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Benchmark against average */}
-        <Card className="card-flat lg:col-span-2 transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+        <Card className="card-flat lg:col-span-2">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.benchmark")} info={t("info.facilityBenchmark")} />
           </CardHeader>
@@ -161,21 +196,25 @@ export function FacilitiesView({
           </CardContent>
         </Card>
 
-        {/* Quick Info */}
-        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
-          <CardHeader className="pb-2">
-            <InfoTitle title={t("facilities.quickInfo")} info={t("info.facilityDiagnostics")} />
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <InfoRow label={t("facilities.yearsOperation")} value={currentFacility.yearsOperation ?? t("facilities.noData")} />
-            <Separator className="bg-[var(--color-border-subtle)]" />
-            <InfoRow label={t("facilities.species")} value={currentFacility.species ?? t("facilities.noData")} />
-            <Separator className="bg-[var(--color-border-subtle)]" />
-            <InfoRow label={t("facilities.waterSource")} value={currentFacility.waterSource ?? t("facilities.noData")} />
-            <Separator className="bg-[var(--color-border-subtle)]" />
-            <InfoRow label={t("facilities.waterMonitoring")} value={currentFacility.waterMonitoringFrequency ?? t("facilities.noData")} />
-          </CardContent>
-        </Card>
+        {/* Quick Info / Action Plan */}
+        {isProducerView ? (
+          <ActionPlanCard items={actionItems} t={t} />
+        ) : (
+          <Card className="card-flat">
+            <CardHeader className="pb-2">
+              <InfoTitle title={t("facilities.quickInfo")} info={t("info.facilityDiagnostics")} />
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <InfoRow label={t("facilities.yearsOperation")} value={currentFacility.yearsOperation ?? t("facilities.noData")} />
+              <Separator className="bg-[var(--color-border-subtle)]" />
+              <InfoRow label={t("facilities.species")} value={currentFacility.species ?? t("facilities.noData")} />
+              <Separator className="bg-[var(--color-border-subtle)]" />
+              <InfoRow label={t("facilities.waterSource")} value={currentFacility.waterSource ?? t("facilities.noData")} />
+              <Separator className="bg-[var(--color-border-subtle)]" />
+              <InfoRow label={t("facilities.waterMonitoring")} value={currentFacility.waterMonitoringFrequency ?? t("facilities.noData")} />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Risks & Suggestions (Prioritized for Producer) */}
@@ -207,7 +246,7 @@ export function FacilitiesView({
       {/* Operational Details */}
       <h3 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight pt-4">{t("tabs.operational")}</h3>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+        <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.keyPractices")} info={t("info.practiceCoverage")} />
           </CardHeader>
@@ -218,7 +257,7 @@ export function FacilitiesView({
           </CardContent>
         </Card>
 
-        <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+        <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("facilities.animalHealthMonitoring")} info={t("info.animalHealthMonitoring")} />
           </CardHeader>
@@ -231,7 +270,7 @@ export function FacilitiesView({
       </div>
 
       {/* Full Checklist - Redesigned with Sticky Navigation and Cards */}
-      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] overflow-hidden transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] overflow-hidden">
         <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
           <div className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5 text-[var(--color-text-secondary)]" />
@@ -490,7 +529,7 @@ function ChecklistBackToTopButton({
     handleScroll(); // Check initial state
     
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [containerRef]);
 
   const scrollToTop = () => {
     const container = containerRef.current;
@@ -513,22 +552,14 @@ function ChecklistBackToTopButton({
     <button
       onClick={scrollToTop}
       className={cn(
-        "fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full",
+        "fixed bottom-6 right-6 z-[35] flex items-center gap-2 px-4 py-3 rounded-full",
         "bg-[var(--color-brand)] text-white shadow-lg hover:bg-[var(--color-brand)]/90",
         "transition-all duration-300 hover:shadow-xl hover:scale-105",
         "focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 focus:ring-offset-2"
       )}
       aria-label={t("checklist.backToSections")}
     >
-      <svg 
-        className="h-4 w-4" 
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor" 
-        strokeWidth={2}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-      </svg>
+      <ArrowUp className="h-4 w-4" />
       <span className="text-sm font-medium">{t("checklist.backToSections")}</span>
     </button>
   );
@@ -543,7 +574,7 @@ function ChecklistCard({
   t: (key: string) => string;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-4 transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/20">
+    <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-3 sm:p-4">
       {/* Question */}
       <h5 className="text-sm font-medium text-[var(--color-text-primary)] leading-relaxed mb-3">
         {item.label}
@@ -647,9 +678,8 @@ function RiskCard({
   }[color];
   const IconBullet = color === "rose" ? AlertTriangle : color === "amber" ? AlertCircle : CheckCircle2;
   const iconColor = color === "rose" ? "text-[var(--color-danger)]" : color === "amber" ? "text-[var(--color-warning)]" : "text-[var(--color-success)]";
-  const bgClass = color === "rose" ? "hover:border-[var(--color-danger)]/30" : color === "amber" ? "hover:border-[var(--color-warning)]/30" : "hover:border-[var(--color-success)]/30";
   return (
-    <Card className={`card-flat transition-all duration-200 hover:shadow-md ${border} ${bgClass}`}>
+    <Card className={`card-flat ${border}`}>
       <CardHeader className="pb-3 bg-[var(--color-raised)] rounded-t-xl">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-[var(--color-raised)] rounded-lg shadow-sm border border-[var(--color-border-subtle)]">{icon}</div>
@@ -685,7 +715,6 @@ type FacilitySelectorProps = {
 function FacilitySelector({ facilities, currentFacility, onSelect, t }: FacilitySelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState<string>("all");
-  const [showFilters, setShowFilters] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Filter facilities based on search and risk
@@ -710,21 +739,21 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
 
   const getRiskColor = (level: string) => {
     switch (level) {
-      case "HIGH": return "bg-red-100 text-red-700 border-red-200";
-      case "MEDIUM": return "bg-amber-100 text-amber-700 border-amber-200";
-      case "LOW": return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "NEGLIGIBLE": return "bg-slate-100 text-slate-700 border-slate-200";
-      default: return "bg-gray-100 text-gray-700 border-gray-200";
+      case "HIGH": return "bg-[var(--color-danger)]/10 text-[var(--color-danger)] border-[var(--color-danger)]/20";
+      case "MEDIUM": return "bg-[var(--color-warning)]/10 text-[var(--color-warning)] border-[var(--color-warning)]/20";
+      case "LOW": return "bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20";
+      case "NEGLIGIBLE": return "bg-[var(--color-muted)]/10 text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
+      default: return "bg-[var(--color-muted)]/10 text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
     }
   };
 
   const getRiskDot = (level: string) => {
     switch (level) {
-      case "HIGH": return "bg-red-500";
-      case "MEDIUM": return "bg-amber-500";
-      case "LOW": return "bg-emerald-500";
-      case "NEGLIGIBLE": return "bg-slate-400";
-      default: return "bg-gray-400";
+      case "HIGH": return "bg-[var(--color-danger)]";
+      case "MEDIUM": return "bg-[var(--color-warning)]";
+      case "LOW": return "bg-[var(--color-success)]";
+      case "NEGLIGIBLE": return "bg-[var(--color-muted)]";
+      default: return "bg-[var(--color-muted)]";
     }
   };
 
@@ -735,7 +764,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
   };
 
   return (
-    <Card className="card-flat transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
+    <Card className="card-flat-interactive">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -799,8 +828,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
           </div>
 
           {/* Risk Filter Buttons */}
-          {showFilters && (
-            <div className="flex flex-wrap gap-2 pb-2">
+          <div className="flex flex-wrap gap-2 pb-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -828,7 +856,6 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                 </Button>
               ))}
             </div>
-          )}
 
           {/* Facilities List */}
           <div className="border rounded-lg overflow-hidden">
@@ -882,9 +909,9 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                       {/* Score badge */}
                       <div className={cn(
                         "flex-shrink-0 text-xs font-semibold px-2 py-1 rounded",
-                        facility.score >= 70 ? "bg-emerald-100 text-emerald-700" :
-                        facility.score >= 50 ? "bg-amber-100 text-amber-700" :
-                        "bg-red-100 text-red-700"
+                        facility.score >= 70 ? "bg-[var(--color-success)]/10 text-[var(--color-success)]" :
+                        facility.score >= 50 ? "bg-[var(--color-warning)]/10 text-[var(--color-warning)]" :
+                        "bg-[var(--color-danger)]/10 text-[var(--color-danger)]"
                       )}>
                         {facility.score}
                       </div>
@@ -898,15 +925,15 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
           {/* Quick stats */}
           <div className="flex flex-wrap gap-4 text-xs text-[var(--color-text-secondary)] pt-1">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="h-2 w-2 rounded-full bg-[var(--color-danger)]" />
               {facilities.filter(f => f.riskLevel === "HIGH").length} {t("metrics.high.title")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              <span className="h-2 w-2 rounded-full bg-[var(--color-warning)]" />
               {facilities.filter(f => f.riskLevel === "MEDIUM").length} {t("metrics.medium.title")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
               {facilities.filter(f => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length} {t("metrics.low.title")}
             </span>
           </div>
