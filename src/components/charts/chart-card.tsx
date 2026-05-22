@@ -1,7 +1,45 @@
-import type { CSSProperties, ReactNode } from "react";
+"use client";
+
+import { useEffect, useRef, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
+import { ResponsiveContainer, type ResponsiveContainerProps } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoTitle } from "@/components/dashboard/info-title";
 import { cn } from "@/lib/utils";
+
+type SafeResponsiveContainerProps = Omit<ResponsiveContainerProps, "width" | "height"> & {
+  children: ReactElement;
+};
+
+/** Renders Recharts only after the parent has measurable size (avoids width/height 0 warnings). */
+export function SafeResponsiveContainer({ children, initialDimension, ...props }: SafeResponsiveContainerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const update = () => {
+      const { width, height } = node.getBoundingClientRect();
+      setReady(width > 0 && height > 0);
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="h-full min-h-0 w-full min-w-0">
+      {ready ? (
+        <ResponsiveContainer width="100%" height="100%" initialDimension={initialDimension} {...props}>
+          {children}
+        </ResponsiveContainer>
+      ) : null}
+    </div>
+  );
+}
 
 export type ChartCardHeight = "sm" | "md" | "lg" | "xl";
 

@@ -2,13 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
 import { CoveragePill, MetricCard } from "./cards";
 import { DashboardPageHeading } from "./dashboard-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
+import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, SafeResponsiveContainer, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
@@ -372,7 +372,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           {translatedSectionAverages.length === 0 ? (
             <EmptyChartState {...emptyStateProps} />
           ) : (
-            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+            <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
               <BarChart data={translatedSectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
@@ -392,7 +392,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
                   <LabelList dataKey="score" position="right" fontSize={11} fill="var(--color-text-primary)" />
                 </Bar>
               </BarChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           )}
         </ChartCard>
       </section>
@@ -582,7 +582,7 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
   const layout = getAdaptiveVerticalBarLayout(chartData.length, longestLabel);
 
   return (
-    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+    <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
       <BarChart data={chartData} layout="vertical" margin={{ top: 8, right: layout.rightMargin, left: layout.leftMargin ?? 8, bottom: 8 }} barSize={layout.barSize}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
         <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
@@ -603,7 +603,7 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
           {layout.showValues ? <LabelList dataKey={valueKey} position="right" fontSize={11} fill="var(--color-text-primary)" /> : null}
         </Bar>
       </BarChart>
-    </ResponsiveContainer>
+    </SafeResponsiveContainer>
   );
 }
 
@@ -623,7 +623,7 @@ function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, block
     <div className="flex h-full w-full flex-col">
       {/* Chart area */}
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+        <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
           <PieChart>
             <Pie
               data={data}
@@ -656,7 +656,7 @@ function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, block
               Total
             </text>
           </PieChart>
-        </ResponsiveContainer>
+        </SafeResponsiveContainer>
       </div>
 
       {/* Legend below chart */}

@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveVerticalBarLayout, truncateChartLabel } from "@/components/charts/chart-card";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Tooltip, XAxis, YAxis } from "recharts";
+import { CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveVerticalBarLayout, SafeResponsiveContainer, truncateChartLabel } from "@/components/charts/chart-card";
 import { cn } from "@/lib/utils";
 import type { DashboardData, FacilitySummary, RuleStatus, SubcategoryChecklist } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
@@ -161,7 +161,7 @@ export function FacilitiesView({
           </CardHeader>
           <CardContent className="h-[340px] md:h-[380px] xl:h-[420px]">
             <div role="img" aria-label={`${t("facilities.benchmark")}. ${benchmarkData.length} ${t("facilities.benchmarkAriaSuffix")}`} className="h-full w-full">
-              <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+              <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
                 <BarChart data={benchmarkData} layout="vertical" margin={{ left: 8, right: 20, top: 10, bottom: 10 }} barGap={2} barSize={benchmarkLayout.barSize}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} />
@@ -191,7 +191,7 @@ export function FacilitiesView({
                   <LabelList dataKey="facility" position="right" fontSize={10} fill="var(--color-text-primary)" fontWeight={600} />
                 </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              </SafeResponsiveContainer>
             </div>
           </CardContent>
         </Card>

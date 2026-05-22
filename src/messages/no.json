@@ -186,7 +186,11 @@
     "riskMatrixLegend": "Grønn = tiltak anvendt, Rød = risiko",
     "tableTitle": "Sammenligningstabell",
     "groupsAriaSuffix": "grupper.",
-    "heatmapAriaSuffix": "Varmekart over anlegg etter underkategori."
+    "heatmapAriaSuffix": "Varmekart over anlegg etter underkategori.",
+    "addAnalysis": "Vis mer analyse",
+    "hideAnalysis": "Skjul tilleggsanalyse",
+    "viewAsList": "Vis som liste",
+    "viewAsChart": "Vis som diagram"
   },
   "info": {
     "moreInformation": "Mer informasjon",

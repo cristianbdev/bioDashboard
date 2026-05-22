@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId, useMemo, useState, useEffect, useRef } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import { Filter, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,14 @@ import {
   CHART_TOOLTIP_CURSOR,
   CHART_TOOLTIP_STYLE,
   getAdaptiveChartHeight,
+  SafeResponsiveContainer,
   truncateChartLabel,
 } from "@/components/charts/chart-card";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
 import { useChartColors, type ChartColors } from "@/hooks/useChartColors";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { RiskBadge } from "./cards";
 import { DashboardPageHeading } from "./dashboard-page-heading";
 import { InfoTitle } from "./info-title";
@@ -247,6 +249,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 
   const [showAllCharts, setShowAllCharts] = useState(false);
   const [showHeatmapAsList, setShowHeatmapAsList] = useState(false);
+  const isMdUp = useMediaQuery("(min-width: 768px)");
 
   const emptyStateProps: EmptyChartStateProps = filteredFacilities.length === 0 ? {
     title: t("charts.noData"),
@@ -770,8 +773,9 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
         </button>
       </div>
 
-      {/* Desktop heatmaps (md+ always visible via ECharts) */}
-      <div className="hidden md:grid gap-6 lg:grid-cols-2">
+      {/* Desktop heatmaps (md+) */}
+      {isMdUp ? (
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("comparative.riskMatrixExternal")} info={t("info.riskMatrix")} />
@@ -804,9 +808,11 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </CardContent>
         </Card>
       </div>
+      ) : null}
 
       {/* Mobile: toggle between chart and scrollable table */}
-      <div className="md:hidden space-y-4">
+      {!isMdUp ? (
+      <div className="space-y-4">
         <div className="flex justify-center">
           <button
             onClick={() => setShowHeatmapAsList(!showHeatmapAsList)}
@@ -856,6 +862,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </div>
         )}
       </div>
+      ) : null}
 
       <Card className="card-flat">
         <CardHeader className="pb-2">
@@ -947,7 +954,7 @@ function ComparisonBar({
   const xAxisHeight = isDense ? 52 : 30;
   const barSize = Math.max(18, Math.min(46, Math.floor(230 / Math.max(1, data.length))));
   return (
-    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
+    <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
       <BarChart data={data} margin={{ left: 4, right: 12, top: 8, bottom: isDense ? 8 : 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-subtle)" />
         <XAxis
@@ -969,6 +976,6 @@ function ComparisonBar({
         />
         <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} maxBarSize={50} barSize={barSize} />
       </BarChart>
-    </ResponsiveContainer>
+    </SafeResponsiveContainer>
   );
 }

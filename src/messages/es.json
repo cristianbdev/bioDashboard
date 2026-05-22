@@ -186,7 +186,11 @@
     "riskMatrixLegend": "Verde = medida aplicada, Rojo = riesgo",
     "tableTitle": "Tabla comparativa",
     "groupsAriaSuffix": "grupos.",
-    "heatmapAriaSuffix": "Mapa de calor de instalaciones por subcategoría."
+    "heatmapAriaSuffix": "Mapa de calor de instalaciones por subcategoría.",
+    "addAnalysis": "Mostrar más análisis",
+    "hideAnalysis": "Ocultar análisis adicional",
+    "viewAsList": "Ver como lista",
+    "viewAsChart": "Ver como gráfico"
   },
   "info": {
     "moreInformation": "Más información",

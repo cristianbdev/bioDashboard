@@ -186,7 +186,11 @@
     "riskMatrixLegend": "Green = biosecurity measure applied, Red = risk",
     "tableTitle": "Comparative Table",
     "groupsAriaSuffix": "groups.",
-    "heatmapAriaSuffix": "Heatmap of facilities by subcategory."
+    "heatmapAriaSuffix": "Heatmap of facilities by subcategory.",
+    "addAnalysis": "Show more analysis",
+    "hideAnalysis": "Hide additional analysis",
+    "viewAsList": "View as list",
+    "viewAsChart": "View as chart"
   },
   "info": {
     "moreInformation": "More information",

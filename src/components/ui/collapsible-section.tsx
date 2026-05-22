@@ -27,11 +27,11 @@ export function CollapsibleSection({ title, icon, defaultOpen = false, children 
         </div>
         <ChevronDown className={cn("h-5 w-5 text-[var(--color-text-secondary)] transition-transform duration-200", isOpen && "rotate-180")} />
       </button>
-      <div className={cn("transition-all duration-300", isOpen ? "block" : "hidden")}>
+      {isOpen ? (
         <div className="border-t border-[var(--color-border-subtle)] p-4 sm:p-5">
           {children}
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
