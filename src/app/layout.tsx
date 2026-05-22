@@ -23,6 +23,10 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Atlas Biosecurity",
   description: "Dashboard for aquaculture biosecurity monitoring and facility assessment results.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 export default async function RootLayout({

@@ -32,6 +32,10 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
     metadataBase: new URL(appBaseUrl),
     title,
     description,
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/icon.png",
+    },
     alternates: {
       canonical: canonicalPath,
       languages: {
