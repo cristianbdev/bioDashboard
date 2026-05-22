@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useId, useMemo, useState, useEffect, useRef } from "react";
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
-import { Filter, X } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 export interface ChartColors {
   textPrimary: string;
@@ -59,12 +59,16 @@ function readChartColorsFromDocument(): ChartColors {
   return colors;
 }
 
+function subscribeToColorChanges(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  media.addEventListener("change", onStoreChange);
+  return () => media.removeEventListener("change", onStoreChange);
+}
+
 export function useChartColors(): ChartColors {
-  const [colors, setColors] = useState<ChartColors>(LIGHT_FALLBACK);
-
-  useEffect(() => {
-    setColors(readChartColorsFromDocument());
-  }, []);
-
-  return colors;
+  return useSyncExternalStore(subscribeToColorChanges, readChartColorsFromDocument, () => LIGHT_FALLBACK);
 }

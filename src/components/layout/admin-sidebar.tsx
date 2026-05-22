@@ -55,8 +55,6 @@ const STORAGE_KEY = "bio-dashboard-sidebar-collapsed";
 const FOCUSABLE_SELECTOR =
   "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
 
-const HEADER_HEIGHT = "4rem"; // 64px - ajustable según la altura real del header
-
 export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;

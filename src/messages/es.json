@@ -245,13 +245,15 @@
     "role": "Rol",
     "facility": "Instalación",
     "facilityPlaceholder": "Selecciona una instalación",
-    "password": "Contraseña por defecto",
-    "passwordPolicyHint": "Patrón de contraseña: correo + .bioDash",
+    "invitationHint": "Los usuarios nuevos reciben una invitación segura por correo para definir su contraseña. Los usuarios existentes se actualizan sin cambiar su contraseña.",
     "create": "Crear o actualizar usuario",
     "creating": "Creando...",
     "success": {
       "title": "Usuario guardado",
-      "message": "Usuario creado/actualizado"
+      "message": "Usuario creado/actualizado",
+      "invited": "Invitación enviada",
+      "updated": "Usuario actualizado",
+      "invitationEmail": "Recibirán un correo para completar el acceso y elegir su contraseña."
     },
     "error": {
       "title": "Error al provisionar usuario",
@@ -342,6 +344,11 @@
     "missingToken": "No está configurado el token de KoboToolbox",
     "koboApiError": "No se pudieron cargar los datos de Kobo",
     "koboAssetApiError": "No se pudieron cargar los metadatos del formulario de Kobo",
+    "facilityNotConfigured": "Tu cuenta de productor no está vinculada a una instalación. Contacta a un administrador.",
+    "facilityNotFound": "La instalación asignada no aparece en este proyecto. Contacta a un administrador para verificar el ID.",
+    "producerAccessTitle": "Acceso a instalación no disponible",
+    "assignedFacilityId": "ID de instalación asignado",
+    "rateLimited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
     "unexpected": "Error inesperado"
   },
   "meta": {

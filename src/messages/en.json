@@ -245,13 +245,15 @@
     "role": "Role",
     "facility": "Facility",
     "facilityPlaceholder": "Select facility",
-    "password": "Default password",
-    "passwordPolicyHint": "Password pattern: email + .bioDash",
+    "invitationHint": "New users receive a secure email invitation to set their password. Existing users are updated without changing their password.",
     "create": "Create or update user",
     "creating": "Creating...",
     "success": {
       "title": "User saved",
-      "message": "User created/updated"
+      "message": "User created/updated",
+      "invited": "Invitation sent",
+      "updated": "User updated",
+      "invitationEmail": "They will receive an email to complete sign-in and choose a password."
     },
     "error": {
       "title": "User provisioning error",
@@ -342,6 +344,11 @@
     "missingToken": "KoboToolbox token is not configured",
     "koboApiError": "Unable to load Kobo data",
     "koboAssetApiError": "Unable to load Kobo form metadata",
+    "facilityNotConfigured": "Your producer account is not linked to a facility. Contact an administrator.",
+    "facilityNotFound": "Your assigned facility was not found in this project. Contact an administrator to verify the facility ID.",
+    "producerAccessTitle": "Facility access unavailable",
+    "assignedFacilityId": "Assigned facility ID",
+    "rateLimited": "Too many requests. Please wait a moment and try again.",
     "unexpected": "Unexpected error"
   },
   "meta": {

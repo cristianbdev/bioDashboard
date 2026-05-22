@@ -245,13 +245,15 @@
     "role": "Rolle",
     "facility": "Anlegg",
     "facilityPlaceholder": "Velg anlegg",
-    "password": "Standardpassord",
-    "passwordPolicyHint": "Passordmønster: e-post + .bioDash",
+    "invitationHint": "Nye brukere får en sikker e-postinvitasjon for å sette passord. Eksisterende brukere oppdateres uten at passordet endres.",
     "create": "Opprett eller oppdater bruker",
     "creating": "Oppretter...",
     "success": {
       "title": "Bruker lagret",
-      "message": "Bruker opprettet/oppdatert"
+      "message": "Bruker opprettet/oppdatert",
+      "invited": "Invitasjon sendt",
+      "updated": "Bruker oppdatert",
+      "invitationEmail": "De mottar en e-post for å fullføre innlogging og velge passord."
     },
     "error": {
       "title": "Feil ved brukeroppsett",
@@ -342,6 +344,11 @@
     "missingToken": "KoboToolbox-tokenet er ikke konfigurert",
     "koboApiError": "Klarte ikke å laste Kobo-data",
     "koboAssetApiError": "Klarte ikke å laste Kobo-skjemadata",
+    "facilityNotConfigured": "Produsentkontoen din er ikke knyttet til et anlegg. Kontakt en administrator.",
+    "facilityNotFound": "Det tildelte anlegget finnes ikke i dette prosjektet. Kontakt en administrator for å verifisere anleggs-ID.",
+    "producerAccessTitle": "Anleggstilgang utilgjengelig",
+    "assignedFacilityId": "Tildelt anleggs-ID",
+    "rateLimited": "For mange forespørsler. Vent litt og prøv igjen.",
     "unexpected": "Uventet feil"
   },
   "meta": {

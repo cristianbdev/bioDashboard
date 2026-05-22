@@ -1,6 +1,15 @@
-import { Overview } from "@/components/dashboard/overview";
+"use client";
+
+import dynamic from "next/dynamic";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData } from "@/lib/kobo";
+
+const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[320px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" aria-hidden />
+  ),
+});
 
 type PublicLayoutProps = {
   data: DashboardData;
@@ -10,11 +19,8 @@ type PublicLayoutProps = {
 
 export function PublicLayout({ data, t, locale }: PublicLayoutProps) {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex-1 min-w-0">
-        {/* Render Overview directly for public users as a continuous report */}
-        <Overview data={data} t={t} locale={locale} />
-      </div>
+    <div className="flex min-w-0 flex-1 flex-col gap-6">
+      <OverviewClient data={data} t={t} locale={locale} />
     </div>
   );
 }

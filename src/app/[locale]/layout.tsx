@@ -5,6 +5,12 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/footer";
 import { routing } from "@/i18n/routing";
 
+const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 type Props = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -18,18 +24,35 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   }
 
   const t = await getTranslations({ locale });
+  const title = t("meta.title");
+  const description = t("meta.description");
+  const canonicalPath = `/${locale}/dashboard`;
 
   return {
-    title: t("meta.title"),
-    description: t("meta.description"),
+    metadataBase: new URL(appBaseUrl),
+    title,
+    description,
     alternates: {
-      canonical: `/${locale}/dashboard`,
+      canonical: canonicalPath,
       languages: {
         en: "/en/dashboard",
         es: "/es/dashboard",
         no: "/no/dashboard",
         "x-default": "/en/dashboard",
       },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalPath,
+      locale,
+      type: "website",
+      siteName: title,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }

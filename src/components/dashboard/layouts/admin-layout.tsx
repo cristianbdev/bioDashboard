@@ -1,32 +1,47 @@
-import { Database as DbIcon, Filter, Loader2, RefreshCw, X } from "lucide-react";
+"use client";
+
+import { Database as DbIcon, Filter, Loader2, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useId, useMemo, useState, useCallback } from "react";
-import { ComparativeView } from "@/components/dashboard/comparative";
-import { FacilitiesView } from "@/components/dashboard/facilities";
-import { MethodologyView } from "@/components/dashboard/methodology";
-import { UserManagementView } from "@/components/dashboard/user-management";
 import { Badge } from "@/components/ui/badge";
 import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Dynamically import Overview component with ssr: false to avoid ResponsiveContainer hydration warnings
 // Recharts ResponsiveContainer doesn't support SSR and causes width(-1)/height(-1) warnings during hydration
+function TabPanelSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 pb-6">
+      <div className="h-[72px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
+      <div className="h-[320px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
+    </div>
+  );
+}
+
 const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col gap-8 pb-6">
-      <div className="space-y-4">
-        <div className="h-[100px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-[80px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-          ))}
-        </div>
-      </div>
-      <div className="h-[400px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-    </div>
-  ),
+  loading: () => <TabPanelSkeleton />,
 });
+
+const FacilitiesView = dynamic(
+  () => import("@/components/dashboard/facilities").then((mod) => mod.FacilitiesView),
+  { loading: () => <TabPanelSkeleton /> },
+);
+
+const ComparativeView = dynamic(
+  () => import("@/components/dashboard/comparative").then((mod) => mod.ComparativeView),
+  { ssr: false, loading: () => <TabPanelSkeleton /> },
+);
+
+const MethodologyView = dynamic(
+  () => import("@/components/dashboard/methodology").then((mod) => mod.MethodologyView),
+  { loading: () => <TabPanelSkeleton /> },
+);
+
+const UserManagementView = dynamic(
+  () => import("@/components/dashboard/user-management").then((mod) => mod.UserManagementView),
+  { loading: () => <TabPanelSkeleton /> },
+);
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -189,9 +204,9 @@ export function AdminLayout({
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSpecies")}</label>
+                  <label htmlFor={speciesFilterId} className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSpecies")}</label>
                   <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={speciesFilterId} className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSpecies")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -203,9 +218,9 @@ export function AdminLayout({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSystem")}</label>
+                  <label htmlFor={systemFilterId} className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSystem")}</label>
                   <Select value={systemFilter} onValueChange={setSystemFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={systemFilterId} className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSystem")} />
                     </SelectTrigger>
                     <SelectContent>
