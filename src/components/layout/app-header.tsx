@@ -63,23 +63,34 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
   })();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] overflow-visible">
-      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
-        {/* Left: Logo + Badge */}
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="shrink-0">
+    <header className="fixed inset-x-0 top-0 z-50 h-16 overflow-hidden border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
+        {/* Left: Logo + brand (title; badge stacked under title on mobile, inline from sm) */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10">
             <Image
-              src="/atlasBiosecurity-light-theme-name2.png"
-              alt="Atlas Biosecurity"
-              width={120}
-              height={80}
-              className="h-18 w-auto object-contain sm:h-20"
-              priority={false}
+              src="/atlasBiosecurity-light-theme.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+              priority
             />
           </div>
-          <Badge variant="outline" className={cn("shrink-0 text-xs font-medium", ROLE_BADGE_STYLE[role])}>
-            {t(ROLE_LABEL_KEYS[role])}
-          </Badge>
+          <div className="flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-2">
+            <span className="whitespace-nowrap text-sm font-semibold leading-none tracking-tight text-[var(--color-brand)] sm:text-lg">
+              BioDashboard
+            </span>
+            <Badge
+              variant="outline"
+              className={cn(
+                "h-4 px-1.5 py-0 text-[10px] leading-none font-medium sm:h-auto sm:px-2 sm:py-0.5 sm:text-xs",
+                ROLE_BADGE_STYLE[role],
+              )}
+            >
+              {t(ROLE_LABEL_KEYS[role])}
+            </Badge>
+          </div>
         </div>
 
         {/* Right: Controls */}
