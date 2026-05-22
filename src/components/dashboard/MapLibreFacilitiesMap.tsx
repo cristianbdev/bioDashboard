@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { FullscreenControl, MapRef, Marker, NavigationControl, Popup, ScaleControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
-import { useTheme } from "next-themes";
 import Supercluster from "supercluster";
 import type { AppLocale } from "@/i18n/routing";
 import type { FacilitySummary } from "@/lib/kobo";
@@ -22,18 +21,7 @@ type Props = {
   className?: string;
 };
 
-const MAP_STYLES = {
-  dark: {
-    url: "https://tiles.openfreemap.org/styles/dark",
-    key: "map.dark",
-    icon: "🌙",
-  },
-  liberty: {
-    url: "https://tiles.openfreemap.org/styles/liberty",
-    key: "map.terrain",
-    icon: "🗻",
-  },
-} as const;
+const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 const RISK_LEVELS: Array<{ level: FacilitySummary["riskLevel"]; labelKey: string; color: string }> = [
   { level: "HIGH", labelKey: "map.riskHigh", color: "var(--color-danger)" },
@@ -99,9 +87,7 @@ function formatNumber(n: number): string {
 
 export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", className }: Props) {
   const mapRef = useRef<MapRef>(null);
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const [mapStyle, setMapStyle] = useState<string>(MAP_STYLES.dark.url);
+  const mapStyle = MAP_STYLE_URL;
   const [selectedFacility, setSelectedFacility] = useState<FacilitySummary | null>(null);
   const [bounds, setBounds] = useState<[number, number, number, number]>([-180, -85, 180, 85]);
   const [zoom, setZoom] = useState(4);
@@ -150,15 +136,6 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
     return 4;
   }, [points.length]);
 
-  // Auto-switch map style based on theme
-  useEffect(() => {
-    if (isDark) {
-      setMapStyle(MAP_STYLES.dark.url);
-    } else {
-      setMapStyle(MAP_STYLES.liberty.url);
-    }
-  }, [isDark]);
-
   const updateViewportState = useCallback(() => {
     if (!mapRef.current) return;
 
@@ -206,26 +183,6 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
   return (
     <div className={cn("flex h-full flex-col", className)}>
       <div className="relative flex-1 overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
-        {/* Map style buttons - hidden on mobile, shown below */}
-        <div className="absolute left-3 top-3 z-10 hidden items-center gap-2 md:flex max-w-[calc(100%-76px)] overflow-x-auto pb-1 pr-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {Object.entries(MAP_STYLES).map(([key, style]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setMapStyle(style.url)}
-              className={cn(
-                "whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm transition-colors",
-                mapStyle === style.url
-                  ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
-                  : "border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]",
-              )}
-            >
-              <span className="mr-1.5">{style.icon}</span>
-              {t(style.key)}
-            </button>
-          ))}
-        </div>
-
         <Map
           ref={mapRef}
           mapStyle={mapStyle}
@@ -377,29 +334,11 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
 
       {/* Legend and Controls */}
       <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-3 py-3 sm:px-4">
-        {/* Map controls for mobile - ABOVE legend */}
-        <div className="flex items-center justify-between gap-2 md:hidden">
+        {/* Facility count (mobile) */}
+        <div className="flex items-center justify-center md:hidden">
           <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] shadow-sm">
             <span className="font-bold text-[var(--color-brand)]">{points.length}</span>
             <span>{points.length === 1 ? t("table.facility") : t("tabs.facilities")}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {Object.entries(MAP_STYLES).map(([key, style]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setMapStyle(style.url)}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium shadow-sm transition-colors",
-                  mapStyle === style.url
-                    ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
-                    : "border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]",
-                )}
-              >
-                <span className="text-sm">{style.icon}</span>
-                <span>{t(style.key)}</span>
-              </button>
-            ))}
           </div>
         </div>
 
@@ -407,7 +346,10 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
           {RISK_LEVELS.map((entry) => (
             <div key={entry.level} className="flex items-center gap-2 text-xs text-[var(--color-text-primary)]">
-              <span className="h-3 w-3 rounded-full ring-1 ring-white shadow-sm" style={{ backgroundColor: entry.color }} />
+              <span
+                className="map-legend-dot h-3 w-3 rounded-full ring-1 ring-white shadow-sm"
+                style={{ "--legend-dot-color": entry.color } as React.CSSProperties}
+              />
               <span>{t(entry.labelKey)}</span>
             </div>
           ))}
@@ -439,7 +381,7 @@ function FacilityPopup({
           event.stopPropagation();
           onClose();
         }}
-        className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]"
+        className="touch-target absolute right-2 top-2 z-20 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]"
         aria-label={t("actions.close")}
       >
         ×

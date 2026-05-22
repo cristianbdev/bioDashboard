@@ -1,11 +1,12 @@
 import { Database as DbIcon, Filter, Loader2, RefreshCw, X } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useMemo, useState, useCallback } from "react";
+import { useId, useMemo, useState, useCallback } from "react";
 import { ComparativeView } from "@/components/dashboard/comparative";
 import { FacilitiesView } from "@/components/dashboard/facilities";
 import { MethodologyView } from "@/components/dashboard/methodology";
 import { UserManagementView } from "@/components/dashboard/user-management";
 import { Badge } from "@/components/ui/badge";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Dynamically import Overview component with ssr: false to avoid ResponsiveContainer hydration warnings
@@ -71,6 +72,10 @@ export function AdminLayout({
   setUid,
   state,
 }: AdminLayoutProps) {
+  const speciesFilterId = useId();
+  const systemFilterId = useId();
+  const locationFilterId = useId();
+
   // Filter state for overview
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const [systemFilter, setSystemFilter] = useState("all");
@@ -121,7 +126,7 @@ export function AdminLayout({
         t={t}
       />
 
-      <main className="min-w-0 flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-8">
+      <div className="min-w-0 flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-8">
         {/* Data Source bar */}
         <Card className="card-flat mb-6">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center">
@@ -212,9 +217,9 @@ export function AdminLayout({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
+                  <label htmlFor={locationFilterId} className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
                   <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={locationFilterId} className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterLocation")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -231,25 +236,19 @@ export function AdminLayout({
                   {speciesFilter !== "all" && (
                     <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
                       {t("overview.filterSpecies")}: {speciesFilter}
-                      <button onClick={() => setSpeciesFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                        <X className="h-3 w-3" />
-                      </button>
+                      <FilterClearButton onClick={() => setSpeciesFilter("all")} filterName={t("overview.filterSpecies")} className="ml-1" />
                     </Badge>
                   )}
                   {systemFilter !== "all" && (
                     <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
                       {t("overview.filterSystem")}: {systemFilter}
-                      <button onClick={() => setSystemFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                        <X className="h-3 w-3" />
-                      </button>
+                      <FilterClearButton onClick={() => setSystemFilter("all")} filterName={t("overview.filterSystem")} className="ml-1" />
                     </Badge>
                   )}
                   {locationFilter !== "all" && (
                     <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
                       {t("overview.filterLocation")}: {locationFilter}
-                      <button onClick={() => setLocationFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                        <X className="h-3 w-3" />
-                      </button>
+                      <FilterClearButton onClick={() => setLocationFilter("all")} filterName={t("overview.filterLocation")} className="ml-1" />
                     </Badge>
                   )}
                   <Button
@@ -285,7 +284,7 @@ export function AdminLayout({
         {activeTab === "users" && canAccessTab(role, "users") && (
           <UserManagementView facilities={data.facilities} projectUid={uid} t={t} />
         )}
-      </main>
+      </div>
     </div>
   );
 }

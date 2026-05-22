@@ -80,10 +80,11 @@ function NavigationContent({
               onTabChange(item.id as DashboardTab);
               onClose();
             }}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all",
+              "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface-base)]",
               isActive
-                ? "bg-[var(--color-brand)] text-white shadow-sm"
+                ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)] shadow-sm"
                 : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-brand)]",
             )}
           >
@@ -230,26 +231,29 @@ export default function Home() {
         </BottomSheet>
       ) : null}
 
-      <div className={cn(
-        "flex-1 flex flex-col pt-16 md:flex-row mx-auto w-full",
-        isSidebarLayout ? "max-w-[1800px]" : "max-w-7xl"
-      )}>
+      <main
+        id="dashboard-main"
+        className={cn(
+          "mx-auto flex w-full flex-1 flex-col pt-16 md:flex-row",
+          isSidebarLayout ? "max-w-[1800px]" : "max-w-7xl",
+        )}
+      >
         {!data && state.status === "loading" ? (
-          <main className="flex min-h-[40vh] w-full items-center justify-center px-6 py-12">
+          <div className="flex min-h-[40vh] w-full items-center justify-center px-6 py-12">
             <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
               <Loader2 className="h-5 w-5 animate-spin" />
               <span>{t("actions.load")}...</span>
             </div>
-          </main>
+          </div>
         ) : null}
 
         {!data && state.status === "error" ? (
-          <main className="w-full px-6 py-10">
+          <div className="w-full px-6 py-10">
             <Alert variant="destructive" className="mx-auto max-w-3xl">
               <AlertTitle>{t("errors.title")}</AlertTitle>
               <AlertDescription>{state.message}</AlertDescription>
             </Alert>
-          </main>
+          </div>
         ) : null}
 
         {data && (
@@ -274,7 +278,7 @@ export default function Home() {
                 state={state}
               />
             ) : (
-              <main className="flex-1 px-6 py-6">
+              <div className="flex-1 px-6 py-6">
                 <Card className="card-flat mb-6 transition-all duration-200 hover:shadow-md hover:border-[var(--color-brand)]/30">
                   <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-3">
@@ -330,11 +334,11 @@ export default function Home() {
                   />
                 )}
                 {role === "public" && <PublicLayout data={data} t={t} locale={locale} />}
-              </main>
+              </div>
             )}
           </>
         )}
-      </div>
+      </main>
     </div>
   );
 }

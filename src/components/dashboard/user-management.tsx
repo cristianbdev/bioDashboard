@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { FacilitySummary } from "@/lib/kobo";
+import { DashboardPageHeading } from "./dashboard-page-heading";
 
 type Props = {
   facilities: FacilitySummary[];
@@ -106,11 +107,12 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
   return (
     <div className="space-y-6">
+      <DashboardPageHeading title={t("users.title")} subtitle={t("users.subtitle")} />
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2 text-[var(--color-text-primary)]">
             <UserPlus className="h-4 w-4" />
-            <h3 className="text-base font-semibold">{t("users.title")}</h3>
+            <h2 className="text-base font-semibold">{t("users.create")}</h2>
           </div>
           <CardDescription>{t("users.subtitle")}</CardDescription>
         </CardHeader>

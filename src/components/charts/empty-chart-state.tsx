@@ -1,6 +1,7 @@
 "use client";
 
-import { BarChart3, X } from "lucide-react";
+import { BarChart3 } from "lucide-react";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,13 +44,7 @@ export function EmptyChartState({
               className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5"
             >
               <span className="max-w-[120px] truncate text-xs">{filter.label}: {filter.value}</span>
-              <button
-                onClick={filter.onClear}
-                className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20"
-                aria-label={`Clear ${filter.label} filter`}
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <FilterClearButton onClick={filter.onClear} filterName={filter.label} className="ml-1.5" />
             </Badge>
           ))}
         </div>

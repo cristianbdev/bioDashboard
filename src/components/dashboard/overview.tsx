@@ -1,10 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
-import { MapLibreFacilitiesMap } from "./MapLibreFacilitiesMap";
 import { CoveragePill, MetricCard } from "./cards";
+import { DashboardPageHeading } from "./dashboard-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
@@ -16,6 +17,18 @@ import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { FloatingFilters } from "./floating-filters";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
+
+const MapLibreFacilitiesMap = dynamic(
+  () => import("./MapLibreFacilitiesMap").then((mod) => mod.MapLibreFacilitiesMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]">
+        <div className="h-10 w-10 animate-pulse rounded-full bg-[var(--color-border-subtle)]" aria-hidden />
+      </div>
+    ),
+  },
+);
 
 export type FilterState = {
   speciesFilter: string;
@@ -286,15 +299,13 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       {/* Section 1: Header + KPIs - This ref is used to detect scroll */}
       <section ref={headerRef} className="space-y-4">
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
-          <div>
-            <h2 className="text-dashboard-title">{t("tabs.overview")}</h2>
-            <p className="mt-1 text-dashboard-subtitle">{t("overview.subtitle")}</p>
-          </div>
+          <DashboardPageHeading title={t("tabs.overview")} subtitle={t("overview.subtitle")} />
           {/* Mobile floating filters button */}
           <button
             type="button"
             onClick={() => setIsMobileFiltersOpen(true)}
-            className="lg:hidden flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg"
+            aria-label={t("overview.openFilters")}
+            className="flex min-h-11 items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2.5 text-white shadow-lg lg:hidden"
           >
             <span className="text-sm font-medium">{t("overview.filters")}</span>
             {hasActiveFilters && (

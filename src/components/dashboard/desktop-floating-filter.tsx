@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,6 +52,7 @@ export function DesktopFloatingFilter({
 }: DesktopFloatingFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const titleId = useId();
+  const baseId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -145,11 +147,13 @@ export function DesktopFloatingFilter({
             </div>
 
             <div className="space-y-4 p-5">
-              {selectControls.map((control) => (
+              {selectControls.map((control) => {
+                const triggerId = `${baseId}-${control.id}`;
+                return (
                 <div key={control.id} className="space-y-2">
-                  <p className="text-xs font-medium text-[var(--color-text-secondary)]">{control.placeholder}</p>
+                  <label htmlFor={triggerId} className="text-xs font-medium text-[var(--color-text-secondary)]">{control.placeholder}</label>
                   <Select value={control.value} onValueChange={control.onChange}>
-                    <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+                    <SelectTrigger id={triggerId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -162,7 +166,8 @@ export function DesktopFloatingFilter({
                     </SelectContent>
                   </Select>
                 </div>
-              ))}
+              );
+              })}
 
               {visibleFilters.length > 0 && (
                 <div className="border-t border-[var(--color-border-subtle)] pt-4">
@@ -180,13 +185,7 @@ export function DesktopFloatingFilter({
                           {filter.label}: {filter.activeValue}
                         </span>
                         {filter.onClear && (
-                          <button
-                            type="button"
-                            onClick={filter.onClear}
-                            className="-mr-1 ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                          <FilterClearButton onClick={filter.onClear} filterName={filter.label} className="-mr-1 ml-1.5" />
                         )}
                       </Badge>
                     ))}

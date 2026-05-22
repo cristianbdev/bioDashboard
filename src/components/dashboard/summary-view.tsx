@@ -15,6 +15,7 @@ type Props = {
 export function SummaryView({ facility, peerAverage, topActions, t }: Props) {
   return (
     <div className="space-y-6 min-w-0">
+      <h1 className="sr-only">{t("producer.summary")}</h1>
       {/* Score KPI */}
       <Card className="card-flat">
         <CardContent className="p-5">

@@ -50,8 +50,9 @@ export function ProducerLayout({
             <Button
               key={item.id}
               variant={isActive ? "secondary" : "ghost"}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "h-10 flex-1 justify-center gap-2",
+                "min-h-11 flex-1 justify-center gap-2",
                 isActive
                   ? "bg-[var(--color-brand)]/10 text-[var(--color-brand)] font-medium"
                   : "text-[var(--color-text-secondary)]",

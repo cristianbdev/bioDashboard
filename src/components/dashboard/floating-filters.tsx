@@ -1,6 +1,8 @@
 "use client";
 
-import { Filter, X } from "lucide-react";
+import { useId } from "react";
+import { Filter } from "lucide-react";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +57,9 @@ export function FloatingFilters({
   setLocationFilter,
   t,
 }: FloatingFiltersProps) {
+  const speciesId = useId();
+  const systemId = useId();
+  const locationId = useId();
   const activeCount = filters.filter((f) => f.allValue ? f.activeValue !== f.allValue : f.activeValue !== "" && f.activeValue !== "all").length;
 
   return (
@@ -89,9 +94,9 @@ export function FloatingFilters({
         <div className="space-y-4">
           {/* Species filter */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{speciesPlaceholder}</p>
+            <label htmlFor={speciesId} className="text-xs font-medium text-[var(--color-text-secondary)]">{speciesPlaceholder}</label>
             <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={speciesId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -105,9 +110,9 @@ export function FloatingFilters({
 
           {/* System filter */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{systemPlaceholder}</p>
+            <label htmlFor={systemId} className="text-xs font-medium text-[var(--color-text-secondary)]">{systemPlaceholder}</label>
             <Select value={systemFilter} onValueChange={setSystemFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={systemId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -121,9 +126,9 @@ export function FloatingFilters({
 
           {/* Location filter */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{locationPlaceholder}</p>
+            <label htmlFor={locationId} className="text-xs font-medium text-[var(--color-text-secondary)]">{locationPlaceholder}</label>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={locationId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -150,13 +155,7 @@ export function FloatingFilters({
                     >
                       <span className="max-w-[150px] truncate">{filter.label}: {filter.activeValue}</span>
                       {filter.onClear && (
-                        <button
-                          type="button"
-                          onClick={filter.onClear}
-                          className="ml-1.5 -mr-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                        <FilterClearButton onClick={filter.onClear} filterName={filter.label} className="ml-1.5 -mr-1" />
                       )}
                     </Badge>
                   ))}

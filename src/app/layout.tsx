@@ -21,8 +21,8 @@ const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono-scientific",
 });
 export const metadata: Metadata = {
-  title: "Bio Dashboard",
-  description: "Dashboard para visualizar resultados de bioseguridad acuicola desde KoboToolbox.",
+  title: "Atlas Biosecurity",
+  description: "Dashboard for aquaculture biosecurity monitoring and facility assessment results.",
 };
 
 export default async function RootLayout({
@@ -38,7 +38,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
+        <ThemeProvider
+          defaultTheme="light"
+          enableSystem={false}
+          forcedTheme="light"
+        >
           <ClerkProvider>{children}</ClerkProvider>
         </ThemeProvider>
       </body>

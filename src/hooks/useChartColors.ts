@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export interface ChartColors {
   textPrimary: string;
@@ -15,21 +15,56 @@ export interface ChartColors {
   success: string;
 }
 
+const CSS_VAR_KEYS: Array<[keyof ChartColors, string]> = [
+  ["textPrimary", "--color-text-primary"],
+  ["textSecondary", "--color-text-secondary"],
+  ["borderSubtle", "--color-border-subtle"],
+  ["borderDefault", "--color-border-default"],
+  ["raised", "--color-raised"],
+  ["surfaceBase", "--color-surface-base"],
+  ["surfaceElevated", "--color-surface-elevated"],
+  ["danger", "--color-danger"],
+  ["warning", "--color-warning"],
+  ["success", "--color-success"],
+];
+
+const LIGHT_FALLBACK: ChartColors = {
+  textPrimary: "#1e293b",
+  textSecondary: "#475569",
+  borderSubtle: "#e2e8e5",
+  borderDefault: "#cbd5e1",
+  raised: "#ffffff",
+  surfaceBase: "#f5f7f6",
+  surfaceElevated: "#fbfcfc",
+  danger: "#b42318",
+  warning: "#a16207",
+  success: "#15803d",
+};
+
+function readChartColorsFromDocument(): ChartColors {
+  if (typeof document === "undefined") {
+    return LIGHT_FALLBACK;
+  }
+
+  const styles = getComputedStyle(document.documentElement);
+  const colors = { ...LIGHT_FALLBACK };
+
+  for (const [key, cssVar] of CSS_VAR_KEYS) {
+    const value = styles.getPropertyValue(cssVar).trim();
+    if (value) {
+      colors[key] = value;
+    }
+  }
+
+  return colors;
+}
+
 export function useChartColors(): ChartColors {
-  const { resolvedTheme } = useTheme();
+  const [colors, setColors] = useState<ChartColors>(LIGHT_FALLBACK);
 
-  const isDark = resolvedTheme === "dark";
+  useEffect(() => {
+    setColors(readChartColorsFromDocument());
+  }, []);
 
-  return {
-    textPrimary: isDark ? "#f1f5f9" : "#1e293b",
-    textSecondary: isDark ? "#94a3b8" : "#64748b",
-    borderSubtle: isDark ? "#334155" : "#e2e8f0",
-    borderDefault: isDark ? "#475569" : "#cbd5e1",
-    raised: isDark ? "#334155" : "#ffffff",
-    surfaceBase: isDark ? "#0f172a" : "#f5f7f6",
-    surfaceElevated: isDark ? "#1e293b" : "#fbfcfc",
-    danger: isDark ? "#ef4444" : "#b42318",
-    warning: isDark ? "#eab308" : "#a16207",
-    success: isDark ? "#22c55e" : "#15803d",
-  };
+  return colors;
 }

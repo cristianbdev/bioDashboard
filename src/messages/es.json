@@ -64,6 +64,9 @@
     "light": "Claro",
     "system": "Sistema"
   },
+  "filters": {
+    "removeFilter": "Quitar filtro de {filter}"
+  },
   "overview": {
     "filters": "Filtros del resumen",
     "filterAll": "Todos",
@@ -168,6 +171,7 @@
     }
   },
   "comparative": {
+    "subtitle": "Compara instalaciones por sistema productivo, especie, ubicación y perfiles de riesgo.",
     "filters": "Filtros comparativos",
     "openFilters": "Abrir filtros",
     "scoreBySystem": "Puntaje por sistema productivo",
@@ -185,6 +189,7 @@
     "heatmapAriaSuffix": "Mapa de calor de instalaciones por subcategoría."
   },
   "info": {
+    "moreInformation": "Más información",
     "overviewFilters": "Filtra el resumen por especie, sistema productivo y ubicación.",
     "mapCoverage": "Mapa de países/regiones con base en coordenadas reportadas.",
     "practiceCoverage": "Tasa de adopción de prácticas clave de bioseguridad.",
@@ -206,7 +211,8 @@
     "comparativeCharts": "Puntaje promedio agrupado por categoría.",
     "comparativeFilters": "Filtra matrices, gráficos y tabla por atributos operativos.",
     "riskMatrix": "El rojo indica riesgo de introducción/dispersión de enfermedades.",
-    "table": "Comparación de instalaciones para los filtros aplicados."
+    "table": "Comparación de instalaciones para los filtros aplicados.",
+    "moreInformation": "Más información"
   },
   "methodology": {
     "title": "Metodología de puntaje",
@@ -301,6 +307,10 @@
     "usage": "Uso autorizado exclusivamente para el Instituto Veterinario Noruego con fines de investigación.",
     "inquiries": "Consultas",
     "copyright": "Todos los derechos reservados.",
+    "atlasAlt": "Atlas Biosecurity",
+    "partnersLabel": "En colaboración con",
+    "vetinstAlt": "Instituto Veterinario Noruego",
+    "eupahwAlt": "European Partnership Animal Health & Welfare",
     "links": {
       "title": "Recursos",
       "methodology": "Metodología",
@@ -331,7 +341,7 @@
     "unexpected": "Error inesperado"
   },
   "meta": {
-    "title": "Tablero de Bioseguridad",
-    "description": "Tablero para visualizar resultados de bioseguridad acuícola desde KoboToolbox."
+    "title": "Atlas Biosecurity",
+    "description": "Tablero de monitoreo de bioseguridad acuícola para evaluación de predios y análisis de riesgo."
   }
 }

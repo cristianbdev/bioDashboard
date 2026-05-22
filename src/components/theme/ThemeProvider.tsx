@@ -9,6 +9,7 @@ interface ThemeProviderProps {
   defaultTheme?: string;
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
+  forcedTheme?: string;
 }
 
 export function ThemeProvider({
@@ -17,6 +18,7 @@ export function ThemeProvider({
   defaultTheme = "system",
   enableSystem = true,
   disableTransitionOnChange = false,
+  forcedTheme,
 }: ThemeProviderProps) {
   return (
     <NextThemesProvider
@@ -24,6 +26,7 @@ export function ThemeProvider({
       defaultTheme={defaultTheme}
       enableSystem={enableSystem}
       disableTransitionOnChange={disableTransitionOnChange}
+      forcedTheme={forcedTheme}
     >
       {children}
     </NextThemesProvider>

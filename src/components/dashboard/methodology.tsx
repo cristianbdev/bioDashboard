@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { DashboardData } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
+import { DashboardPageHeading } from "./dashboard-page-heading";
 import { InfoTitle } from "./info-title";
 
 type Props = {
@@ -14,6 +15,7 @@ export function MethodologyView({ data, t }: Props) {
 
   return (
     <div className="space-y-6 min-w-0">
+      <DashboardPageHeading title={t("methodology.title")} subtitle={t("methodology.subtitle")} />
       <Card className="card-flat">
         <CardHeader className="pb-2">
           <InfoTitle title={t("methodology.title")} info={t("methodology.info")} />

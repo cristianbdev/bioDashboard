@@ -64,6 +64,9 @@
     "light": "Lys",
     "system": "System"
   },
+  "filters": {
+    "removeFilter": "Fjern filter for {filter}"
+  },
   "overview": {
     "filters": "Filtre",
     "filterAll": "Alle",
@@ -168,6 +171,7 @@
     }
   },
   "comparative": {
+    "subtitle": "Sammenlign anlegg på tvers av produksjonssystem, arter, lokasjon og risikoprofiler.",
     "filters": "Sammenligningsfiltre",
     "openFilters": "Åpne filtre",
     "scoreBySystem": "Poeng etter produksjonssystem",
@@ -185,6 +189,7 @@
     "heatmapAriaSuffix": "Varmekart over anlegg etter underkategori."
   },
   "info": {
+    "moreInformation": "Mer informasjon",
     "overviewFilters": "Filtrer oversikten etter art, produksjonssystem og lokasjon.",
     "mapCoverage": "Kart over land/regioner basert på anleggskoordinater.",
     "practiceCoverage": "Adopsjonsgrad for sentrale biosikkerhetspraksiser.",
@@ -206,7 +211,8 @@
     "comparativeCharts": "Gjennomsnittsscore gruppert etter valgt kategori.",
     "comparativeFilters": "Filtrer matriser, grafer og tabell etter driftsattributter.",
     "riskMatrix": "Røde celler indikerer risiko for introduksjon/spredning av sykdom.",
-    "table": "Sammenligning på anleggsnivå for filtrerte poster."
+    "table": "Sammenligning på anleggsnivå for filtrerte poster.",
+    "moreInformation": "Mer informasjon"
   },
   "methodology": {
     "title": "Scoremetodikk",
@@ -301,6 +307,10 @@
     "usage": "Kun autorisert for Norsk Veterinærinstitutt til forskningsformål.",
     "inquiries": "Forespørsler",
     "copyright": "Alle rettigheter forbeholdt.",
+    "atlasAlt": "Atlas Biosecurity",
+    "partnersLabel": "I samarbeid med",
+    "vetinstAlt": "Veterinærinstituttet",
+    "eupahwAlt": "European Partnership Animal Health & Welfare",
     "links": {
       "title": "Ressurser",
       "methodology": "Metodikk",
@@ -331,7 +341,7 @@
     "unexpected": "Uventet feil"
   },
   "meta": {
-    "title": "Biosikkerhetsdashboard",
-    "description": "Dashboard for å visualisere biosikkerhetsresultater i akvakultur fra KoboToolbox."
+    "title": "Atlas Biosecurity",
+    "description": "Dashboard for biosikkerhetsovervåking i akvakultur med vurdering av anlegg og risikoanalyse."
   }
 }

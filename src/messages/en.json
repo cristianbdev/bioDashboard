@@ -64,6 +64,9 @@
     "light": "Light",
     "system": "System"
   },
+  "filters": {
+    "removeFilter": "Remove {filter} filter"
+  },
   "overview": {
     "filters": "Overview filters",
     "filterAll": "All",
@@ -168,6 +171,7 @@
     }
   },
   "comparative": {
+    "subtitle": "Compare facilities across production systems, species, locations, and risk profiles.",
     "filters": "Comparative filters",
     "openFilters": "Open filters",
     "scoreBySystem": "Score by Production System",
@@ -185,6 +189,7 @@
     "heatmapAriaSuffix": "Heatmap of facilities by subcategory."
   },
   "info": {
+    "moreInformation": "More information",
     "overviewFilters": "Filter overview by species, production system and location.",
     "mapCoverage": "Map of countries/regions based on facility coordinates.",
     "practiceCoverage": "Adoption rate of key biosecurity practices.",
@@ -206,7 +211,8 @@
     "comparativeCharts": "Average score grouped by selected category.",
     "comparativeFilters": "Filter matrices, charts and table by operational attributes.",
     "riskMatrix": "Red cells indicate risk of disease introduction/spread.",
-    "table": "Facility-level comparison for filtered records."
+    "table": "Facility-level comparison for filtered records.",
+    "moreInformation": "More information"
   },
   "methodology": {
     "title": "Score Methodology",
@@ -301,6 +307,10 @@
     "usage": "Authorized exclusively for the Norwegian Veterinary Institute for research purposes.",
     "inquiries": "Inquiries",
     "copyright": "All rights reserved.",
+    "atlasAlt": "Atlas Biosecurity",
+    "partnersLabel": "In collaboration with",
+    "vetinstAlt": "Norwegian Veterinary Institute",
+    "eupahwAlt": "European Partnership Animal Health & Welfare",
     "links": {
       "title": "Resources",
       "methodology": "Methodology",
@@ -331,7 +341,7 @@
     "unexpected": "Unexpected error"
   },
   "meta": {
-    "title": "Biosecurity Dashboard",
-    "description": "Dashboard for visualizing aquaculture biosecurity results from KoboToolbox."
+    "title": "Atlas Biosecurity",
+    "description": "Aquaculture biosecurity monitoring dashboard for facility assessment and risk analytics."
   }
 }

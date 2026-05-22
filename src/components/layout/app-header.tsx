@@ -1,8 +1,8 @@
 "use client";
 
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
-import { Clock, Languages, Loader2, Menu, MoreHorizontal, RefreshCw, Shield } from "lucide-react";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { Clock, Languages, Loader2, Menu, MoreHorizontal, RefreshCw } from "lucide-react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,18 +65,17 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] overflow-visible">
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
-        {/* Left: Logo + Title + Badge */}
+        {/* Left: Logo + Badge */}
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)] shadow-sm">
-            <Shield className="h-4 w-4 text-[var(--color-text-inverse)]" />
-          </div>
-          <div className="hidden min-w-0 sm:block">
-            <p className="truncate text-base font-semibold leading-tight text-[var(--color-text-primary)]">
-              {t("header.title")}
-            </p>
-            <p className="truncate text-xs text-[var(--color-text-secondary)]">
-              {t("header.subtitle")}
-            </p>
+          <div className="shrink-0">
+            <Image
+              src="/atlasBiosecurity-light-theme-name.png"
+              alt="Atlas Biosecurity"
+              width={120}
+              height={80}
+              className="h-7 w-auto object-contain sm:h-8"
+              priority={false}
+            />
           </div>
           <Badge variant="outline" className={cn("shrink-0 text-xs font-medium", ROLE_BADGE_STYLE[role])}>
             {t(ROLE_LABEL_KEYS[role])}
@@ -95,7 +94,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
           <div className="hidden lg:block">
             <Select value={locale} onValueChange={onLocaleChange}>
               <SelectTrigger
-                className="h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)] sm:h-8 sm:min-w-[60px]"
+                className="h-11 min-h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)]"
               >
                 <div className="flex items-center gap-1">
                   <Languages className="h-3.5 w-3.5" />
@@ -119,22 +118,17 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             variant="ghost"
             onClick={onRefresh}
             disabled={isLoading}
-            className="h-11 w-11 p-0 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] sm:h-8 sm:w-8"
+            className="h-11 min-h-11 w-11 min-w-11 p-0 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)]"
             aria-label={t("actions.refresh")}
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           </Button>
 
-          {/* Theme toggle - desktop only (>= lg) */}
-          <div className="hidden lg:block">
-            <ThemeToggle />
-          </div>
-
           {/* Sign in - ghost, no fill */}
           {isLoaded ? (
             <Show when="signed-out">
               <SignInButton mode="modal">
-                <Button size="sm" variant="ghost" className="h-11 px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)] sm:h-8 sm:px-2.5">
+                <Button size="sm" variant="ghost" className="h-11 min-h-11 px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]">
                   {t("auth.signIn")}
                 </Button>
               </SignInButton>
@@ -146,13 +140,13 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             <Show when="signed-in">
               <UserButton
                 appearance={{
-                  elements: { avatarBox: "h-11 w-11 sm:h-8 sm:w-8" },
+                  elements: { avatarBox: "h-11 w-11" },
                 }}
               />
             </Show>
           ) : null}
 
-          {/* Mobile overflow menu - contains ThemeToggle and Language selector (< lg) */}
+          {/* Mobile overflow menu - contains Language selector (< lg) */}
           <div className="lg:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -160,7 +154,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-11 w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)] sm:h-8 sm:w-8"
+                  className="h-11 min-h-11 w-11 min-w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]"
                   aria-label={t("navigation.more")}
                 >
                   <MoreHorizontal className="h-4 w-4" />
@@ -182,11 +176,6 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
                     {locale === entry && <span className="ml-auto">✓</span>}
                   </DropdownMenuItem>
                 ))}
-                <div className="my-1 h-px bg-[var(--color-border-subtle)]" />
-                {/* Theme toggle item - opens theme menu */}
-                <div className="px-2 py-1">
-                  <ThemeToggle />
-                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
