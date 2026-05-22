@@ -37,10 +37,13 @@
 *.tsbuildinfo
 next-env.d.ts
 
-# Agents Docs
+# Agents Docs/Files
 .agents/
 skills-lock.json
-.codex
+.codex/
+.pi/
+.github/
+.impeccable.md
 
 # Limux
 squashfs-root/
