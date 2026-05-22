@@ -95,7 +95,7 @@ export function DesktopFloatingFilter({
           onClick={() => setIsOpen(true)}
           className={cn(
             "flex items-center gap-2 rounded-full px-5 py-6 shadow-xl",
-            "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90",
+            "btn-brand",
             "transition-all duration-200 hover:scale-105 hover:shadow-2xl",
           )}
           aria-label={labels.openButtonAria}

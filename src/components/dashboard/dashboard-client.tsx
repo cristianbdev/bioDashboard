@@ -358,7 +358,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
                           size="sm"
                           onClick={() => fetchData(uid)}
                           disabled={!uid || state.status === "loading"}
-                          className="flex-1 bg-[var(--color-brand)] text-white shadow-sm transition-all duration-200 hover:bg-[var(--color-brand)]/90 hover:shadow-md sm:flex-none"
+                          className="btn-brand flex-1 shadow-sm transition-all duration-200 hover:shadow-md sm:flex-none"
                         >
                           {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
                         </Button>

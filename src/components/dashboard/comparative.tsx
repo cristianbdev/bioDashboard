@@ -178,7 +178,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
         aria-label={t("comparative.openFilters")}
-        className={`fixed right-4 z-40 flex min-h-11 items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2.5 text-white shadow-lg transition-all duration-300 lg:hidden ${
+        className={`btn-brand fixed right-4 z-40 flex min-h-11 items-center gap-2 rounded-full px-4 py-2.5 shadow-lg transition-all duration-300 lg:hidden ${
           showFloatingFilters ? "bottom-6 translate-y-0 opacity-100" : "bottom-6 pointer-events-none translate-y-4 opacity-0"
         }`}
       >

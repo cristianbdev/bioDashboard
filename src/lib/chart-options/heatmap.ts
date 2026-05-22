@@ -78,7 +78,7 @@ export function buildHeatmapOption(
       precision: 0,
       text: [t("status.compliant"), t("status.nonCompliant")],
       textStyle: { color: colors.textPrimary },
-      inRange: { color: [colors.danger, colors.warning, colors.success] },
+      inRange: { color: [colors.danger, colors.success] },
     },
     series: [
       {

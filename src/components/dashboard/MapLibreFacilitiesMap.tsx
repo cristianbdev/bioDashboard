@@ -283,7 +283,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                 >
                   <div
                     className={cn(
-                      "flex cursor-pointer select-none items-center justify-center rounded-full border-2 border-white font-bold text-white shadow-lg transition-transform hover:scale-110",
+                      "flex cursor-pointer select-none items-center justify-center rounded-full border-2 border-[var(--color-text-inverse)] font-bold text-[var(--color-text-inverse)] shadow-lg transition-transform hover:scale-110",
                       isLarge ? "bg-[var(--color-danger)]" : isMedium ? "bg-[var(--color-warning)]" : "bg-[var(--color-info)]",
                     )}
                     style={{
@@ -313,7 +313,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                 }}
               >
                 <div
-                  className="h-5 w-5 cursor-pointer rounded-full border-2 border-white shadow-md transition-transform hover:scale-125"
+                  className="h-5 w-5 cursor-pointer rounded-full border-2 border-[var(--color-text-inverse)] shadow-md transition-transform hover:scale-125"
                   style={{ backgroundColor: markerColorByRisk(facility.riskLevel) }}
                 />
               </Marker>

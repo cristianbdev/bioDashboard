@@ -69,7 +69,7 @@ const DARK_FALLBACK: ChartThemeColors = {
   warning: "#eab308",
   success: "#22c55e",
   brand: "#14b8a6",
-  chart: ["#2dd4bf", "#93c5fd", "#fcd34d", "#c4b5fd", "#67e8f9", "#fca5a5", "#6ee7b7", "#94a3b8"],
+  chart: ["#2dd4bf", "#93c5fd", "#fcd34d", "#c4b5fd", "#67e8f9", "#fca5a5", "#6ee7b7", "#cbd5e1"],
 };
 
 export function readChartThemeColors(): ChartThemeColors {
@@ -130,25 +130,22 @@ function buildEchartsTheme(colors: ChartThemeColors): Record<string, unknown> {
   };
 }
 
-let registeredLight = false;
-let registeredDark = false;
+let lastLightThemeJson = "";
+let lastDarkThemeJson = "";
 
 export function syncAtlasEchartsThemes(colors: ChartThemeColors, isDark: boolean): AtlasThemeName {
   const themeName: AtlasThemeName = isDark ? "atlas-dark" : "atlas-light";
   const themeOption = buildEchartsTheme(colors);
+  const themeJson = JSON.stringify(themeOption);
 
   if (isDark) {
-    if (!registeredDark) {
+    if (themeJson !== lastDarkThemeJson) {
       echarts.registerTheme("atlas-dark", themeOption);
-      registeredDark = true;
-    } else {
-      echarts.registerTheme("atlas-dark", themeOption);
+      lastDarkThemeJson = themeJson;
     }
-  } else if (!registeredLight) {
+  } else if (themeJson !== lastLightThemeJson) {
     echarts.registerTheme("atlas-light", themeOption);
-    registeredLight = true;
-  } else {
-    echarts.registerTheme("atlas-light", themeOption);
+    lastLightThemeJson = themeJson;
   }
 
   return themeName;
@@ -164,9 +161,18 @@ export function resolveChartTokenColor(token: string, colors: ChartThemeColors):
   return token;
 }
 
+const mixedColorCache = new Map<string, string>();
+
 export function resolveMixedColor(baseCssVar: string, mixPercent: number): string {
   if (typeof document === "undefined") {
     return LIGHT_FALLBACK.brand;
+  }
+
+  const themeKey = document.documentElement.classList.contains("dark") ? "dark" : "light";
+  const cacheKey = `${themeKey}:${baseCssVar}:${mixPercent}`;
+  const cached = mixedColorCache.get(cacheKey);
+  if (cached) {
+    return cached;
   }
 
   const el = document.createElement("div");
@@ -176,5 +182,7 @@ export function resolveMixedColor(baseCssVar: string, mixPercent: number): strin
   document.body.appendChild(el);
   const resolved = getComputedStyle(el).backgroundColor;
   document.body.removeChild(el);
-  return resolved || readChartThemeColors().brand;
+  const color = resolved || readChartThemeColors().brand;
+  mixedColorCache.set(cacheKey, color);
+  return color;
 }

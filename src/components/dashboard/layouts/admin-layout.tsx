@@ -176,7 +176,7 @@ export function AdminLayout({
                   size="sm"
                   onClick={() => fetchData(uid)}
                   disabled={!uid || state.status === "loading"}
-                  className="h-10 flex-1 bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 sm:flex-none"
+                  className="btn-brand h-10 flex-1 sm:flex-none"
                 >
                   {state.status === "loading" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                   {t("actions.load")}

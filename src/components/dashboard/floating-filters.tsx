@@ -70,7 +70,7 @@ export function FloatingFilters({
         onClick={onOpen}
         className={cn(
           "fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full px-4 py-3 shadow-lg transition-all lg:hidden",
-          "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90",
+          "btn-brand",
           "animate-in slide-in-from-bottom-4 duration-300",
         )}
         aria-label={t("overview.openFilters")}

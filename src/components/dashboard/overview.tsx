@@ -294,7 +294,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
             type="button"
             onClick={() => setIsMobileFiltersOpen(true)}
             aria-label={t("overview.openFilters")}
-            className="flex min-h-11 items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2.5 text-white shadow-lg lg:hidden"
+            className="btn-brand flex min-h-11 items-center gap-2 rounded-full px-4 py-2.5 shadow-lg lg:hidden"
           >
             <span className="text-sm font-medium">{t("overview.filters")}</span>
             {hasActiveFilters && (
@@ -401,7 +401,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       <button
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
-        className={`lg:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg transition-all duration-300 ${
+        className={`btn-brand lg:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full px-4 py-2 shadow-lg transition-all duration-300 ${
           showDesktopFloating ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
         aria-label={t("overview.openFilters")}

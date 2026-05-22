@@ -26,6 +26,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -70,7 +71,6 @@
   --color-text-secondary: #475569;
   --color-text-muted: #64748b;
   --color-text-inverse: #ffffff;
-  --color-text-inverse: #ffffff;
 
   /* Borders */
   --color-border-subtle: #e2e8e5;
@@ -103,6 +103,7 @@
   --accent: #edf2ef;
   --accent-foreground: var(--color-text-primary);
   --destructive: var(--color-danger);
+  --destructive-foreground: #ffffff;
   --border: var(--color-border-subtle);
   --input: var(--color-border-subtle);
   --ring: var(--color-brand);
@@ -160,7 +161,7 @@
   --color-chart-5: #67e8f9;
   --color-chart-6: #fca5a5;
   --color-chart-7: #6ee7b7;
-  --color-chart-8: #94a3b8;
+  --color-chart-8: #cbd5e1;
 
   /* shadcn/ui mapped variables - Dark mode */
   --radius: 0.75rem;
@@ -179,6 +180,7 @@
   --accent: #334155;
   --accent-foreground: var(--color-text-primary);
   --destructive: var(--color-danger);
+  --destructive-foreground: #0f172a;
   --border: var(--color-border-subtle);
   --input: var(--color-border-subtle);
   --ring: var(--color-brand);
@@ -341,6 +343,16 @@
 
 .risk-negligible {
   color: var(--color-muted);
+}
+
+/* Brand action controls — WCAG-safe foreground via semantic tokens */
+.btn-brand {
+  background-color: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.btn-brand:hover {
+  background-color: color-mix(in srgb, var(--color-brand) 90%, transparent);
 }
 
 /* Accessible tooltip styles are handled by Radix Tooltip in components/ui/tooltip.tsx */

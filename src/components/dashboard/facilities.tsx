@@ -116,8 +116,7 @@ export function FacilitiesView({
       )}
 
       {/* Hero Facility Details */}
-      <Card className="card-flat overflow-hidden">
-        <div className="h-2 w-full bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-chart-8)]" />
+      <Card className="card-flat overflow-hidden border-t-4 border-t-[var(--color-brand)]">
         <CardHeader className="pb-2">
           <InfoTitle title={t("facilities.information")} info={t("info.facilityDiagnostics")} />
         </CardHeader>
@@ -546,7 +545,7 @@ function ChecklistBackToTopButton({
       onClick={scrollToTop}
       className={cn(
         "fixed bottom-6 right-6 z-[35] flex items-center gap-2 px-4 py-3 rounded-full",
-        "bg-[var(--color-brand)] text-white shadow-lg hover:bg-[var(--color-brand)]/90",
+        "btn-brand shadow-lg",
         "transition-all duration-300 hover:shadow-xl hover:scale-105",
         "focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 focus:ring-offset-2"
       )}
@@ -828,7 +827,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                 onClick={() => setRiskFilter("all")}
                 className={cn(
                   "h-7 text-xs border-[var(--color-border-subtle)]",
-                  riskFilter === "all" && "bg-[var(--color-brand)] text-white border-[var(--color-brand)]"
+                  riskFilter === "all" && "bg-primary text-primary-foreground border-primary"
                 )}
               >
                 {t("overview.filterAll")}
@@ -876,7 +875,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                           : "border-[var(--color-border-subtle)]"
                       )}>
                         {currentFacility.id === facility.id && (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[var(--color-text-inverse)]" />
                         )}
                       </div>
 

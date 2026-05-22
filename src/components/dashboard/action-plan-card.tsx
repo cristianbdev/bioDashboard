@@ -37,7 +37,7 @@ export function ActionPlanCard({ items, t }: Props) {
       <CardContent className="space-y-3">
         {items.slice(0, 3).map((item, index) => (
           <div key={index} className="flex items-start gap-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] p-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand)] text-xs font-bold text-white">
+            <span className="btn-brand flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
               {item.priority}
             </span>
             <div className="flex-1">
