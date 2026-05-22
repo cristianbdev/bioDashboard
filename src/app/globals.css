@@ -65,6 +65,7 @@
   --color-surface-base: #f5f7f6;
   --color-surface-elevated: #fbfcfc;
   --color-raised: #ffffff;
+  --color-card-surface: var(--color-raised);
 
   /* Typography */
   --color-text-primary: #1e293b;
@@ -90,7 +91,7 @@
   --radius: 0.75rem;
   --background: var(--color-surface-base);
   --foreground: var(--color-text-primary);
-  --card: var(--color-raised);
+  --card: var(--color-card-surface);
   --card-foreground: var(--color-text-primary);
   --popover: var(--color-raised);
   --popover-foreground: var(--color-text-primary);
@@ -141,7 +142,10 @@
   /* Surfaces - Dark mode */
   --color-surface-base: #0f172a;
   --color-surface-elevated: #1e293b;
-  --color-raised: #334155;
+  /* Controls / inset fields — subtle lift on flat layout, not card slabs */
+  --color-raised: #1e293b;
+  /* Cards share the layout canvas (like light: white on near-white) */
+  --color-card-surface: var(--color-surface-base);
 
   /* Typography - Dark mode */
   --color-text-primary: #f1f5f9;
@@ -150,7 +154,7 @@
   --color-text-inverse: #0f172a;
 
   /* Borders - Dark mode */
-  --color-border-subtle: #334155;
+  --color-border-subtle: #1e293b;
   --color-border-default: #475569;
 
   /* Chart palette - Dark mode (brighter for visibility) */
@@ -167,9 +171,9 @@
   --radius: 0.75rem;
   --background: var(--color-surface-base);
   --foreground: var(--color-text-primary);
-  --card: var(--color-raised);
+  --card: var(--color-card-surface);
   --card-foreground: var(--color-text-primary);
-  --popover: var(--color-raised);
+  --popover: var(--color-surface-elevated);
   --popover-foreground: var(--color-text-primary);
   --primary: var(--color-brand);
   --primary-foreground: #0f172a;
@@ -177,7 +181,7 @@
   --secondary-foreground: #f1f5f9;
   --muted: #1e293b;
   --muted-foreground: var(--color-text-secondary);
-  --accent: #334155;
+  --accent: #1e293b;
   --accent-foreground: var(--color-text-primary);
   --destructive: var(--color-danger);
   --destructive-foreground: #0f172a;
@@ -192,11 +196,11 @@
   --chart-3: var(--color-chart-3);
   --chart-4: var(--color-chart-4);
   --chart-5: var(--color-chart-5);
-  --sidebar: var(--color-raised);
+  --sidebar: var(--color-surface-base);
   --sidebar-foreground: var(--color-text-primary);
   --sidebar-primary: var(--color-brand);
   --sidebar-primary-foreground: #0f172a;
-  --sidebar-accent: #334155;
+  --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: var(--color-text-primary);
   --sidebar-border: var(--color-border-subtle);
   --sidebar-ring: var(--color-brand);
@@ -219,14 +223,19 @@
 .card-flat {
   @apply rounded-xl border shadow-sm;
   border-color: var(--color-border-subtle);
-  background-color: var(--color-raised);
+  background-color: var(--color-card-surface);
 }
 
 /* NEW: interactive variant for clickable cards */
 .card-flat-interactive {
   @apply rounded-xl border shadow-sm transition-shadow duration-200;
   border-color: var(--color-border-subtle);
-  background-color: var(--color-raised);
+  background-color: var(--color-card-surface);
+}
+
+.dark .card-flat,
+.dark .card-flat-interactive {
+  box-shadow: none;
 }
 
 .card-flat-interactive:hover {
@@ -349,6 +358,7 @@
 .btn-brand {
   background-color: var(--color-brand);
   color: var(--color-text-inverse);
+  cursor: pointer;
 }
 
 .btn-brand:hover {
@@ -377,7 +387,7 @@
   padding: 0 !important;
   border-radius: 12px !important;
   border: 1px solid var(--color-border-subtle) !important;
-  background-color: var(--color-raised) !important;
+  background-color: var(--color-surface-elevated) !important;
   overflow: visible !important;
 }
 
@@ -435,25 +445,25 @@
 /* MapLibre Popup Dark Mode Styles */
 .dark .maplibregl-popup-content {
   border-color: var(--color-border-subtle) !important;
-  background-color: var(--color-raised) !important;
+  background-color: var(--color-surface-elevated) !important;
   color: var(--color-text-primary) !important;
 }
 
 /* Popup tip/arrow styling for dark mode */
 .dark .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-  border-top-color: var(--color-raised) !important;
+  border-top-color: var(--color-surface-elevated) !important;
 }
 
 .dark .maplibregl-popup-anchor-top .maplibregl-popup-tip {
-  border-bottom-color: var(--color-raised) !important;
+  border-bottom-color: var(--color-surface-elevated) !important;
 }
 
 .dark .maplibregl-popup-anchor-left .maplibregl-popup-tip {
-  border-right-color: var(--color-raised) !important;
+  border-right-color: var(--color-surface-elevated) !important;
 }
 
 .dark .maplibregl-popup-anchor-right .maplibregl-popup-tip {
-  border-left-color: var(--color-raised) !important;
+  border-left-color: var(--color-surface-elevated) !important;
 }
 
 /* Scale control dark mode */

@@ -668,7 +668,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
       <div className="flex justify-center">
         <button
           onClick={() => setShowAllCharts(!showAllCharts)}
-          className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-base)] hover:border-[var(--color-brand)]/40"
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-base)] hover:border-[var(--color-brand)]/40"
         >
           {showAllCharts ? t("comparative.hideAnalysis") : t("comparative.addAnalysis")}
         </button>
@@ -717,7 +717,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
         <div className="flex justify-center">
           <button
             onClick={() => setShowHeatmapAsList(!showHeatmapAsList)}
-            className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-base)]"
+            className="flex cursor-pointer items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-base)]"
           >
             {showHeatmapAsList ? t("comparative.viewAsChart") : t("comparative.viewAsList")}
           </button>

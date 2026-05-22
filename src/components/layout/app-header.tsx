@@ -1,15 +1,26 @@
 "use client";
 
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
-import { Clock, Languages, Loader2, Menu, MoreHorizontal, RefreshCw } from "lucide-react";
-import Image from "next/image";
-import { useTheme } from "next-themes";
+import {
+  Clock,
+  Languages,
+  Loader2,
+  Menu,
+  MoreHorizontal,
+  RefreshCw,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useSyncExternalStore } from "react";
+import { AtlasLogo } from "@/components/brand/atlas-logo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,9 +44,12 @@ type AppHeaderProps = {
 };
 
 const ROLE_BADGE_STYLE: Record<AppRole, string> = {
-  admin: "border-[var(--color-brand)]/30 bg-[var(--color-brand)]/10 text-[var(--color-brand)]",
-  producer: "border-[var(--color-warning)]/30 bg-[var(--color-warning)]/10 text-[var(--color-warning)]",
-  public: "border-[var(--color-muted)]/30 bg-[var(--color-muted)]/10 text-[var(--color-muted)]",
+  admin:
+    "border-[var(--color-brand)]/30 bg-[var(--color-brand)]/10 text-[var(--color-brand)]",
+  producer:
+    "border-[var(--color-warning)]/30 bg-[var(--color-warning)]/10 text-[var(--color-warning)]",
+  public:
+    "border-[var(--color-muted)]/30 bg-[var(--color-muted)]/10 text-[var(--color-muted)]",
 };
 
 const ROLE_LABEL_KEYS = {
@@ -50,30 +64,28 @@ const LOCALE_LABEL_KEYS = {
   no: "locales.no",
 } as const;
 
-export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoading, onOpenNav }: AppHeaderProps) {
+export function AppHeader({
+  role,
+  data,
+  isLoaded,
+  isNavOpen,
+  onRefresh,
+  isLoading,
+  onOpenNav,
+}: AppHeaderProps) {
   const locale = useLocale();
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
-  const { resolvedTheme } = useTheme();
-  const mounted = useSyncExternalStore(
-    () => () => undefined,
-    () => true,
-    () => false,
-  );
-
-  const logoSrc =
-    mounted && resolvedTheme === "dark"
-      ? "/atlasBiosecurity-dark-theme.png"
-      : "/atlasBiosecurity-light-theme.png";
-
   const onLocaleChange = (value: string) => {
     router.replace(pathname, { locale: value as AppLocale });
   };
 
   const formattedUpdatedAt = (() => {
     if (!data?.stats.lastUpdated) return "-";
-    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(data.stats.lastUpdated));
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
+      new Date(data.stats.lastUpdated),
+    );
   })();
 
   return (
@@ -81,15 +93,8 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         {/* Left: Logo + brand (title; badge stacked under title on mobile, inline from sm) */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10">
-            <Image
-              src={logoSrc}
-              alt=""
-              width={40}
-              height={40}
-              className="h-full w-full object-contain"
-              priority
-            />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
+            <AtlasLogo size={50} priority />
           </div>
           <div className="flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-2">
             <span className="whitespace-nowrap text-sm font-semibold leading-none tracking-tight text-[var(--color-brand)] sm:text-lg">
@@ -123,15 +128,18 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
           {/* Language selector - desktop only (>= lg) */}
           <div className="hidden lg:block">
             <Select value={locale} onValueChange={onLocaleChange}>
-              <SelectTrigger
-                className="h-11 min-h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)]"
-              >
+              <SelectTrigger className="h-11 min-h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)]">
                 <div className="flex items-center gap-1">
                   <Languages className="h-3.5 w-3.5" />
                   <SelectValue />
                 </div>
               </SelectTrigger>
-              <SelectContent position="popper" sideOffset={4} align="end" avoidCollisions>
+              <SelectContent
+                position="popper"
+                sideOffset={4}
+                align="end"
+                avoidCollisions
+              >
                 {routing.locales.map((entry) => (
                   <SelectItem key={entry} value={entry} className="uppercase">
                     {t(LOCALE_LABEL_KEYS[entry])}
@@ -151,14 +159,22 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
             className="h-11 min-h-11 w-11 min-w-11 p-0 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)]"
             aria-label={t("actions.refresh")}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
           </Button>
 
           {/* Sign in - ghost, no fill */}
           {isLoaded ? (
             <Show when="signed-out">
               <SignInButton mode="modal">
-                <Button size="sm" variant="ghost" className="h-11 min-h-11 px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-11 min-h-11 px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]"
+                >
                   {t("auth.signIn")}
                 </Button>
               </SignInButton>
@@ -200,7 +216,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
                     onClick={() => onLocaleChange(entry)}
                     className={cn(
                       "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
-                      locale === entry && "bg-accent text-accent-foreground"
+                      locale === entry && "bg-accent text-accent-foreground",
                     )}
                   >
                     <Languages className="h-4 w-4" />

@@ -214,21 +214,21 @@ export function FacilitiesView({
       <div className="grid gap-6 lg:grid-cols-3">
         <RiskCard
           color="rose"
-          icon={<AlertTriangle className="h-5 w-5 text-[var(--color-danger)]" />}
+          icon={<AlertTriangle className="h-5 w-5" />}
           title={t("facilities.risks.high")}
           items={currentFacility.highRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="amber"
-          icon={<AlertCircle className="h-5 w-5 text-[var(--color-warning)]" />}
+          icon={<AlertCircle className="h-5 w-5" />}
           title={t("facilities.risks.medium")}
           items={currentFacility.moderateRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="emerald"
-          icon={<CheckCircle2 className="h-5 w-5 text-[var(--color-success)]" />}
+          icon={<CheckCircle2 className="h-5 w-5" />}
           title={t("facilities.risks.positive")}
           items={currentFacility.positivePractices}
           emptyLabel={t("facilities.noData")}
@@ -262,8 +262,8 @@ export function FacilitiesView({
       </div>
 
       {/* Full Checklist - Redesigned with Sticky Navigation and Cards */}
-      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+      <div className="card-flat overflow-hidden gap-0 py-0 shadow-none">
+        <div className="border-b border-[var(--color-border-subtle)] px-5 py-4">
           <div className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5 text-[var(--color-text-secondary)]" />
             <InfoTitle title={t("facilities.subcategoryChecklist")} info={t("info.subcategoryChecklist")} />
@@ -650,6 +650,27 @@ function RuleRow({ rule, t }: { rule: RuleStatus; t: (key: string) => string }) 
   );
 }
 
+const RISK_CARD_VARIANT = {
+  rose: {
+    accent: "border-t-[var(--color-danger)]",
+    tint: "text-[var(--color-danger)]",
+    iconWrap: "border-[var(--color-danger)]/20 bg-[var(--color-danger)]/10",
+    bullet: AlertTriangle,
+  },
+  amber: {
+    accent: "border-t-[var(--color-warning)]",
+    tint: "text-[var(--color-warning)]",
+    iconWrap: "border-[var(--color-warning)]/20 bg-[var(--color-warning)]/10",
+    bullet: AlertCircle,
+  },
+  emerald: {
+    accent: "border-t-[var(--color-success)]",
+    tint: "text-[var(--color-success)]",
+    iconWrap: "border-[var(--color-success)]/20 bg-[var(--color-success)]/10",
+    bullet: CheckCircle2,
+  },
+} as const;
+
 function RiskCard({
   color,
   icon,
@@ -657,39 +678,43 @@ function RiskCard({
   items,
   emptyLabel,
 }: {
-  color: "rose" | "amber" | "emerald";
+  color: keyof typeof RISK_CARD_VARIANT;
   icon: ReactNode;
   title: string;
   items: string[];
   emptyLabel: string;
 }) {
-  const border = {
-    rose: "border-t-4 border-t-[var(--color-danger)]",
-    amber: "border-t-4 border-t-[var(--color-warning)]",
-    emerald: "border-t-4 border-t-[var(--color-success)]",
-  }[color];
-  const IconBullet = color === "rose" ? AlertTriangle : color === "amber" ? AlertCircle : CheckCircle2;
-  const iconColor = color === "rose" ? "text-[var(--color-danger)]" : color === "amber" ? "text-[var(--color-warning)]" : "text-[var(--color-success)]";
+  const variant = RISK_CARD_VARIANT[color];
+  const IconBullet = variant.bullet;
+
   return (
-    <Card className={`card-flat ${border}`}>
-      <CardHeader className="pb-3 bg-[var(--color-raised)] rounded-t-xl">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[var(--color-raised)] rounded-lg shadow-sm border border-[var(--color-border-subtle)]">{icon}</div>
+    <Card className={cn("card-flat gap-0 border-t-4 py-0 shadow-none", variant.accent)}>
+      <CardHeader className="border-b border-[var(--color-border-subtle)] pb-4 pt-5">
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
+              variant.iconWrap,
+              variant.tint,
+            )}
+          >
+            {icon}
+          </div>
           <CardTitle className="text-base font-semibold text-[var(--color-text-primary)]">{title}</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="py-4">
         {items.length > 0 ? (
           <ul className="space-y-3">
             {items.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--color-text-primary)]">
-                <IconBullet className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
-                <span className="leading-snug">{item}</span>
+              <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--color-text-secondary)]">
+                <IconBullet className={cn("mt-0.5 h-4 w-4 shrink-0", variant.tint)} aria-hidden />
+                <span className="leading-snug text-[var(--color-text-primary)]">{item}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-[var(--color-text-secondary)] italic">{emptyLabel}</p>
+          <p className="text-sm text-[var(--color-text-muted)] italic">{emptyLabel}</p>
         )}
       </CardContent>
     </Card>

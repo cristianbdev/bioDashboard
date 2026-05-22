@@ -60,9 +60,9 @@ const LIGHT_FALLBACK: ChartThemeColors = {
 const DARK_FALLBACK: ChartThemeColors = {
   textPrimary: "#f1f5f9",
   textSecondary: "#94a3b8",
-  borderSubtle: "#334155",
+  borderSubtle: "#1e293b",
   borderDefault: "#475569",
-  raised: "#334155",
+  raised: "#1e293b",
   surfaceBase: "#0f172a",
   surfaceElevated: "#1e293b",
   danger: "#ef4444",

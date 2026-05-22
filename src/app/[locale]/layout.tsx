@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/footer";
+import { ATLAS_LOGO_ICONS } from "@/lib/brand/logo";
 import { routing } from "@/i18n/routing";
 
 const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
@@ -33,8 +34,8 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
     title,
     description,
     icons: {
-      icon: "/favicon.ico",
-      apple: "/icon.png",
+      icon: [...ATLAS_LOGO_ICONS],
+      apple: [...ATLAS_LOGO_ICONS],
     },
     alternates: {
       canonical: canonicalPath,

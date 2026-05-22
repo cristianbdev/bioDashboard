@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 
 export function Footer() {
@@ -20,13 +19,10 @@ export function Footer() {
         <div className="hidden items-center justify-between gap-6 sm:flex">
           {/* Developer logo */}
           <div className="shrink-0">
-            <Image
+            <img
               src="/cristianbdev-logo.png"
               alt="CristianBDev"
-              width={120}
-              height={40}
               className="h-10 w-auto object-contain"
-              priority={false}
             />
           </div>
 
@@ -45,18 +41,14 @@ export function Footer() {
           <div className="flex shrink-0 items-center gap-5">
             {/* Partner logos */}
             <div className="flex items-center gap-3">
-              <Image
+              <img
                 src={vetinstSrc}
                 alt={t("footer.vetinstAlt")}
-                width={130}
-                height={32}
                 className="h-10 w-auto object-contain"
               />
-              <Image
+              <img
                 src="/partners/eupahw-logo-color.png"
                 alt={t("footer.eupahwAlt")}
-                width={110}
-                height={41}
                 className="h-11 w-auto object-contain"
               />
             </div>
@@ -81,18 +73,14 @@ export function Footer() {
         <div className="flex flex-col items-center gap-4 sm:hidden">
           {/* Partners */}
           <div className="flex items-center gap-3">
-            <Image
+            <img
               src={vetinstSrc}
               alt={t("footer.vetinstAlt")}
-              width={130}
-              height={32}
               className="h-8 w-auto object-contain"
             />
-            <Image
+            <img
               src="/partners/eupahw-logo-color.png"
               alt={t("footer.eupahwAlt")}
-              width={110}
-              height={41}
               className="h-7 w-auto object-contain"
             />
           </div>
@@ -111,13 +99,10 @@ export function Footer() {
 
           {/* Developer logo + contact */}
           <div className="flex items-center gap-3">
-            <Image
+            <img
               src="/cristianbdev-logo.png"
               alt="CristianBDev"
-              width={100}
-              height={33}
               className="h-7 w-auto object-contain"
-              priority={false}
             />
             <div className="text-center text-[11px] text-[var(--color-text-muted)]">
               <a

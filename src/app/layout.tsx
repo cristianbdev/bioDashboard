@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono, IBM_Plex_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { ATLAS_LOGO_ICONS } from "@/lib/brand/logo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,8 +25,8 @@ export const metadata: Metadata = {
   title: "Atlas Biosecurity",
   description: "Dashboard for aquaculture biosecurity monitoring and facility assessment results.",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/icon.png",
+    icon: [...ATLAS_LOGO_ICONS],
+    apple: [...ATLAS_LOGO_ICONS],
   },
 };
 
