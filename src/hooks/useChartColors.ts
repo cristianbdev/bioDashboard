@@ -59,6 +59,22 @@ function readChartColorsFromDocument(): ChartColors {
   return colors;
 }
 
+function colorsEqual(a: ChartColors, b: ChartColors): boolean {
+  return CSS_VAR_KEYS.every(([key]) => a[key] === b[key]);
+}
+
+/** Stable snapshot reference — required by useSyncExternalStore. */
+let cachedSnapshot: ChartColors = LIGHT_FALLBACK;
+
+function getChartColorsSnapshot(): ChartColors {
+  const next = readChartColorsFromDocument();
+  if (colorsEqual(cachedSnapshot, next)) {
+    return cachedSnapshot;
+  }
+  cachedSnapshot = next;
+  return cachedSnapshot;
+}
+
 function subscribeToColorChanges(onStoreChange: () => void) {
   if (typeof window === "undefined") {
     return () => undefined;
@@ -70,5 +86,5 @@ function subscribeToColorChanges(onStoreChange: () => void) {
 }
 
 export function useChartColors(): ChartColors {
-  return useSyncExternalStore(subscribeToColorChanges, readChartColorsFromDocument, () => LIGHT_FALLBACK);
+  return useSyncExternalStore(subscribeToColorChanges, getChartColorsSnapshot, () => LIGHT_FALLBACK);
 }
