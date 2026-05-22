@@ -10,6 +10,7 @@ interface ThemeProviderProps {
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
   forcedTheme?: string;
+  storageKey?: string;
 }
 
 export function ThemeProvider({
@@ -19,6 +20,7 @@ export function ThemeProvider({
   enableSystem = true,
   disableTransitionOnChange = false,
   forcedTheme,
+  storageKey = "theme",
 }: ThemeProviderProps) {
   return (
     <NextThemesProvider
@@ -27,6 +29,7 @@ export function ThemeProvider({
       enableSystem={enableSystem}
       disableTransitionOnChange={disableTransitionOnChange}
       forcedTheme={forcedTheme}
+      storageKey={storageKey}
     >
       {children}
     </NextThemesProvider>

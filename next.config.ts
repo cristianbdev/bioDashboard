@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev'],
+  transpilePackages: ["echarts", "zrender"],
 };
 
 export default withNextIntl(nextConfig);

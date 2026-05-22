@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { FullscreenControl, MapRef, Marker, NavigationControl, Popup, ScaleControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { useTheme } from "next-themes";
 import Supercluster from "supercluster";
 import type { AppLocale } from "@/i18n/routing";
 import type { FacilitySummary } from "@/lib/kobo";
@@ -21,7 +22,10 @@ type Props = {
   className?: string;
 };
 
-const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+const MAP_STYLES = {
+  light: "https://tiles.openfreemap.org/styles/liberty",
+  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+} as const;
 
 const RISK_LEVELS: Array<{ level: FacilitySummary["riskLevel"]; labelKey: string; color: string }> = [
   { level: "HIGH", labelKey: "map.riskHigh", color: "var(--color-danger)" },
@@ -87,7 +91,8 @@ function formatNumber(n: number): string {
 
 export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", className }: Props) {
   const mapRef = useRef<MapRef>(null);
-  const mapStyle = MAP_STYLE_URL;
+  const { resolvedTheme } = useTheme();
+  const mapStyle = resolvedTheme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;
   const [selectedFacility, setSelectedFacility] = useState<FacilitySummary | null>(null);
   const [bounds, setBounds] = useState<[number, number, number, number]>([-180, -85, 180, 85]);
   const [zoom, setZoom] = useState(4);

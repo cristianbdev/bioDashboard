@@ -8,8 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Tooltip, XAxis, YAxis } from "recharts";
-import { CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveVerticalBarLayout, SafeResponsiveContainer, truncateChartLabel } from "@/components/charts/chart-card";
+import { getAdaptiveVerticalBarLayout } from "@/components/charts/chart-card";
+import { EChartsChart } from "@/components/charts/echarts-chart";
+import { useChartTheme } from "@/hooks/useChartTheme";
+import { buildHorizontalGroupedBarOption } from "@/lib/chart-options";
+import { resolveMixedColor } from "@/lib/chart-theme";
 import { cn } from "@/lib/utils";
 import type { DashboardData, FacilitySummary, RuleStatus, SubcategoryChecklist } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
@@ -27,17 +30,6 @@ type Props = {
   isProducerView?: boolean;
 };
 
-// Update to theme colors - use CSS variables for dark mode support
-const FACILITY_COLORS = {
-  external: "var(--color-brand)",
-  internal: "var(--color-chart-8)",
-};
-
-const AVERAGE_COLORS = {
-  external: "color-mix(in srgb, var(--color-brand) 60%, transparent)",
-  internal: "color-mix(in srgb, var(--color-chart-8) 60%, transparent)",
-};
-
 export function FacilitiesView({
   facilities,
   currentFacility,
@@ -47,6 +39,7 @@ export function FacilitiesView({
   readOnlySelection = false,
   isProducerView = false,
 }: Props) {
+  const { colors } = useChartTheme();
   const peerAverage = useMemo(() => {
     if (sectionAverages.length === 0) return undefined;
     return Math.round(sectionAverages.reduce((acc, s) => acc + s.score, 0) / sectionAverages.length);
@@ -66,19 +59,49 @@ export function FacilitiesView({
       .slice(0, 3);
   }, [currentFacility, t]);
 
-  if (!currentFacility) return null;
+  const benchmarkData = useMemo(() => {
+    if (!currentFacility) return [];
+    return currentFacility.sectionScores.map((section) => {
+      const average =
+        sectionAverages.find((item) => item.section === section.section && item.side === section.side)?.score ?? 0;
+      return {
+        section: translateSectionLabel(section.section, t),
+        side: section.side,
+        facility: section.score,
+        average,
+      };
+    });
+  }, [currentFacility, sectionAverages, t]);
 
-  const benchmarkData = currentFacility.sectionScores.map((section) => {
-    const average = sectionAverages.find((item) => item.section === section.section && item.side === section.side)?.score ?? 0;
-    return {
-      section: translateSectionLabel(section.section, t),
-      side: section.side,
-      facility: section.score,
-      average,
-    };
-  });
-  const longestBenchmarkLabel = benchmarkData.reduce((max, item) => Math.max(max, item.section.length), 0);
-  const benchmarkLayout = getAdaptiveVerticalBarLayout(benchmarkData.length, longestBenchmarkLabel);
+  const benchmarkOption = useMemo(() => {
+    if (benchmarkData.length === 0) return undefined;
+    const externalAvg = resolveMixedColor("--color-brand", 60);
+    const internalAvg = resolveMixedColor("--color-chart-8", 60);
+    const chart8 = colors.chart[7] ?? colors.brand;
+    const longestBenchmarkLabel = benchmarkData.reduce((max, item) => Math.max(max, item.section.length), 0);
+    const benchmarkLayout = getAdaptiveVerticalBarLayout(benchmarkData.length, longestBenchmarkLabel);
+
+    return buildHorizontalGroupedBarOption({
+      categories: benchmarkData.map((entry) => entry.section),
+      series: [
+        {
+          name: t("facilities.networkAverage"),
+          values: benchmarkData.map((entry) => entry.average),
+          colors: benchmarkData.map((entry) => (entry.side === "external" ? externalAvg : internalAvg)),
+        },
+        {
+          name: t("table.facility"),
+          values: benchmarkData.map((entry) => entry.facility),
+          colors: benchmarkData.map((entry) => (entry.side === "external" ? colors.brand : chart8)),
+        },
+      ],
+      colors,
+      yAxisWidth: Math.min(132, benchmarkLayout.yAxisWidth),
+      scoreLabel: t("table.facility"),
+    });
+  }, [benchmarkData, colors, t]);
+
+  if (!currentFacility) return null;
 
   return (
     <div className="space-y-6 min-w-0">
@@ -161,37 +184,7 @@ export function FacilitiesView({
           </CardHeader>
           <CardContent className="h-[340px] md:h-[380px] xl:h-[420px]">
             <div role="img" aria-label={`${t("facilities.benchmark")}. ${benchmarkData.length} ${t("facilities.benchmarkAriaSuffix")}`} className="h-full w-full">
-              <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
-                <BarChart data={benchmarkData} layout="vertical" margin={{ left: 8, right: 20, top: 10, bottom: 10 }} barGap={2} barSize={benchmarkLayout.barSize}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} />
-                <YAxis
-                  type="category"
-                  dataKey="section"
-                  width={Math.min(132, benchmarkLayout.yAxisWidth)}
-                  tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
-                  tickFormatter={(value: string) => truncateChartLabel(value, 22)}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                  cursor={CHART_TOOLTIP_CURSOR}
-                  formatter={(value) => [`${value}/100`, t("table.score")]}
-                />
-                <Bar dataKey="average" name={t("facilities.networkAverage")} radius={[0, 4, 4, 0]} maxBarSize={12}>
-                  {benchmarkData.map((entry) => (
-                    <Cell key={`${entry.section}-average`} fill={entry.side === "external" ? AVERAGE_COLORS.external : AVERAGE_COLORS.internal} />
-                  ))}
-                </Bar>
-                <Bar dataKey="facility" name={t("table.facility")} radius={[0, 4, 4, 0]} maxBarSize={12}>
-                  {benchmarkData.map((entry) => (
-                    <Cell key={`${entry.section}-facility`} fill={entry.side === "external" ? FACILITY_COLORS.external : FACILITY_COLORS.internal} />
-                  ))}
-                  <LabelList dataKey="facility" position="right" fontSize={10} fill="var(--color-text-primary)" fontWeight={600} />
-                </Bar>
-                </BarChart>
-              </SafeResponsiveContainer>
+              <EChartsChart option={benchmarkOption} />
             </div>
           </CardContent>
         </Card>

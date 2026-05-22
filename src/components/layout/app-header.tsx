@@ -3,7 +3,10 @@
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { Clock, Languages, Loader2, Menu, MoreHorizontal, RefreshCw } from "lucide-react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
+import { useSyncExternalStore } from "react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -52,6 +55,17 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
+  const { resolvedTheme } = useTheme();
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
+  const logoSrc =
+    mounted && resolvedTheme === "dark"
+      ? "/atlasBiosecurity-dark-theme.png"
+      : "/atlasBiosecurity-light-theme.png";
 
   const onLocaleChange = (value: string) => {
     router.replace(pathname, { locale: value as AppLocale });
@@ -69,7 +83,7 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
         <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10">
             <Image
-              src="/atlasBiosecurity-light-theme.png"
+              src={logoSrc}
               alt=""
               width={40}
               height={40}
@@ -99,6 +113,11 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
           <div className="hidden items-center gap-1.5 text-xs text-[var(--color-text-muted)] lg:flex">
             <Clock className="h-3.5 w-3.5" />
             <span>{formattedUpdatedAt}</span>
+          </div>
+
+          {/* Theme - desktop only */}
+          <div className="hidden md:block">
+            <ThemeToggle />
           </div>
 
           {/* Language selector - desktop only (>= lg) */}
@@ -172,7 +191,9 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={4} className="w-48">
-                {/* Language options */}
+                <div className="md:hidden">
+                  <ThemeToggle variant="menu-item" />
+                </div>
                 {routing.locales.map((entry) => (
                   <DropdownMenuItem
                     key={entry}

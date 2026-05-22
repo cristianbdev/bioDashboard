@@ -42,11 +42,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
-        <ThemeProvider
-          defaultTheme="light"
-          enableSystem={false}
-          forcedTheme="light"
-        >
+        <ThemeProvider defaultTheme="light" enableSystem storageKey="theme">
           <ClerkProvider>{children}</ClerkProvider>
         </ThemeProvider>
       </body>

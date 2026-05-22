@@ -2,13 +2,16 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
 import { CoveragePill, MetricCard } from "./cards";
 import { DashboardPageHeading } from "./dashboard-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, SafeResponsiveContainer, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
+import { ChartCard, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, type ChartCardHeight } from "@/components/charts/chart-card";
+import { EChartsChart } from "@/components/charts/echarts-chart";
+import { useChartTheme } from "@/hooks/useChartTheme";
+import { buildDonutOption, buildSectionScoreBarOption, buildVerticalBarOption } from "@/lib/chart-options";
+import type { ChartThemeColors } from "@/lib/chart-theme";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
@@ -50,17 +53,6 @@ type Props = {
   locale: AppLocale;
   externalFilters?: FilterState;
 };
-
-const CHART_PALETTE = [
-  "var(--color-chart-1)",
-  "var(--color-chart-2)",
-  "var(--color-chart-3)",
-  "var(--color-chart-4)",
-  "var(--color-chart-5)",
-  "var(--color-chart-6)",
-  "var(--color-chart-7)",
-  "var(--color-chart-8)",
-];
 
 function average(values: number[]) {
   if (values.length === 0) return 0;
@@ -109,10 +101,10 @@ function filteredSectionAverages(base: DashboardData["sectionAverages"], facilit
   });
 }
 
-function sectionColor(score: number) {
-  if (score >= 70) return "var(--color-success)";
-  if (score >= 50) return "var(--color-warning)";
-  return "var(--color-danger)";
+function sectionColor(score: number, colors: ChartThemeColors) {
+  if (score >= 70) return colors.success;
+  if (score >= 50) return colors.warning;
+  return colors.danger;
 }
 
 function riskLabelToBarColor(kind: "high" | "positive") {
@@ -212,9 +204,6 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     () => sectionAverages.map((item) => ({ ...item, section: translateSectionLabel(item.section, t) })),
     [sectionAverages, t],
   );
-  const sectionLongestLabel = translatedSectionAverages.reduce((max, item) => Math.max(max, item.section.length), 0);
-  const sectionLayout = getAdaptiveVerticalBarLayout(translatedSectionAverages.length, sectionLongestLabel);
-
   const avgScore = average(filteredFacilities.map((f) => f.score));
   const highRiskCount = filteredFacilities.filter((f) => f.riskLevel === "HIGH").length;
   const lowRiskCount = filteredFacilities.filter((f) => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length;
@@ -372,27 +361,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           {translatedSectionAverages.length === 0 ? (
             <EmptyChartState {...emptyStateProps} />
           ) : (
-            <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
-              <BarChart data={translatedSectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  type="category"
-                  dataKey="section"
-                  width={sectionLayout.yAxisWidth}
-                  tick={{ fontSize: 11, fill: "var(--color-text-primary)" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
-                <Bar dataKey="score" radius={[0, 6, 6, 0]}>
-                  {translatedSectionAverages.map((entry) => (
-                    <Cell key={entry.section} fill={sectionColor(entry.score)} />
-                  ))}
-                  <LabelList dataKey="score" position="right" fontSize={11} fill="var(--color-text-primary)" />
-                </Bar>
-              </BarChart>
-            </SafeResponsiveContainer>
+            <SectionScoresChart data={translatedSectionAverages} />
           )}
         </ChartCard>
       </section>
@@ -562,18 +531,27 @@ function ChartBlock({ title, info, data, labelKey, valueKey, height, emptyStateP
   );
 }
 
+function SectionScoresChart({ data }: { data: { section: string; score: number }[] }) {
+  const { colors } = useChartTheme();
+  const option = useMemo(
+    () =>
+      buildSectionScoreBarOption({
+        data,
+        colors,
+        getBarColor: (score) => sectionColor(score, colors),
+      }),
+    [data, colors],
+  );
+
+  return <EChartsChart option={option} />;
+}
+
 function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; barColor?: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
-  if (data.length === 0) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
-  }
+  const { colors } = useChartTheme();
 
   const nonZeroData = data.filter((item) => Number(item[valueKey] ?? 0) > 0);
   const chartData = nonZeroData.length > 0 ? nonZeroData : data;
   const hasAnyValue = chartData.some((item) => Number(item[valueKey] ?? 0) > 0);
-
-  if (!hasAnyValue) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
-  }
 
   const longestLabel = chartData.reduce((max, item) => {
     const label = String(item[labelKey] ?? "");
@@ -581,90 +559,69 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
   }, 0);
   const layout = getAdaptiveVerticalBarLayout(chartData.length, longestLabel);
 
-  return (
-    <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
-      <BarChart data={chartData} layout="vertical" margin={{ top: 8, right: layout.rightMargin, left: layout.leftMargin ?? 8, bottom: 8 }} barSize={layout.barSize}>
-        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
-        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
-        <YAxis
-          type="category"
-          dataKey={labelKey}
-          width={layout.yAxisWidth}
-          tick={{ fontSize: 11, fill: "var(--color-text-primary)" }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(value: string) => truncateChartLabel(value, 24)}
-        />
-        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
-        <Bar dataKey={valueKey} radius={[0, 4, 4, 0]}>
-          {chartData.map((_, index) => (
-            <Cell key={index} fill={barColor ?? CHART_PALETTE[index % CHART_PALETTE.length]} />
-          ))}
-          {layout.showValues ? <LabelList dataKey={valueKey} position="right" fontSize={11} fill="var(--color-text-primary)" /> : null}
-        </Bar>
-      </BarChart>
-    </SafeResponsiveContainer>
+  const option = useMemo(
+    () =>
+      buildVerticalBarOption({
+        data: chartData,
+        labelKey,
+        valueKey,
+        colors,
+        barColor,
+        showValueLabels: layout.showValues,
+        allowDecimals: false,
+        domainMax: Math.max(...chartData.map((item) => Number(item[valueKey] ?? 0)), 1) * 1.1,
+      }),
+    [chartData, labelKey, valueKey, colors, barColor, layout.showValues],
   );
-}
 
-function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
   if (data.length === 0) {
     return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
-  const hasAnyValue = data.some((item) => Number(item[valueKey] ?? 0) > 0);
   if (!hasAnyValue) {
     return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
-  const total = data.reduce((sum, item) => sum + Number(item[valueKey] ?? 0), 0);
+  return <EChartsChart option={option} />;
+}
+
+function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
+  const { colors } = useChartTheme();
+  const hasAnyValue = data.some((item) => Number(item[valueKey] ?? 0) > 0);
+
+  const option = useMemo(
+    () =>
+      buildDonutOption({
+        data,
+        labelKey,
+        valueKey,
+        colors,
+        totalLabel: "Total",
+      }),
+    [data, labelKey, valueKey, colors],
+  );
+
+  if (data.length === 0) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
+  }
+
+  if (!hasAnyValue) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
+  }
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* Chart area */}
-      <div className="flex-1 min-h-0">
-        <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius="55%"
-              outerRadius="75%"
-              paddingAngle={2}
-              dataKey={valueKey}
-              nameKey={labelKey}
-              stroke="none"
-            >
-              {data.map((_, index) => (
-                <Cell key={index} fill={CHART_PALETTE[index % CHART_PALETTE.length]} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={CHART_TOOLTIP_STYLE}
-              cursor={CHART_TOOLTIP_CURSOR}
-              formatter={(value, name) => {
-                const numericValue = typeof value === "number" ? value : Number(value ?? 0);
-                return [`${numericValue} (${((numericValue / total) * 100).toFixed(1)}%)`, String(name)] as [string, string];
-              }}
-            />
-            {/* Center label */}
-            <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-primary)]" fontSize={24} fontWeight={700}>
-              {total}
-            </text>
-            <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-secondary)]" fontSize={11}>
-              Total
-            </text>
-          </PieChart>
-        </SafeResponsiveContainer>
+      <div className="min-h-0 flex-1">
+        <EChartsChart option={option} />
       </div>
-
-      {/* Legend below chart */}
-      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 px-2 py-2 shrink-0">
+      <div className="flex shrink-0 flex-wrap justify-center gap-x-3 gap-y-1.5 px-2 py-2">
         {data.map((item, index) => (
           <div key={index} className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_PALETTE[index % CHART_PALETTE.length] }} />
-            <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">{String(item[labelKey])}</span>
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: colors.chart[index % colors.chart.length] }}
+            />
+            <span className="whitespace-nowrap text-xs text-[var(--color-text-secondary)]">{String(item[labelKey])}</span>
           </div>
         ))}
       </div>

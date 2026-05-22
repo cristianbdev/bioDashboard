@@ -1,8 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useId, useMemo, useState, useEffect, useRef } from "react";
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import { Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,18 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 
-import {
-  ChartCard,
-  CHART_TOOLTIP_CURSOR,
-  CHART_TOOLTIP_STYLE,
-  getAdaptiveChartHeight,
-  SafeResponsiveContainer,
-  truncateChartLabel,
-} from "@/components/charts/chart-card";
+import { ChartCard, getAdaptiveChartHeight } from "@/components/charts/chart-card";
+import { EChartsChart } from "@/components/charts/echarts-chart";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
+import { useChartTheme } from "@/hooks/useChartTheme";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
-import { translateSectionLabel } from "@/lib/section-labels";
-import { useChartColors, type ChartColors } from "@/hooks/useChartColors";
+import { buildComparisonBarOption, buildHeatmapOption } from "@/lib/chart-options";
+import { resolveChartTokenColor } from "@/lib/chart-theme";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { RiskBadge } from "./cards";
 import { DashboardPageHeading } from "./dashboard-page-heading";
@@ -30,8 +23,6 @@ import { InfoTitle } from "./info-title";
 import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { MobileHeatmapTable } from "./mobile-heatmap-table";
-
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
 
 type Props = {
   data: DashboardData;
@@ -60,96 +51,6 @@ function avgByField(
     .sort((a, b) => b.count - a.count);
 }
 
-function buildHeatmapOption(
-  facilities: FacilitySummary[],
-  side: "external" | "internal",
-  title: string,
-  t: (key: string) => string,
-  colors: ChartColors,
-) {
-  type HeatmapTooltipParam = {
-    data: [number, number, number, number];
-  };
-
-  const rows = facilities.flatMap((facility) =>
-    facility.sectionScores
-      .filter((section) => section.side === side)
-      .map((section) => ({
-        facility: facility.name,
-        subcategory: translateSectionLabel(section.section, t),
-        value: section.score >= 70 ? 1 : 0,
-        score: section.score,
-      })),
-  );
-
-  if (rows.length === 0) return undefined;
-
-  const facilitiesAxis = Array.from(new Set(rows.map((row) => row.facility)));
-  const subcategoriesAxis = Array.from(new Set(rows.map((row) => row.subcategory)));
-
-  return {
-    title: {
-      text: title,
-      left: "center",
-      textStyle: { fontSize: 14, fontWeight: 600, color: colors.textPrimary },
-    },
-    backgroundColor: "transparent",
-    tooltip: {
-      position: "top",
-      backgroundColor: colors.raised,
-      borderColor: colors.borderSubtle,
-      textStyle: { color: colors.textPrimary },
-      formatter: (params: HeatmapTooltipParam) => {
-        const facility = facilitiesAxis[params.data[0]];
-        const subcategory = subcategoriesAxis[params.data[1]];
-        const score = params.data[3];
-        const status = params.data[2] ? t("status.compliant") : t("status.nonCompliant");
-        return `${facility}<br/>${subcategory}<br/>${t("table.score")}: ${score}/100<br/>${status}`;
-      },
-    },
-    textStyle: { color: colors.textPrimary },
-    grid: { top: 56, left: 90, right: 20, bottom: 80 },
-    xAxis: {
-      type: "category",
-      data: facilitiesAxis,
-      axisLabel: { rotate: 40, fontSize: 10, color: colors.textSecondary },
-      axisLine: { lineStyle: { color: colors.borderDefault } },
-      splitArea: { show: true, areaStyle: { color: [colors.surfaceBase, colors.surfaceElevated] } },
-      splitLine: { lineStyle: { color: colors.borderSubtle } },
-    },
-    yAxis: {
-      type: "category",
-      data: subcategoriesAxis,
-      axisLabel: { fontSize: 11, color: colors.textSecondary },
-      axisLine: { lineStyle: { color: colors.borderDefault } },
-      splitArea: { show: true, areaStyle: { color: [colors.surfaceBase, colors.surfaceElevated] } },
-      splitLine: { lineStyle: { color: colors.borderSubtle } },
-    },
-    visualMap: {
-      min: 0,
-      max: 1,
-      orient: "horizontal",
-      left: "center",
-      bottom: 12,
-      precision: 0,
-      text: [t("status.compliant"), t("status.nonCompliant")],
-      textStyle: { color: colors.textPrimary },
-      inRange: { color: [colors.danger, colors.warning, colors.success] },
-    },
-    series: [
-      {
-        type: "heatmap",
-        data: rows.map((row) => [
-          facilitiesAxis.indexOf(row.facility),
-          subcategoriesAxis.indexOf(row.subcategory),
-          row.value,
-          row.score,
-        ]),
-      },
-    ],
-  };
-}
-
 export function ComparativeView({ data, t, onSelectFacility }: Props) {
   const baseId = useId();
   const loc1 = `${baseId}-loc1`;
@@ -168,7 +69,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
   const spec3 = `${baseId}-spec3`;
   const water3 = `${baseId}-water3`;
 
-  const colors = useChartColors();
+  const { colors } = useChartTheme();
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [productionTypeFilter, setProductionTypeFilter] = useState<string>("all");
   const [systemFilter, setSystemFilter] = useState<string>("all");
@@ -784,7 +685,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <CardContent className="h-[460px]">
             {externalHeatmap ? (
               <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+                <EChartsChart option={externalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
               </div>
             ) : (
               <EmptyChartState {...emptyStateProps} />
@@ -800,7 +701,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <CardContent className="h-[460px]">
             {internalHeatmap ? (
               <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+                <EChartsChart option={internalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
               </div>
             ) : (
               <EmptyChartState {...emptyStateProps} />
@@ -836,7 +737,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <CardContent className="h-[460px]">
                 {externalHeatmap ? (
                   <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                    <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+                    <EChartsChart option={externalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
                   </div>
                 ) : (
                   <EmptyChartState {...emptyStateProps} />
@@ -852,7 +753,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <CardContent className="h-[460px]">
                 {internalHeatmap ? (
                   <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                    <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+                    <EChartsChart option={internalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
                   </div>
                 ) : (
                   <EmptyChartState {...emptyStateProps} />
@@ -946,36 +847,25 @@ function ComparisonBar({
   emptyStateProps?: EmptyChartStateProps;
   t: (key: string) => string;
 }) {
+  const { colors } = useChartTheme();
+  const barColor = resolveChartTokenColor(color, colors);
+
+  const option = useMemo(
+    () =>
+      data.length > 0
+        ? buildComparisonBarOption({
+            data,
+            barColor,
+            colors,
+            scoreLabel: t("table.score"),
+          })
+        : undefined,
+    [data, barColor, colors, t],
+  );
+
   if (data.length === 0) {
     return <EmptyChartState {...(emptyStateProps ?? {})} />;
   }
 
-  const isDense = data.length > 4;
-  const xAxisHeight = isDense ? 52 : 30;
-  const barSize = Math.max(18, Math.min(46, Math.floor(230 / Math.max(1, data.length))));
-  return (
-    <SafeResponsiveContainer initialDimension={{ width: 500, height: 300 }}>
-      <BarChart data={data} margin={{ left: 4, right: 12, top: 8, bottom: isDense ? 8 : 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-subtle)" />
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
-          tickFormatter={(value: string) => truncateChartLabel(value, 18)}
-          tickLine={false}
-          axisLine={false}
-          interval={0}
-          angle={isDense ? -14 : 0}
-          textAnchor={isDense ? "end" : "middle"}
-          height={xAxisHeight}
-        />
-        <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} width={34} />
-        <Tooltip
-          contentStyle={CHART_TOOLTIP_STYLE}
-          cursor={CHART_TOOLTIP_CURSOR}
-          formatter={(value, _name, props) => [`${value}/100 (${props.payload.count})`, t("table.score")]}
-        />
-        <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} maxBarSize={50} barSize={barSize} />
-      </BarChart>
-    </SafeResponsiveContainer>
-  );
+  return <EChartsChart option={option} />;
 }
