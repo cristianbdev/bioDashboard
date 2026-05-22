@@ -69,11 +69,11 @@ export function AppHeader({ role, data, isLoaded, isNavOpen, onRefresh, isLoadin
         <div className="flex min-w-0 items-center gap-3">
           <div className="shrink-0">
             <Image
-              src="/atlasBiosecurity-light-theme-name.png"
+              src="/atlasBiosecurity-light-theme-name2.png"
               alt="Atlas Biosecurity"
               width={120}
               height={80}
-              className="h-7 w-auto object-contain sm:h-8"
+              className="h-18 w-auto object-contain sm:h-20"
               priority={false}
             />
           </div>

@@ -25,7 +25,7 @@ export function Footer() {
               alt="CristianBDev"
               width={120}
               height={40}
-              className="h-7 w-auto object-contain"
+              className="h-10 w-auto object-contain"
               priority={false}
             />
           </div>
@@ -50,19 +50,19 @@ export function Footer() {
                 alt={t("footer.vetinstAlt")}
                 width={130}
                 height={32}
-                className="h-7 w-auto object-contain"
+                className="h-10 w-auto object-contain"
               />
               <Image
                 src="/partners/eupahw-logo-color.png"
                 alt={t("footer.eupahwAlt")}
                 width={110}
                 height={41}
-                className="h-7 w-auto object-contain"
+                className="h-11 w-auto object-contain"
               />
             </div>
 
             {/* Divider */}
-            <div className="h-6 w-px bg-[var(--color-border-subtle)]" />
+            <div className="h-8 w-px bg-[var(--color-border-subtle)]" />
 
             {/* Contact */}
             <div className="text-right text-xs text-[var(--color-text-muted)]">
@@ -86,7 +86,7 @@ export function Footer() {
               alt={t("footer.vetinstAlt")}
               width={130}
               height={32}
-              className="h-7 w-auto object-contain"
+              className="h-8 w-auto object-contain"
             />
             <Image
               src="/partners/eupahw-logo-color.png"
@@ -116,7 +116,7 @@ export function Footer() {
               alt="CristianBDev"
               width={100}
               height={33}
-              className="h-6 w-auto object-contain"
+              className="h-7 w-auto object-contain"
               priority={false}
             />
             <div className="text-center text-[11px] text-[var(--color-text-muted)]">
