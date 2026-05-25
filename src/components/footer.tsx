@@ -1,16 +1,30 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 
 export function Footer() {
   const t = useTranslations();
   const locale = useLocale();
+  const { resolvedTheme } = useTheme();
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+  const isDark = mounted && resolvedTheme === "dark";
   const currentYear = new Date().getFullYear();
 
-  const vetinstSrc =
-    locale === "no"
+  const vetinstSrc = isDark
+    ? locale === "no"
+      ? "/partners/vetinst-logo-neg-no.svg"
+      : "/partners/vetinst-logo-neg-eng.svg"
+    : locale === "no"
       ? "/partners/vetinst-logo-no.svg"
       : "/partners/vetinst-logo-eng.svg";
+
+  const devLogoSrc = isDark ? "/cristianbdev-logo.webp" : "/cristianbdev-logo.png";
 
   return (
     <footer className="mt-auto w-full border-t border-border bg-card">
@@ -25,7 +39,7 @@ export function Footer() {
             className="shrink-0 transition-opacity hover:opacity-80"
           >
             <img
-              src="/cristianbdev-logo.png"
+              src={devLogoSrc}
               alt="CristianBDev"
               width={1492}
               height={500}
@@ -81,7 +95,7 @@ export function Footer() {
                   width={2440}
                   height={911}
                   loading="lazy"
-                  className="h-11 w-auto object-contain"
+                  className={`h-11 w-auto object-contain${isDark ? " brightness-0 invert" : ""}`}
                 />
               </a>
             </div>
@@ -127,14 +141,14 @@ export function Footer() {
               rel="noopener noreferrer"
               className="transition-opacity hover:opacity-80"
             >
-              <img
-                src="/partners/eupahw-logo-color.png"
-                alt={t("footer.eupahwAlt")}
-                width={2440}
-                height={911}
-                loading="lazy"
-                className="h-7 w-auto object-contain"
-              />
+                <img
+                  src="/partners/eupahw-logo-color.png"
+                  alt={t("footer.eupahwAlt")}
+                  width={2440}
+                  height={911}
+                  loading="lazy"
+                  className={`h-7 w-auto object-contain${isDark ? " brightness-0 invert" : ""}`}
+                />
             </a>
           </div>
 
@@ -166,7 +180,7 @@ export function Footer() {
               className="transition-opacity hover:opacity-80"
             >
               <img
-                src="/cristianbdev-logo.png"
+                src={devLogoSrc}
                 alt="CristianBDev"
                 width={1492}
                 height={500}

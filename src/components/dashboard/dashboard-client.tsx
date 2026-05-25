@@ -149,7 +149,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
   }, [user?.publicMetadata?.projectUid]);
   const producerFacilityId = useMemo(() => parseFacilityId(user?.publicMetadata?.facilityId), [user?.publicMetadata?.facilityId]);
 
-  const t = useCallback((key: string) => translate(key as never), [translate]);
+  const t = useCallback((key: string, values?: Record<string, string | number>) => translate(key as never, values as never), [translate]);
 
   const currentFacility: FacilitySummary | undefined = useMemo(() => {
     if (!data || data.facilities.length === 0) return undefined;

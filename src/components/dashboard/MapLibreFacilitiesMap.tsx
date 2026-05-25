@@ -282,9 +282,12 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                   }}
                 >
                   <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t("map.clusterAria", { count: pointCount })}
                     className={cn(
                       "flex cursor-pointer select-none items-center justify-center rounded-full border-2 border-[var(--color-text-inverse)] font-bold text-[var(--color-text-inverse)] shadow-lg transition-transform hover:scale-110",
-                      isLarge ? "bg-destructive" : isMedium ? "bg-warning" : "bg-[var(--color-info)]",
+                      isLarge ? "bg-destructive" : isMedium ? "bg-warning" : "bg-info",
                     )}
                     style={{
                       width: `${size}px`,
@@ -313,6 +316,13 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                 }}
               >
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label={t("map.markerAria", {
+                    name: facility.name,
+                    risk: t(`risk.${facility.riskLevel.toLowerCase()}`),
+                    score: facility.score,
+                  })}
                   className="h-5 w-5 cursor-pointer rounded-full border-2 border-[var(--color-text-inverse)] shadow-md transition-transform hover:scale-125"
                   style={{ backgroundColor: markerColorByRisk(facility.riskLevel) }}
                 />

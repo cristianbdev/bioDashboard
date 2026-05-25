@@ -36,7 +36,12 @@ function EChartsChartInner({ option, className }: { option: EChartsOption; class
   }, []);
 
   return (
-    <div ref={containerRef} className={cn("h-full min-h-0 w-full min-w-0", className)}>
+    <div
+      ref={containerRef}
+      className={cn("h-full min-h-0 w-full min-w-0", className)}
+      aria-live="polite"
+      aria-atomic="false"
+    >
       {ready ? (
         <ReactEChartsCore
           key={themeName}

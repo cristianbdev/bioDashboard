@@ -129,8 +129,7 @@ export async function POST(request: Request) {
       projectUid,
       facilityId: role === "producer" ? facilityId : null,
     });
-  } catch (error: unknown) {
-    console.error("Admin users API error", error);
+  } catch {
     return NextResponse.json({ errorCode: "generic" }, { status: 500 });
   }
 }

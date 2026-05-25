@@ -123,7 +123,17 @@
     "records": "Records",
     "sops": "SOPs",
     "noData": "No data available",
-    "tryFilters": "Adjust your filters or check back later"
+    "tryFilters": "Adjust your filters or check back later",
+    "chartDataTableCaption": "Chart data",
+    "chartDataTableLabel": "Label",
+    "chartDataTableValue": "Value",
+    "chartDataTableScore": "Score",
+    "chartDataTableSection": "Section",
+    "chartDataTableFacility": "Facility",
+    "chartDataTableAverage": "Average",
+    "chartDataTableGroup": "Group",
+    "chartDataTableCount": "Count",
+    "chartUpdated": "Chart updated"
   },
   "map": {
     "dark": "Dark",
@@ -135,7 +145,9 @@
     "fullscreen": "Fullscreen",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "noGeo": "No facilities with geolocation data"
+    "noGeo": "No facilities with geolocation data",
+    "markerAria": "Facility {name}. Risk level: {risk}. Score: {score}.",
+    "clusterAria": "Cluster of {count} facilities. Click to zoom in and view individual markers."
   },
   "coverage": {
     "quarantine": "Quarantine on arrival",

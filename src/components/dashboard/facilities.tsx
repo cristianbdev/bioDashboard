@@ -19,6 +19,7 @@ import { translateSectionLabel } from "@/lib/section-labels";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 import { ActionPlanCard } from "./action-plan-card";
+import { ChartDataTable } from "@/components/charts/chart-data-table";
 
 type Props = {
   facilities: FacilitySummary[];
@@ -124,7 +125,7 @@ export function FacilitiesView({
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3 flex-1">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">{currentFacility.name}</h1>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">{currentFacility.name}</h2>
                 <RiskBadge level={currentFacility.riskLevel} label={t(`risk.${currentFacility.riskLevel.toLowerCase()}`)} />
               </div>
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -185,6 +186,11 @@ export function FacilitiesView({
             <div role="img" aria-label={`${t("facilities.benchmark")}. ${benchmarkData.length} ${t("facilities.benchmarkAriaSuffix")}`} className="h-full w-full">
               <EChartsChart option={benchmarkOption} />
             </div>
+            <ChartDataTable
+              caption={t("facilities.benchmark")}
+              headers={[t("charts.chartDataTableSection"), t("charts.chartDataTableScore"), t("charts.chartDataTableAverage")]}
+              rows={benchmarkData.map((d) => [d.section, d.facility, d.average])}
+            />
           </CardContent>
         </Card>
 

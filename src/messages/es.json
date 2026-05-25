@@ -123,7 +123,17 @@
     "records": "Registros",
     "sops": "POEs",
     "noData": "No hay datos disponibles",
-    "tryFilters": "Ajusta los filtros o vuelve a intentarlo luego"
+    "tryFilters": "Ajusta los filtros o vuelve a intentarlo luego",
+    "chartDataTableCaption": "Datos del gráfico",
+    "chartDataTableLabel": "Etiqueta",
+    "chartDataTableValue": "Valor",
+    "chartDataTableScore": "Puntaje",
+    "chartDataTableSection": "Sección",
+    "chartDataTableFacility": "Instalación",
+    "chartDataTableAverage": "Promedio",
+    "chartDataTableGroup": "Grupo",
+    "chartDataTableCount": "Cantidad",
+    "chartUpdated": "Gráfico actualizado"
   },
   "map": {
     "dark": "Oscuro",
@@ -135,7 +145,9 @@
     "fullscreen": "Pantalla completa",
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
-    "noGeo": "No hay instalaciones con datos de geolocalización"
+    "noGeo": "No hay instalaciones con datos de geolocalización",
+    "markerAria": "Instalación {name}. Nivel de riesgo: {risk}. Puntaje: {score}.",
+    "clusterAria": "Grupo de {count} instalaciones. Haga clic para acercar y ver marcadores individuales."
   },
   "coverage": {
     "quarantine": "Cuarentena al ingreso",
