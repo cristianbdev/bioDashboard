@@ -39,8 +39,8 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
 
   if (variant === "menu-item") {
     return (
-      <div className={cn("border-t border-[var(--color-border-subtle)] pt-1", className)}>
-        <p className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-muted)]">{t("theme.toggle")}</p>
+      <div className={cn("border-t border-border pt-1", className)}>
+        <p className="px-3 py-1.5 text-xs font-medium text-muted-foreground">{t("theme.toggle")}</p>
         {THEME_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           const isActive = mounted && theme === opt.value;
@@ -71,7 +71,7 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
           variant="ghost"
           size="sm"
           className={cn(
-            "h-11 min-h-11 w-11 min-w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-elevated)] hover:text-[var(--color-text-primary)]",
+            "h-11 min-h-11 w-11 min-w-11 p-0 text-muted-foreground hover:bg-popover hover:text-foreground",
             className,
           )}
           aria-label={t("theme.toggle")}

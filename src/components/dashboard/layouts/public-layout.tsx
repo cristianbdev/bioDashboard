@@ -7,7 +7,7 @@ import type { DashboardData } from "@/lib/kobo";
 const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
   ssr: false,
   loading: () => (
-    <div className="h-[320px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" aria-hidden />
+    <div className="h-[320px] animate-pulse rounded-xl bg-popover" aria-hidden />
   ),
 });
 

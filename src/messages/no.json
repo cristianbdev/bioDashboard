@@ -10,6 +10,8 @@
     "demo": "Standard-UID",
     "close": "Lukk",
     "search": "Søk",
+    "searchFacilities": "Søk etter anlegg",
+    "clearSearch": "Tøm søk",
     "show": "Vis",
     "hide": "Skjul"
   },

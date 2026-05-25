@@ -45,9 +45,9 @@ type AppHeaderProps = {
 
 const ROLE_BADGE_STYLE: Record<AppRole, string> = {
   admin:
-    "border-[var(--color-brand)]/30 bg-[var(--color-brand)]/10 text-[var(--color-brand)]",
+    "border-primary/30 bg-primary/10 text-primary",
   producer:
-    "border-[var(--color-warning)]/30 bg-[var(--color-warning)]/10 text-[var(--color-warning)]",
+    "border-warning/30 bg-warning/10 text-warning",
   public:
     "border-[var(--color-muted)]/30 bg-[var(--color-muted)]/10 text-[var(--color-muted)]",
 };
@@ -89,7 +89,7 @@ export function AppHeader({
   })();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-16 overflow-hidden border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+    <header className="fixed inset-x-0 top-0 z-50 h-16 overflow-hidden border-b border-border bg-background">
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
         {/* Left: Logo + brand (title; badge stacked under title on mobile, inline from sm) */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
@@ -97,13 +97,13 @@ export function AppHeader({
             <AtlasLogo size={50} priority />
           </div>
           <div className="flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-2">
-            <span className="whitespace-nowrap text-sm font-semibold leading-none tracking-tight text-[var(--color-brand)] sm:text-lg">
+            <span className="whitespace-nowrap text-sm font-semibold leading-none tracking-tight text-primary sm:text-lg">
               BioDashboard
             </span>
             <Badge
               variant="outline"
               className={cn(
-                "h-4 px-1.5 py-0 text-[10px] leading-none font-medium sm:h-auto sm:px-2 sm:py-0.5 sm:text-xs",
+                "h-4 px-1.5 py-0 text-3xs leading-none font-medium sm:h-auto sm:px-2 sm:py-0.5 sm:text-xs",
                 ROLE_BADGE_STYLE[role],
               )}
             >
@@ -115,7 +115,7 @@ export function AppHeader({
         {/* Right: Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Last updated - desktop only */}
-          <div className="hidden items-center gap-1.5 text-xs text-[var(--color-text-muted)] lg:flex">
+          <div className="hidden items-center gap-1.5 text-xs text-muted-foreground lg:flex">
             <Clock className="h-3.5 w-3.5" />
             <span>{formattedUpdatedAt}</span>
           </div>
@@ -128,7 +128,7 @@ export function AppHeader({
           {/* Language selector - desktop only (>= lg) */}
           <div className="hidden lg:block">
             <Select value={locale} onValueChange={onLocaleChange}>
-              <SelectTrigger className="h-11 min-h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-[var(--color-text-secondary)] shadow-none hover:bg-[var(--color-surface-base)]">
+              <SelectTrigger className="h-11 min-h-11 w-auto min-w-[72px] border-0 bg-transparent text-xs font-medium text-muted-foreground shadow-none hover:bg-background">
                 <div className="flex items-center gap-1">
                   <Languages className="h-3.5 w-3.5" />
                   <SelectValue />
@@ -156,7 +156,7 @@ export function AppHeader({
             variant="ghost"
             onClick={onRefresh}
             disabled={isLoading}
-            className="h-11 min-h-11 w-11 min-w-11 p-0 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)]"
+            className="h-11 min-h-11 w-11 min-w-11 p-0 text-muted-foreground hover:text-primary"
             aria-label={t("actions.refresh")}
           >
             {isLoading ? (
@@ -173,7 +173,7 @@ export function AppHeader({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-11 min-h-11 px-3 text-xs font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]"
+                  className="h-11 min-h-11 px-3 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground"
                 >
                   {t("auth.signIn")}
                 </Button>
@@ -200,7 +200,7 @@ export function AppHeader({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-11 min-h-11 w-11 min-w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)]"
+                  className="h-11 min-h-11 w-11 min-w-11 p-0 text-muted-foreground hover:bg-background hover:text-foreground"
                   aria-label={t("navigation.more")}
                 >
                   <MoreHorizontal className="h-4 w-4" />
@@ -234,7 +234,7 @@ export function AppHeader({
               type="button"
               variant="ghost"
               onClick={onOpenNav}
-              className="flex h-11 w-11 items-center justify-center rounded-lg p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-brand)] lg:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-lg p-0 text-muted-foreground hover:bg-background hover:text-primary lg:hidden"
               aria-label={t("navigation.openMenu")}
               aria-expanded={isNavOpen}
               aria-haspopup="dialog"

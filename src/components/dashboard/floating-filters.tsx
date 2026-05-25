@@ -78,7 +78,7 @@ export function FloatingFilters({
         <Filter className="h-4 w-4" />
         <span className="text-sm font-medium">{t("overview.filters")}</span>
         {activeCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
             {activeCount}
           </span>
         )}
@@ -94,9 +94,9 @@ export function FloatingFilters({
         <div className="space-y-4">
           {/* Species filter */}
           <div className="space-y-2">
-            <label htmlFor={speciesId} className="text-xs font-medium text-[var(--color-text-secondary)]">{speciesPlaceholder}</label>
+            <label htmlFor={speciesId} className="text-xs font-medium text-muted-foreground">{speciesPlaceholder}</label>
             <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-              <SelectTrigger id={speciesId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={speciesId} className="w-full border-border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -110,9 +110,9 @@ export function FloatingFilters({
 
           {/* System filter */}
           <div className="space-y-2">
-            <label htmlFor={systemId} className="text-xs font-medium text-[var(--color-text-secondary)]">{systemPlaceholder}</label>
+            <label htmlFor={systemId} className="text-xs font-medium text-muted-foreground">{systemPlaceholder}</label>
             <Select value={systemFilter} onValueChange={setSystemFilter}>
-              <SelectTrigger id={systemId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={systemId} className="w-full border-border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -126,9 +126,9 @@ export function FloatingFilters({
 
           {/* Location filter */}
           <div className="space-y-2">
-            <label htmlFor={locationId} className="text-xs font-medium text-[var(--color-text-secondary)]">{locationPlaceholder}</label>
+            <label htmlFor={locationId} className="text-xs font-medium text-muted-foreground">{locationPlaceholder}</label>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger id={locationId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={locationId} className="w-full border-border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -142,8 +142,8 @@ export function FloatingFilters({
 
           {/* Active filters summary */}
           {activeCount > 0 && (
-            <div className="border-t border-[var(--color-border-subtle)] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{t("overview.activeFilters")}</p>
+            <div className="border-t border-border pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("overview.activeFilters")}</p>
               <div className="flex flex-wrap gap-2">
                 {filters
                   .filter((f) => f.allValue ? f.activeValue !== f.allValue : f.activeValue !== "" && f.activeValue !== "all")
@@ -151,7 +151,7 @@ export function FloatingFilters({
                     <Badge
                       key={filter.label}
                       variant="secondary"
-                      className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5"
+                      className="bg-primary/10 text-primary border border-primary/20 pr-1.5"
                     >
                       <span className="max-w-[150px] truncate">{filter.label}: {filter.activeValue}</span>
                       {filter.onClear && (
@@ -166,7 +166,7 @@ export function FloatingFilters({
                 onClick={() => {
                   onClearAll();
                 }}
-                className="mt-3 text-xs text-[var(--color-brand)]"
+                className="mt-3 min-h-11 text-xs text-primary"
               >
                 {t("overview.clearAll")}
               </Button>

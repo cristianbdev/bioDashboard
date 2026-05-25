@@ -86,8 +86,8 @@ function NavigationContent({
             className={cn(
               "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface-base)]",
               isActive
-                ? "bg-[var(--color-brand)] text-[var(--color-text-inverse)] shadow-sm"
-                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-brand)]",
+                ? "bg-primary text-[var(--color-text-inverse)] shadow-sm"
+                : "text-muted-foreground hover:bg-background hover:text-primary",
             )}
           >
             <Icon className="h-4 w-4" />
@@ -241,7 +241,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
     role === "producer" && isLoaded && (initialErrorCode === "facilityNotFound" || initialErrorCode === "facilityNotConfigured" || facilitiesForRole.length === 0);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--color-surface-base)]">
+    <div className="flex min-h-screen flex-col bg-background">
       <AppHeader
         role={role}
         data={data}
@@ -272,8 +272,8 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
       >
         {!data && state.status === "loading" ? (
           <div className="flex min-h-[40vh] w-full items-center justify-center px-6 py-12">
-            <div className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
-              <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
               <span>{t("actions.load")}...</span>
             </div>
           </div>
@@ -281,7 +281,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
 
         {!data && state.status === "error" ? (
           <div className="w-full px-6 py-10">
-            <Alert variant="destructive" className="mx-auto max-w-3xl border-[var(--color-danger)]/25 bg-[var(--color-raised)]">
+            <Alert variant="destructive" className="mx-auto max-w-3xl border-destructive/25 bg-card">
               <AlertTitle>{t("errors.title")}</AlertTitle>
               <AlertDescription>{state.message}</AlertDescription>
             </Alert>
@@ -290,10 +290,10 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
 
         {showProducerAssignmentError && !data ? (
           <div className="w-full px-6 py-10">
-            <Card className="mx-auto max-w-2xl border-[var(--color-warning)]/30 bg-[var(--color-raised)] shadow-sm">
+            <Card className="mx-auto max-w-2xl border-warning/30 bg-card shadow-sm">
               <CardContent className="space-y-3 p-6">
-                <p className="text-sm font-semibold text-[var(--color-text-primary)]">{t("errors.producerAccessTitle")}</p>
-                <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+                <p className="text-sm font-semibold text-foreground">{t("errors.producerAccessTitle")}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   {t(
                     initialErrorCode === "facilityNotFound" || producerFacilityId !== undefined
                       ? "errors.facilityNotFound"
@@ -301,7 +301,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
                   )}
                 </p>
                 {producerFacilityId !== undefined ? (
-                  <p className="font-scientific text-xs text-[var(--color-text-muted)]">
+                  <p className="font-scientific text-xs text-muted-foreground">
                     {t("errors.assignedFacilityId")}: {producerFacilityId}
                   </p>
                 ) : null}
@@ -333,15 +333,15 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
               />
             ) : (
               <div className="flex-1 px-6 py-6">
-                <Card className="card-flat mb-6 transition-all duration-200 hover:border-[var(--color-brand)]/30 hover:shadow-md">
+                <Card className="card-flat mb-6 transition-all duration-200 hover:border-primary/30 hover:shadow-md">
                   <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] p-2">
-                        <Database className="h-4 w-4 text-[var(--color-text-secondary)]" />
+                      <div className="rounded-lg border border-border bg-background p-2">
+                        <Database className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[var(--color-text-primary)]">{t("datasource.title")}</p>
-                        <p className="text-xs text-[var(--color-text-secondary)]">{t("datasource.subtitle")}</p>
+                        <p className="text-sm font-medium text-foreground">{t("datasource.title")}</p>
+                        <p className="text-xs text-muted-foreground">{t("datasource.subtitle")}</p>
                       </div>
                     </div>
 
@@ -350,7 +350,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
                         value={uid}
                         onChange={(event) => setUid(event.target.value)}
                         placeholder={t("datasource.projectUidPlaceholder")}
-                        className="h-9 border-[var(--color-border-subtle)] bg-[var(--color-raised)] font-scientific text-sm text-[var(--color-text-primary)] shadow-sm"
+                        className="h-9 border-border bg-card font-scientific text-sm text-foreground shadow-sm"
                         disabled={!canUseCustomUid}
                       />
                       <div className="flex w-full gap-2 sm:w-auto">
@@ -366,7 +366,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
                           size="sm"
                           variant="outline"
                           onClick={() => fetchData(DEFAULT_PROJECT_UID)}
-                          className="flex-1 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] shadow-sm transition-all duration-200 hover:border-[var(--color-brand)]/30 hover:shadow-md sm:flex-none"
+                          className="flex-1 border-border bg-card text-foreground shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md sm:flex-none"
                         >
                           {t("actions.demo")}
                         </Button>
@@ -374,7 +374,7 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
                     </div>
                   </CardContent>
                   {!canUseCustomUid ? (
-                    <p className="px-4 pb-4 text-xs text-[var(--color-text-secondary)]">{t("datasource.lockedByRole")}</p>
+                    <p className="px-4 pb-4 text-xs text-muted-foreground">{t("datasource.lockedByRole")}</p>
                   ) : null}
                 </Card>
 

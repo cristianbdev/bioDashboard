@@ -10,6 +10,8 @@
     "demo": "Default UID",
     "close": "Close",
     "search": "Search",
+    "searchFacilities": "Search facilities",
+    "clearSearch": "Clear search",
     "show": "Show",
     "hide": "Hide"
   },

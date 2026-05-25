@@ -10,6 +10,8 @@
     "demo": "UID por defecto",
     "close": "Cerrar",
     "search": "Buscar",
+    "searchFacilities": "Buscar instalaciones",
+    "clearSearch": "Borrar búsqueda",
     "show": "Mostrar",
     "hide": "Ocultar"
   },

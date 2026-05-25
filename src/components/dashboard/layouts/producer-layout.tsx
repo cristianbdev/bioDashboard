@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
   ssr: false,
   loading: () => (
-    <div className="h-[320px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" aria-hidden />
+    <div className="h-[320px] animate-pulse rounded-xl bg-popover" aria-hidden />
   ),
 });
 
@@ -47,7 +47,7 @@ export function ProducerLayout({
 }: ProducerLayoutProps) {
   return (
     <div className="flex flex-col gap-6">
-      <nav className="hidden w-full items-center gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-2 shadow-sm md:flex">
+      <nav className="hidden w-full items-center gap-2 rounded-xl border border-border bg-card p-2 shadow-sm md:flex">
         {PRODUCER_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -60,8 +60,8 @@ export function ProducerLayout({
               className={cn(
                 "min-h-11 flex-1 justify-center gap-2",
                 isActive
-                  ? "bg-[var(--color-brand)]/10 font-medium text-[var(--color-brand)]"
-                  : "text-[var(--color-text-secondary)]",
+                  ? "bg-primary/10 font-medium text-primary"
+                  : "text-muted-foreground",
               )}
               onClick={() => setActiveTab(item.id)}
             >
@@ -77,7 +77,7 @@ export function ProducerLayout({
           const isActive = activeTab === item.id;
           if (!isActive) return null;
           return (
-            <div key={item.id} className="flex items-center gap-2 text-sm text-[var(--color-brand)]">
+            <div key={item.id} className="flex items-center gap-2 text-sm text-primary">
               <item.icon className="h-4 w-4" />
               <span className="font-medium">{t(item.labelKey)}</span>
             </div>

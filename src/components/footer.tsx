@@ -13,26 +13,39 @@ export function Footer() {
       : "/partners/vetinst-logo-eng.svg";
 
   return (
-    <footer className="mt-auto w-full border-t border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
+    <footer className="mt-auto w-full border-t border-border bg-card">
       <div className="mx-auto max-w-[1600px] px-6 py-6">
         {/* Desktop: single row with all elements */}
         <div className="hidden items-center justify-between gap-6 sm:flex">
           {/* Developer logo */}
-          <div className="shrink-0">
+          <a
+            href="https://cristianb.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 transition-opacity hover:opacity-80"
+          >
             <img
               src="/cristianbdev-logo.png"
               alt="CristianBDev"
+              width={1492}
+              height={500}
+              loading="lazy"
               className="h-10 w-auto object-contain"
             />
-          </div>
+          </a>
 
           {/* Legal / attribution */}
-          <div className="flex-1 text-center text-xs leading-relaxed text-[var(--color-text-secondary)]">
+          <div className="flex-1 text-center text-xs leading-relaxed text-muted-foreground">
             <p>
               {t("footer.developed")}{" "}
-              <span className="font-medium text-[var(--color-text-primary)]">
+              <a
+                href="https://cristianb.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground transition-colors hover:text-primary"
+              >
                 CristianBDev
-              </span>
+              </a>
               . {t("footer.usage")}
             </p>
           </div>
@@ -41,26 +54,46 @@ export function Footer() {
           <div className="flex shrink-0 items-center gap-5">
             {/* Partner logos */}
             <div className="flex items-center gap-3">
-              <img
-                src={vetinstSrc}
-                alt={t("footer.vetinstAlt")}
-                className="h-10 w-auto object-contain"
-              />
-              <img
-                src="/partners/eupahw-logo-color.png"
-                alt={t("footer.eupahwAlt")}
-                className="h-11 w-auto object-contain"
-              />
+              <a
+                href="https://www.vetinst.no/en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+              >
+                <img
+                  src={vetinstSrc}
+                  alt={t("footer.vetinstAlt")}
+                  width={260}
+                  height={64}
+                  loading="lazy"
+                  className="h-10 w-auto object-contain"
+                />
+              </a>
+              <a
+                href="https://eupahw.eu/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+              >
+                <img
+                  src="/partners/eupahw-logo-color.png"
+                  alt={t("footer.eupahwAlt")}
+                  width={2440}
+                  height={911}
+                  loading="lazy"
+                  className="h-11 w-auto object-contain"
+                />
+              </a>
             </div>
 
             {/* Divider */}
             <div className="h-8 w-px bg-[var(--color-border-subtle)]" />
 
             {/* Contact */}
-            <div className="text-right text-xs text-[var(--color-text-muted)]">
+            <div className="text-right text-xs text-muted-foreground">
               <a
                 href="mailto:hi@cristianb.dev"
-                className="block text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-brand)]"
+                className="block text-muted-foreground transition-colors hover:text-primary"
               >
                 hi@cristianb.dev
               </a>
@@ -73,41 +106,78 @@ export function Footer() {
         <div className="flex flex-col items-center gap-4 sm:hidden">
           {/* Partners */}
           <div className="flex items-center gap-3">
-            <img
-              src={vetinstSrc}
-              alt={t("footer.vetinstAlt")}
-              className="h-8 w-auto object-contain"
-            />
-            <img
-              src="/partners/eupahw-logo-color.png"
-              alt={t("footer.eupahwAlt")}
-              className="h-7 w-auto object-contain"
-            />
+            <a
+              href="https://www.vetinst.no/en"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={vetinstSrc}
+                alt={t("footer.vetinstAlt")}
+                width={260}
+                height={64}
+                loading="lazy"
+                className="h-8 w-auto object-contain"
+              />
+            </a>
+            <a
+              href="https://eupahw.eu/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src="/partners/eupahw-logo-color.png"
+                alt={t("footer.eupahwAlt")}
+                width={2440}
+                height={911}
+                loading="lazy"
+                className="h-7 w-auto object-contain"
+              />
+            </a>
           </div>
 
           {/* Divider */}
           <div className="w-full h-px bg-[var(--color-border-subtle)]" />
 
           {/* Legal */}
-          <div className="text-center text-[11px] leading-relaxed text-[var(--color-text-secondary)]">
+          <div className="text-center text-2xs leading-relaxed text-muted-foreground">
             <p>
               {t("footer.developed")}{" "}
-              <span className="font-medium text-[var(--color-text-primary)]">CristianBDev</span>.
+              <a
+                href="https://cristianb.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground transition-colors hover:text-primary"
+              >
+                CristianBDev
+              </a>.
             </p>
             <p className="mt-0.5">{t("footer.usage")}</p>
           </div>
 
           {/* Developer logo + contact */}
           <div className="flex items-center gap-3">
-            <img
-              src="/cristianbdev-logo.png"
-              alt="CristianBDev"
-              className="h-7 w-auto object-contain"
-            />
-            <div className="text-center text-[11px] text-[var(--color-text-muted)]">
+            <a
+              href="https://cristianb.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src="/cristianbdev-logo.png"
+                alt="CristianBDev"
+                width={1492}
+                height={500}
+                loading="lazy"
+                className="h-7 w-auto object-contain"
+              />
+            </a>
+            <div className="text-center text-2xs text-muted-foreground">
               <a
                 href="mailto:hi@cristianb.dev"
-                className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-brand)]"
+                className="text-muted-foreground transition-colors hover:text-primary"
               >
                 hi@cristianb.dev
               </a>

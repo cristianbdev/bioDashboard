@@ -56,7 +56,7 @@ export function BottomSheet({ isOpen, onClose, title, closeLabel, children }: Bo
       <div
         ref={sheetRef}
         className={cn(
-          "fixed bottom-0 left-0 right-0 rounded-t-2xl bg-[var(--color-raised)] shadow-xl",
+          "fixed bottom-0 left-0 right-0 rounded-t-2xl bg-card shadow-xl",
           "max-h-[85vh] overflow-y-auto",
           "animate-in slide-in-from-bottom-full duration-300",
           "md:left-auto md:right-auto md:w-full md:max-w-lg md:mx-auto",
@@ -68,9 +68,9 @@ export function BottomSheet({ isOpen, onClose, title, closeLabel, children }: Bo
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-4 pb-3">
+        <div className="flex items-center justify-between border-b border-border px-4 pb-3">
           {title ? (
-            <p id={titleId} className="font-semibold text-[var(--color-text-primary)]">{title}</p>
+            <p id={titleId} className="font-semibold text-foreground">{title}</p>
           ) : (
             <div />
           )}
@@ -78,7 +78,7 @@ export function BottomSheet({ isOpen, onClose, title, closeLabel, children }: Bo
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-11 w-11 -mr-2 text-[var(--color-text-secondary)] sm:h-8 sm:w-8"
+            className="h-11 w-11 -mr-2 text-muted-foreground"
             aria-label={closeLabel}
           >
             <X className="h-5 w-5" />

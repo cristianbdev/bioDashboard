@@ -29,12 +29,12 @@ export function MetricCard({ title, value, subtitle, icon: Icon, color = "sky" }
           <div className="metric-icon-wrap w-fit rounded-md p-1.5">
             <Icon className="metric-icon h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </div>
-          <p className="text-xs font-medium uppercase leading-snug tracking-wider text-[var(--color-text-secondary)]">{title}</p>
+          <p className="text-xs font-medium uppercase leading-snug tracking-wider text-muted-foreground">{title}</p>
         </div>
 
-        <p className="font-scientific mt-auto text-[26px] font-bold text-[var(--color-text-primary)] sm:text-3xl">{value}</p>
+        <p className="font-scientific mt-auto text-[26px] font-bold text-foreground sm:text-3xl">{value}</p>
 
-        {subtitle && <p className="mt-1 text-xs leading-snug text-[var(--color-text-secondary)]">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-xs leading-snug text-muted-foreground">{subtitle}</p>}
       </CardContent>
     </Card>
   );
@@ -46,10 +46,10 @@ export function ComplianceBar({ label, value, color }: { label: string; value: n
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-[var(--color-text-secondary)]">{label}</span>
-        <span className="font-scientific font-semibold text-[var(--color-text-primary)]">{boundedValue}%</span>
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-scientific font-semibold text-foreground">{boundedValue}%</span>
       </div>
-      <div className="h-2 w-full rounded-full bg-[var(--color-surface-base)]">
+      <div className="h-2 w-full rounded-full bg-background">
         <div
           className="compliance-bar-fill h-2 rounded-full"
           style={
@@ -160,7 +160,7 @@ export function CoveragePill({
         </div>
       </div>
 
-      <p className="mb-2 line-clamp-2 text-xs font-medium leading-tight text-[var(--color-text-primary)]">{label}</p>
+      <p className="mb-2 line-clamp-2 text-xs font-medium leading-tight text-foreground">{label}</p>
 
       <span className={cn("font-scientific text-xl font-bold", valueClass)}>{boundedValue}%</span>
     </div>

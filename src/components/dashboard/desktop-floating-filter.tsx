@@ -103,7 +103,7 @@ export function DesktopFloatingFilter({
           <SlidersHorizontal className="h-5 w-5" />
           <span className="text-sm font-semibold">{labels.openButton}</span>
           {activeCount > 0 && (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)] shadow-sm">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-card text-xs font-bold text-primary shadow-sm">
               {activeCount}
             </span>
           )}
@@ -123,15 +123,15 @@ export function DesktopFloatingFilter({
           <div
             ref={panelRef}
             className={cn(
-              "relative w-full max-w-md rounded-2xl bg-[var(--color-raised)] shadow-2xl",
+              "relative w-full max-w-md rounded-2xl bg-card shadow-2xl",
               "max-h-[80vh] overflow-y-auto",
               "animate-in zoom-in-95 duration-200",
             )}
           >
-            <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-5 py-4">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="h-5 w-5 text-[var(--color-brand)]" />
-                <p id={titleId} className="font-semibold text-[var(--color-text-primary)]">
+                <SlidersHorizontal className="h-5 w-5 text-primary" />
+                <p id={titleId} className="font-semibold text-foreground">
                   {labels.title}
                 </p>
               </div>
@@ -139,7 +139,7 @@ export function DesktopFloatingFilter({
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
-                className="h-9 w-9 text-[var(--color-text-secondary)]"
+                className="h-11 w-11 text-muted-foreground"
                 aria-label={labels.close}
               >
                 <X className="h-5 w-5" />
@@ -151,9 +151,9 @@ export function DesktopFloatingFilter({
                 const triggerId = `${baseId}-${control.id}`;
                 return (
                 <div key={control.id} className="space-y-2">
-                  <label htmlFor={triggerId} className="text-xs font-medium text-[var(--color-text-secondary)]">{control.placeholder}</label>
+                  <label htmlFor={triggerId} className="text-xs font-medium text-muted-foreground">{control.placeholder}</label>
                   <Select value={control.value} onValueChange={control.onChange}>
-                    <SelectTrigger id={triggerId} className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+                    <SelectTrigger id={triggerId} className="w-full border-border bg-background">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -170,8 +170,8 @@ export function DesktopFloatingFilter({
               })}
 
               {visibleFilters.length > 0 && (
-                <div className="border-t border-[var(--color-border-subtle)] pt-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+                <div className="border-t border-border pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {labels.activeFilters}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -179,7 +179,7 @@ export function DesktopFloatingFilter({
                       <Badge
                         key={filter.label}
                         variant="secondary"
-                        className="border border-[var(--color-brand)]/20 bg-[var(--color-brand)]/10 pr-1.5 text-[var(--color-brand)]"
+                        className="border border-primary/20 bg-primary/10 pr-1.5 text-primary"
                       >
                         <span className="max-w-[150px] truncate">
                           {filter.label}: {filter.activeValue}
@@ -198,7 +198,7 @@ export function DesktopFloatingFilter({
                   {labels.close}
                 </Button>
                 {activeCount > 0 && (
-                  <Button variant="ghost" onClick={onClearAll} className="text-[var(--color-brand)]">
+                  <Button variant="ghost" onClick={onClearAll} className="text-primary">
                     {labels.clearAll}
                   </Button>
                 )}

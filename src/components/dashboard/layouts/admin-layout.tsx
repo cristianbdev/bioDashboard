@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 function TabPanelSkeleton() {
   return (
     <div className="flex flex-col gap-6 pb-6">
-      <div className="h-[72px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-      <div className="h-[320px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
+      <div className="h-[72px] animate-pulse rounded-xl bg-popover" />
+      <div className="h-[320px] animate-pulse rounded-xl bg-popover" />
     </div>
   );
 }
@@ -146,12 +146,12 @@ export function AdminLayout({
         <Card className="card-flat mb-6">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-2.5 shadow-sm">
-                <DbIcon className="h-5 w-5 text-[var(--color-brand)]" />
+              <div className="rounded-xl border border-border bg-card p-2.5 shadow-sm">
+                <DbIcon className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[var(--color-text-primary)]">{t("datasource.title")}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">{t("datasource.subtitle")}</p>
+                <p className="text-sm font-semibold text-foreground">{t("datasource.title")}</p>
+                <p className="text-xs text-muted-foreground">{t("datasource.subtitle")}</p>
               </div>
             </div>
 
@@ -161,11 +161,11 @@ export function AdminLayout({
                   value={uid}
                   onChange={(event) => setUid(event.target.value)}
                   placeholder={t("datasource.projectUidPlaceholder")}
-                  className="h-10 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-sm font-scientific text-[var(--color-text-primary)] shadow-sm"
+                  className="h-10 border-border bg-card text-sm font-scientific text-foreground shadow-sm"
                   disabled={!canUseCustomUid}
                 />
                 {!canUseCustomUid ? (
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--color-text-secondary)]">
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-border bg-background px-1.5 py-0.5 text-3xs font-semibold uppercase text-muted-foreground">
                     {t("datasource.locked")}
                   </span>
                 ) : null}
@@ -185,7 +185,7 @@ export function AdminLayout({
                   size="sm"
                   variant="outline"
                   onClick={() => fetchData(DEFAULT_PROJECT_UID)}
-                  className="h-10 flex-1 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] sm:flex-none"
+                  className="h-10 flex-1 border-border bg-card text-foreground sm:flex-none"
                 >
                   {t("actions.demo")}
                 </Button>
@@ -198,15 +198,15 @@ export function AdminLayout({
         {activeTab === "overview" && (
           <Card className="card-flat mb-6">
             <CardContent className="p-4">
-              <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
                 <Filter className="h-4 w-4" />
                 <span>{t("overview.filters")}</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1.5">
-                  <label htmlFor={speciesFilterId} className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSpecies")}</label>
+                  <label htmlFor={speciesFilterId} className="text-xs font-medium text-muted-foreground">{t("overview.filterSpecies")}</label>
                   <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                    <SelectTrigger id={speciesFilterId} className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={speciesFilterId} className="h-10 w-full border-border bg-card text-foreground hover:border-primary/40 focus:border-primary focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSpecies")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -218,9 +218,9 @@ export function AdminLayout({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor={systemFilterId} className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSystem")}</label>
+                  <label htmlFor={systemFilterId} className="text-xs font-medium text-muted-foreground">{t("overview.filterSystem")}</label>
                   <Select value={systemFilter} onValueChange={setSystemFilter}>
-                    <SelectTrigger id={systemFilterId} className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={systemFilterId} className="h-10 w-full border-border bg-card text-foreground hover:border-primary/40 focus:border-primary focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSystem")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -232,9 +232,9 @@ export function AdminLayout({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor={locationFilterId} className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
+                  <label htmlFor={locationFilterId} className="text-xs font-medium text-muted-foreground">{t("overview.filterLocation")}</label>
                   <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger id={locationFilterId} className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={locationFilterId} className="h-10 w-full border-border bg-card text-foreground hover:border-primary/40 focus:border-primary focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterLocation")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -247,21 +247,21 @@ export function AdminLayout({
                 </div>
               </div>
               {hasActiveFilters && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-3">
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
                   {speciesFilter !== "all" && (
-                    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    <Badge variant="secondary" className="bg-background text-muted-foreground flex items-center gap-1 pr-1">
                       {t("overview.filterSpecies")}: {speciesFilter}
                       <FilterClearButton onClick={() => setSpeciesFilter("all")} filterName={t("overview.filterSpecies")} className="ml-1" />
                     </Badge>
                   )}
                   {systemFilter !== "all" && (
-                    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    <Badge variant="secondary" className="bg-background text-muted-foreground flex items-center gap-1 pr-1">
                       {t("overview.filterSystem")}: {systemFilter}
                       <FilterClearButton onClick={() => setSystemFilter("all")} filterName={t("overview.filterSystem")} className="ml-1" />
                     </Badge>
                   )}
                   {locationFilter !== "all" && (
-                    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    <Badge variant="secondary" className="bg-background text-muted-foreground flex items-center gap-1 pr-1">
                       {t("overview.filterLocation")}: {locationFilter}
                       <FilterClearButton onClick={() => setLocationFilter("all")} filterName={t("overview.filterLocation")} className="ml-1" />
                     </Badge>
@@ -269,7 +269,7 @@ export function AdminLayout({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 text-xs text-[var(--color-brand)]"
+                    className="min-h-11 text-xs text-primary"
                     onClick={clearAllFilters}
                   >
                     {t("overview.clearAll")}

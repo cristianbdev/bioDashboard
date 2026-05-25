@@ -153,7 +153,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
   function renderGroup(group: NavGroup) {
     return (
       <section key={group.labelKey} className="space-y-2">
-        <p className={cn("px-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-(--color-text-muted)", isCollapsed && "md:sr-only")}>
+        <p className={cn("px-3 text-3xs font-semibold uppercase tracking-[0.24em] text-(--color-text-muted)", isCollapsed && "md:sr-only")}>
           {t(group.labelKey)}
         </p>
         <div className="space-y-1">{group.items.map((item) => renderNavButton(item))}</div>
@@ -177,7 +177,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
       <aside
           ref={mobileDrawerRef}
           className={cn(
-            "fixed inset-y-0 left-0 z-[60] flex w-[min(88vw,320px)] flex-col border-r border-(--color-border-subtle) bg-[var(--color-surface-base)] shadow-2xl md:hidden",
+            "fixed inset-y-0 left-0 z-[60] flex w-[min(88vw,320px)] flex-col border-r border-(--color-border-subtle) bg-background shadow-2xl md:hidden",
             "animate-in slide-in-from-left-4 duration-300",
           )}
           role="dialog"
@@ -209,7 +209,7 @@ export function AdminSidebar({ activeTab, onTabChange, isOpen, onClose, t }: Adm
       <aside
         className={cn(
           "hidden md:flex md:flex-col md:shrink-0 md:sticky md:z-30 md:h-[calc(100vh-4rem)] md:top-16",
-          "md:border-r md:border-(--color-border-subtle) md:bg-[var(--color-surface-base)] md:shadow-none",
+          "md:border-r md:border-(--color-border-subtle) md:bg-background md:shadow-none",
           isCollapsed ? "md:w-22" : "md:w-70",
         )}
         aria-label={t("navigation.title")}

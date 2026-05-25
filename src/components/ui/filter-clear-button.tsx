@@ -19,7 +19,7 @@ export function FilterClearButton({ onClick, filterName, className }: FilterClea
       onClick={onClick}
       aria-label={t("filters.removeFilter", { filter: filterName })}
       className={cn(
-        "touch-target shrink-0 rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-brand)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-1",
+        "touch-target shrink-0 rounded-full text-muted-foreground transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-1",
         className,
       )}
     >

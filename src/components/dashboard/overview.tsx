@@ -26,7 +26,7 @@ const MapLibreFacilitiesMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]">
+      <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-border bg-popover">
         <div className="h-10 w-10 animate-pulse rounded-full bg-[var(--color-border-subtle)]" aria-hidden />
       </div>
     ),
@@ -298,7 +298,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           >
             <span className="text-sm font-medium">{t("overview.filters")}</span>
             {hasActiveFilters && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
                 {[speciesFilter, systemFilter, locationFilter].filter(f => f !== "all").length}
               </span>
             )}
@@ -401,14 +401,14 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       <button
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
-        className={`btn-brand lg:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full px-4 py-2 shadow-lg transition-all duration-300 ${
+        className={`btn-brand lg:hidden fixed bottom-20 right-4 z-40 flex min-h-11 items-center gap-2 rounded-full px-4 py-2 shadow-lg transition-all duration-300 ${
           showDesktopFloating ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
         aria-label={t("overview.openFilters")}
       >
         <span className="text-sm font-medium">{t("overview.filters")}</span>
         {hasActiveFilters && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
             {[speciesFilter, systemFilter, locationFilter].filter((f) => f !== "all").length}
           </span>
         )}
@@ -482,17 +482,17 @@ function FactorList({ title, factors, color, emptyStateProps, t }: { title: stri
   return (
     <Card className="card-flat">
       <CardContent className="space-y-4 p-5">
-        <h4 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h4>
+        <h4 className="text-base font-semibold text-foreground">{title}</h4>
         {factors.length === 0 ? (
           <EmptyChartState title={emptyStateProps?.title ?? t("charts.noData")} subtitle={emptyStateProps?.subtitle ?? t("charts.tryFilters")} blockingFilters={emptyStateProps?.blockingFilters} onClearAll={emptyStateProps?.onClearAll} />
         ) : (
           factors.map((item) => (
             <div key={item.factor} className="space-y-2">
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="font-medium text-[var(--color-text-primary)]">{item.factor}</span>
-                <Badge variant="outline" className="text-[var(--color-text-secondary)]">{item.count}</Badge>
+                <span className="font-medium text-foreground">{item.factor}</span>
+                <Badge variant="outline" className="text-muted-foreground">{item.count}</Badge>
               </div>
-              <div className="h-2 rounded-full bg-[var(--color-surface-base)]">
+              <div className="h-2 rounded-full bg-background">
                 <div
                   className="h-2 rounded-full"
                   style={{ width: `${(item.count / (factors[0]?.count || 1)) * 100}%`, backgroundColor: barColor }}
@@ -621,7 +621,7 @@ function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, block
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: colors.chart[index % colors.chart.length] }}
             />
-            <span className="whitespace-nowrap text-xs text-[var(--color-text-secondary)]">{String(item[labelKey])}</span>
+            <span className="whitespace-nowrap text-xs text-muted-foreground">{String(item[labelKey])}</span>
           </div>
         ))}
       </div>

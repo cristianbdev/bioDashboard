@@ -179,7 +179,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
 
   if (points.length === 0) {
     return (
-      <div className="flex h-full min-h-[220px] items-center justify-center rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-4 text-center text-sm text-[var(--color-text-secondary)]">
+      <div className="flex h-full min-h-[220px] items-center justify-center rounded-xl border border-border bg-background px-4 text-center text-sm text-muted-foreground">
         {t("map.noGeo")}
       </div>
     );
@@ -187,7 +187,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
 
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      <div className="relative flex-1 overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+      <div className="relative flex-1 overflow-hidden rounded-xl border border-border bg-background">
         <Map
           ref={mapRef}
           mapStyle={mapStyle}
@@ -284,7 +284,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                   <div
                     className={cn(
                       "flex cursor-pointer select-none items-center justify-center rounded-full border-2 border-[var(--color-text-inverse)] font-bold text-[var(--color-text-inverse)] shadow-lg transition-transform hover:scale-110",
-                      isLarge ? "bg-[var(--color-danger)]" : isMedium ? "bg-[var(--color-warning)]" : "bg-[var(--color-info)]",
+                      isLarge ? "bg-destructive" : isMedium ? "bg-warning" : "bg-[var(--color-info)]",
                     )}
                     style={{
                       width: `${size}px`,
@@ -338,11 +338,11 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
       </div>
 
       {/* Legend and Controls */}
-      <div className="mt-3 flex flex-col gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-3 py-3 sm:px-4">
+      <div className="mt-3 flex flex-col gap-3 rounded-xl border border-border bg-card px-3 py-3 sm:px-4">
         {/* Facility count (mobile) */}
         <div className="flex items-center justify-center md:hidden">
-          <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] shadow-sm">
-            <span className="font-bold text-[var(--color-brand)]">{points.length}</span>
+          <div className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm">
+            <span className="font-bold text-primary">{points.length}</span>
             <span>{points.length === 1 ? t("table.facility") : t("tabs.facilities")}</span>
           </div>
         </div>
@@ -350,7 +350,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
         {/* Legend - Risk levels */}
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
           {RISK_LEVELS.map((entry) => (
-            <div key={entry.level} className="flex items-center gap-2 text-xs text-[var(--color-text-primary)]">
+            <div key={entry.level} className="flex items-center gap-2 text-xs text-foreground">
               <span
                 className="map-legend-dot h-3 w-3 rounded-full ring-1 ring-white shadow-sm"
                 style={{ "--legend-dot-color": entry.color } as React.CSSProperties}
@@ -379,32 +379,32 @@ function FacilityPopup({
   const Icon = facility.riskLevel === "HIGH" ? AlertTriangle : facility.riskLevel === "LOW" || facility.riskLevel === "NEGLIGIBLE" ? CheckCircle : Info;
 
   return (
-    <div className="relative min-w-[260px] overflow-hidden rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-raised)] shadow-xl">
+    <div className="relative min-w-[260px] overflow-hidden rounded-lg border border-border bg-card shadow-xl">
       <button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
           onClose();
         }}
-        className="touch-target absolute right-2 top-2 z-20 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)]"
+        className="touch-target absolute right-2 top-2 z-20 rounded-full border border-border bg-popover text-muted-foreground hover:bg-background"
         aria-label={t("actions.close")}
       >
         ×
       </button>
 
-      <div className="flex items-center gap-3 border-b border-[var(--color-border-subtle)] px-4 py-4" style={{ backgroundColor: "color-mix(in oklab, var(--color-raised) 82%, var(--color-surface-base))" }}>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-surface-base)]" style={{ color }}>
+      <div className="flex items-center gap-3 border-b border-border px-4 py-4" style={{ backgroundColor: "color-mix(in oklab, var(--color-raised) 82%, var(--color-surface-base))" }}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background" style={{ color }}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 pr-6">
-          <h3 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{facility.name}</h3>
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color }}>
+          <h3 className="truncate text-sm font-semibold text-foreground">{facility.name}</h3>
+          <p className="text-2xs font-semibold uppercase tracking-wider" style={{ color }}>
             {t(`risk.${facility.riskLevel.toLowerCase()}`)}
           </p>
         </div>
       </div>
 
-      <div className="space-y-2 px-4 py-3 text-xs bg-[var(--color-surface-base)]">
+      <div className="space-y-2 px-4 py-3 text-xs bg-background">
         <PopupRow label={t("overview.filterLocation")} value={facility.location || facility.basedOn || "-"} />
         <PopupRow label={t("table.score")} value={`${facility.score}/100`} />
         <PopupRow label={t("table.species")} value={facility.species || "-"} />
@@ -423,8 +423,8 @@ function FacilityPopup({
 function PopupRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <span className="text-[var(--color-text-secondary)]">{label}</span>
-      <span className="text-right font-medium text-[var(--color-text-primary)]">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-medium text-foreground">{value}</span>
     </div>
   );
 }

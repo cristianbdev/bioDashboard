@@ -30,7 +30,7 @@ export function EmptyChartState({
   const resolvedSubtitle = subtitle ?? t("charts.tryFilters");
 
   return (
-    <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] p-6">
+    <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-border text-muted-foreground p-6">
       <BarChart3 className="mb-3 h-12 w-12 opacity-20" />
       <p className="text-sm font-medium">{resolvedTitle}</p>
       <p className="mt-1 text-xs">{resolvedSubtitle}</p>
@@ -41,7 +41,7 @@ export function EmptyChartState({
             <Badge
               key={filter.label}
               variant="secondary"
-              className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5"
+              className="bg-primary/10 text-primary border border-primary/20 pr-1.5"
             >
               <span className="max-w-[120px] truncate text-xs">{filter.label}: {filter.value}</span>
               <FilterClearButton onClick={filter.onClear} filterName={filter.label} className="ml-1.5" />
@@ -55,7 +55,7 @@ export function EmptyChartState({
           size="sm"
           variant="ghost"
           onClick={onClearAll}
-          className="mt-3 text-xs text-[var(--color-brand)]"
+          className="mt-3 min-h-11 text-xs text-primary"
         >
           {t("overview.clearAll")}
         </Button>
