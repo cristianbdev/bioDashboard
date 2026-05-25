@@ -17,7 +17,7 @@ type PointProperties = {
 
 type Props = {
   filteredFacilities: FacilitySummary[];
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, unknown>) => string;
   locale?: AppLocale;
   className?: string;
 };
@@ -382,7 +382,7 @@ function FacilityPopup({
 }: {
   facility: FacilitySummary;
   onClose: () => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, unknown>) => string;
   locale: AppLocale;
 }) {
   const color = markerColorByRisk(facility.riskLevel);
