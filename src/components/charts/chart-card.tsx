@@ -1,4 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
+"use client";
+
+import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoTitle } from "@/components/dashboard/info-title";
 import { cn } from "@/lib/utils";
@@ -11,16 +13,6 @@ const HEIGHT_CLASSES: Record<ChartCardHeight, string> = {
   lg: "min-h-[220px] h-[220px] sm:h-[260px] md:h-[300px]",
   xl: "min-h-[260px] h-[280px] sm:h-[320px] md:h-[380px] xl:h-[420px]",
 };
-
-export const CHART_TOOLTIP_STYLE: CSSProperties = {
-  borderRadius: "12px",
-  border: "1px solid var(--color-border-subtle)",
-  backgroundColor: "var(--color-raised)",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.2)",
-  fontSize: "12px",
-};
-
-export const CHART_TOOLTIP_CURSOR = { fill: "var(--color-surface-base)" };
 
 export function truncateChartLabel(value: string, max = 25) {
   if (value.length <= max) return value;
@@ -36,13 +28,10 @@ export function getAdaptiveChartHeight(itemCount: number): ChartCardHeight {
 
 export function getAdaptiveVerticalBarLayout(itemCount: number, longestLabelLength: number) {
   const safeCount = Math.max(1, itemCount);
-  // Calculate yAxisWidth based on truncated label length (24 chars max displayed)
   const truncatedLength = Math.min(longestLabelLength, 24);
   const yAxisWidth = Math.min(120, Math.max(40, Math.floor(truncatedLength * 5.5)));
-  // Bar size scales with item count but stays reasonable
   const barSize = Math.max(18, Math.min(32, Math.floor(180 / safeCount)));
   const showValues = safeCount <= 10;
-  // No extra left margin - yAxisWidth already accounts for label space
   const leftMargin = 0;
 
   return {
@@ -77,10 +66,10 @@ export function ChartCard({
 }: ChartCardProps) {
   return (
     <Card className={cn("card-flat min-w-0", className)}>
-      <CardHeader className="border-b border-[var(--color-border-subtle)] pb-3">
+      <CardHeader className="border-b border-border pb-3">
         <div className="flex items-center justify-between gap-3">
           <InfoTitle title={title} info={info} />
-          {icon ? <div className="text-[var(--color-text-secondary)]">{icon}</div> : null}
+          {icon ? <div className="text-muted-foreground">{icon}</div> : null}
         </div>
       </CardHeader>
       <CardContent className={cn("min-w-0 p-3 sm:p-4 lg:p-5", contentClassName)}>

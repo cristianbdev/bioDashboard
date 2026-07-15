@@ -1,31 +1,47 @@
-import { Database as DbIcon, Filter, Loader2, RefreshCw, X } from "lucide-react";
+"use client";
+
+import { Database as DbIcon, Filter, Loader2, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useMemo, useState, useCallback } from "react";
-import { ComparativeView } from "@/components/dashboard/comparative";
-import { FacilitiesView } from "@/components/dashboard/facilities";
-import { MethodologyView } from "@/components/dashboard/methodology";
-import { UserManagementView } from "@/components/dashboard/user-management";
+import { useId, useMemo, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Dynamically import Overview component with ssr: false to avoid ResponsiveContainer hydration warnings
 // Recharts ResponsiveContainer doesn't support SSR and causes width(-1)/height(-1) warnings during hydration
+function TabPanelSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 pb-6">
+      <div className="h-[72px] animate-pulse rounded-xl bg-popover" />
+      <div className="h-[320px] animate-pulse rounded-xl bg-popover" />
+    </div>
+  );
+}
+
 const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col gap-8 pb-6">
-      <div className="space-y-4">
-        <div className="h-[100px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-[80px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-          ))}
-        </div>
-      </div>
-      <div className="h-[400px] animate-pulse rounded-xl bg-[var(--color-surface-elevated)]" />
-    </div>
-  ),
+  loading: () => <TabPanelSkeleton />,
 });
+
+const FacilitiesView = dynamic(
+  () => import("@/components/dashboard/facilities").then((mod) => mod.FacilitiesView),
+  { loading: () => <TabPanelSkeleton /> },
+);
+
+const ComparativeView = dynamic(
+  () => import("@/components/dashboard/comparative").then((mod) => mod.ComparativeView),
+  { ssr: false, loading: () => <TabPanelSkeleton /> },
+);
+
+const MethodologyView = dynamic(
+  () => import("@/components/dashboard/methodology").then((mod) => mod.MethodologyView),
+  { loading: () => <TabPanelSkeleton /> },
+);
+
+const UserManagementView = dynamic(
+  () => import("@/components/dashboard/user-management").then((mod) => mod.UserManagementView),
+  { loading: () => <TabPanelSkeleton /> },
+);
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,6 +87,10 @@ export function AdminLayout({
   setUid,
   state,
 }: AdminLayoutProps) {
+  const speciesFilterId = useId();
+  const systemFilterId = useId();
+  const locationFilterId = useId();
+
   // Filter state for overview
   const [speciesFilter, setSpeciesFilter] = useState("all");
   const [systemFilter, setSystemFilter] = useState("all");
@@ -121,17 +141,17 @@ export function AdminLayout({
         t={t}
       />
 
-      <main className="min-w-0 flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-8">
+      <div className="min-w-0 flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-8">
         {/* Data Source bar */}
         <Card className="card-flat mb-6">
           <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-2.5 shadow-sm">
-                <DbIcon className="h-5 w-5 text-[var(--color-brand)]" />
+              <div className="rounded-xl border border-border bg-card p-2.5 shadow-sm">
+                <DbIcon className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[var(--color-text-primary)]">{t("datasource.title")}</p>
-                <p className="text-xs text-[var(--color-text-secondary)]">{t("datasource.subtitle")}</p>
+                <p className="text-sm font-semibold text-foreground">{t("datasource.title")}</p>
+                <p className="text-xs text-muted-foreground">{t("datasource.subtitle")}</p>
               </div>
             </div>
 
@@ -141,11 +161,11 @@ export function AdminLayout({
                   value={uid}
                   onChange={(event) => setUid(event.target.value)}
                   placeholder={t("datasource.projectUidPlaceholder")}
-                  className="h-10 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-sm font-scientific text-[var(--color-text-primary)] shadow-sm"
+                  className="h-10 border-border bg-card text-sm font-scientific text-foreground shadow-sm"
                   disabled={!canUseCustomUid}
                 />
                 {!canUseCustomUid ? (
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-[var(--color-border-subtle)] bg-[var(--color-surface-base)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--color-text-secondary)]">
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-border bg-background px-1.5 py-0.5 text-3xs font-semibold uppercase text-muted-foreground">
                     {t("datasource.locked")}
                   </span>
                 ) : null}
@@ -156,7 +176,7 @@ export function AdminLayout({
                   size="sm"
                   onClick={() => fetchData(uid)}
                   disabled={!uid || state.status === "loading"}
-                  className="h-10 flex-1 bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 sm:flex-none"
+                  className="btn-brand h-10 flex-1 sm:flex-none"
                 >
                   {state.status === "loading" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                   {t("actions.load")}
@@ -165,7 +185,7 @@ export function AdminLayout({
                   size="sm"
                   variant="outline"
                   onClick={() => fetchData(DEFAULT_PROJECT_UID)}
-                  className="h-10 flex-1 border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] sm:flex-none"
+                  className="h-10 flex-1 border-border bg-card text-foreground sm:flex-none"
                 >
                   {t("actions.demo")}
                 </Button>
@@ -178,15 +198,15 @@ export function AdminLayout({
         {activeTab === "overview" && (
           <Card className="card-flat mb-6">
             <CardContent className="p-4">
-              <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
                 <Filter className="h-4 w-4" />
                 <span>{t("overview.filters")}</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSpecies")}</label>
+                  <label htmlFor={speciesFilterId} className="text-xs font-medium text-muted-foreground">{t("overview.filterSpecies")}</label>
                   <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={speciesFilterId} className="h-10 w-full border-border bg-card text-foreground hover:border-primary/40 focus:border-primary focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSpecies")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -198,9 +218,9 @@ export function AdminLayout({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterSystem")}</label>
+                  <label htmlFor={systemFilterId} className="text-xs font-medium text-muted-foreground">{t("overview.filterSystem")}</label>
                   <Select value={systemFilter} onValueChange={setSystemFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={systemFilterId} className="h-10 w-full border-border bg-card text-foreground hover:border-primary/40 focus:border-primary focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterSystem")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -212,9 +232,9 @@ export function AdminLayout({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
+                  <label htmlFor={locationFilterId} className="text-xs font-medium text-muted-foreground">{t("overview.filterLocation")}</label>
                   <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
+                    <SelectTrigger id={locationFilterId} className="h-10 w-full border-border bg-card text-foreground hover:border-primary/40 focus:border-primary focus:ring-1 focus:ring-[var(--color-brand)]">
                       <SelectValue placeholder={t("overview.filterLocation")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -227,35 +247,29 @@ export function AdminLayout({
                 </div>
               </div>
               {hasActiveFilters && (
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-3">
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
                   {speciesFilter !== "all" && (
-                    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    <Badge variant="secondary" className="bg-background text-muted-foreground flex items-center gap-1 pr-1">
                       {t("overview.filterSpecies")}: {speciesFilter}
-                      <button onClick={() => setSpeciesFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                        <X className="h-3 w-3" />
-                      </button>
+                      <FilterClearButton onClick={() => setSpeciesFilter("all")} filterName={t("overview.filterSpecies")} className="ml-1" />
                     </Badge>
                   )}
                   {systemFilter !== "all" && (
-                    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    <Badge variant="secondary" className="bg-background text-muted-foreground flex items-center gap-1 pr-1">
                       {t("overview.filterSystem")}: {systemFilter}
-                      <button onClick={() => setSystemFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                        <X className="h-3 w-3" />
-                      </button>
+                      <FilterClearButton onClick={() => setSystemFilter("all")} filterName={t("overview.filterSystem")} className="ml-1" />
                     </Badge>
                   )}
                   {locationFilter !== "all" && (
-                    <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
+                    <Badge variant="secondary" className="bg-background text-muted-foreground flex items-center gap-1 pr-1">
                       {t("overview.filterLocation")}: {locationFilter}
-                      <button onClick={() => setLocationFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                        <X className="h-3 w-3" />
-                      </button>
+                      <FilterClearButton onClick={() => setLocationFilter("all")} filterName={t("overview.filterLocation")} className="ml-1" />
                     </Badge>
                   )}
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 text-xs text-[var(--color-brand)]"
+                    className="min-h-11 text-xs text-primary"
                     onClick={clearAllFilters}
                   >
                     {t("overview.clearAll")}
@@ -267,13 +281,16 @@ export function AdminLayout({
         )}
 
         {/* Tab contents */}
-        {activeTab === "overview" && <OverviewClient data={data} t={t} locale={locale} externalFilters={externalFilters} />}
+        {activeTab === "overview" && <OverviewClient data={data} t={t} locale={locale} externalFilters={externalFilters} role={role} />}
         {activeTab === "facilities" && canAccessTab(role, "facilities") && (
           <FacilitiesView
             facilities={facilitiesForRole}
             currentFacility={currentFacilityForRole}
             onSelect={setSelectedFacility}
             readOnlySelection={role === "producer"}
+            role={role}
+            locale={locale}
+            networkStats={data.stats}
             t={t}
             sectionAverages={data.sectionAverages}
           />
@@ -285,7 +302,7 @@ export function AdminLayout({
         {activeTab === "users" && canAccessTab(role, "users") && (
           <UserManagementView facilities={data.facilities} projectUid={uid} t={t} />
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { Moon, Sun, Monitor, Check } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,67 +14,88 @@ import {
 import { cn } from "@/lib/utils";
 
 const THEME_OPTIONS = [
-  { value: "light", icon: Sun },
-  { value: "dark", icon: Moon },
-  { value: "system", icon: Monitor },
+  { value: "light", icon: Sun, labelKey: "theme.light" as const },
+  { value: "dark", icon: Moon, labelKey: "theme.dark" as const },
+  { value: "system", icon: Monitor, labelKey: "theme.system" as const },
 ] as const;
 
-type ThemeValue = (typeof THEME_OPTIONS)[number]["value"];
+type ThemeToggleProps = {
+  className?: string;
+  variant?: "icon" | "menu-item";
+};
 
-export function ThemeToggle() {
+export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
+  const t = useTranslations();
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const t = useTranslations("theme");
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Get current icon based on resolved theme (for display when system)
+  const activeValue = theme === "system" ? resolvedTheme : theme;
   const CurrentIcon =
-    THEME_OPTIONS.find((opt) => opt.value === (theme === "system" ? resolvedTheme : theme))?.icon ||
-    Sun;
+    THEME_OPTIONS.find((opt) => opt.value === (mounted ? activeValue : "light"))?.icon ?? Monitor;
 
-  // Show neutral icon during SSR and before client mount to avoid hydration mismatch
-  const DisplayIcon = mounted ? CurrentIcon : Monitor;
+  if (variant === "menu-item") {
+    return (
+      <div className={cn("border-t border-border pt-1", className)}>
+        <p className="px-3 py-1.5 text-xs font-medium text-muted-foreground">{t("theme.toggle")}</p>
+        {THEME_OPTIONS.map((opt) => {
+          const Icon = opt.icon;
+          const isActive = mounted && theme === opt.value;
+          return (
+            <DropdownMenuItem
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
+                isActive && "bg-accent text-accent-foreground",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="flex-1">{t(opt.labelKey)}</span>
+              {isActive ? <span className="ml-auto">✓</span> : null}
+            </DropdownMenuItem>
+          );
+        })}
+      </div>
+    );
+  }
 
-  return (mounted ? (
+  return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="sm"
-          className="h-11 w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)] sm:h-8 sm:w-8"
-          aria-label={t("toggle")}
+          className={cn(
+            "h-11 min-h-11 w-11 min-w-11 p-0 text-muted-foreground hover:bg-popover hover:text-foreground",
+            className,
+          )}
+          aria-label={t("theme.toggle")}
         >
-          <DisplayIcon className="h-4 w-4" />
+          <CurrentIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={4}>
-        {THEME_OPTIONS.map(({ value, icon: Icon }) => (
-          <DropdownMenuItem
-            key={value}
-            onClick={() => setTheme(value)}
-            className={cn(
-              "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
-              theme === value && "bg-accent text-accent-foreground"
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            <span className="flex-1">{t(value)}</span>
-            {theme === value && <Check className="h-4 w-4" />}
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent align="end" sideOffset={4} className="w-40">
+        {THEME_OPTIONS.map((opt) => {
+          const Icon = opt.icon;
+          const isActive = mounted && theme === opt.value;
+          return (
+            <DropdownMenuItem
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn("flex cursor-pointer items-center gap-2", isActive && "bg-accent text-accent-foreground")}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="flex-1">{t(opt.labelKey)}</span>
+              {isActive ? <span className="ml-auto text-xs">✓</span> : null}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
-  ) : (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-11 w-11 p-0 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-base)] hover:text-[var(--color-text-primary)] sm:h-8 sm:w-8"
-      aria-label={t("toggle")}
-    >
-      <Monitor className="h-4 w-4" />
-    </Button>
-  ));
+  );
 }

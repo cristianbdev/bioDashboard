@@ -1,80 +1,203 @@
 "use client";
 
-import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 
 export function Footer() {
   const t = useTranslations();
+  const locale = useLocale();
+  const { resolvedTheme } = useTheme();
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+  const isDark = mounted && resolvedTheme === "dark";
   const currentYear = new Date().getFullYear();
 
-  return (
-    <footer className="mt-auto w-full border-t border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
-      <div className="mx-auto max-w-[1600px] px-6 py-6">
-        {/* Desktop layout */}
-        <div className="hidden items-center justify-between gap-8 sm:flex">
-          {/* Logo */}
-          <div className="shrink-0">
-            <Image
-              src="/cristianbdev-logo.png"
-              alt="CristianBDev"
-              width={130}
-              height={44}
-              className="h-auto"
-              priority={false}
-            />
-          </div>
+  const vetinstSrc = isDark
+    ? locale === "no"
+      ? "/partners/vetinst-logo-neg-no.svg"
+      : "/partners/vetinst-logo-neg-eng.svg"
+    : locale === "no"
+      ? "/partners/vetinst-logo-no.svg"
+      : "/partners/vetinst-logo-eng.svg";
 
-          {/* Center: Authorization text */}
-          <div className="flex-1 text-center text-xs leading-relaxed text-[var(--color-text-secondary)]">
+  const devLogoSrc = isDark ? "/cristianbdev-logo.webp" : "/cristianbdev-logo.png";
+
+  return (
+    <footer className="mt-auto w-full border-t border-border bg-card">
+      <div className="mx-auto max-w-[1600px] px-6 py-6">
+        {/* Desktop: single row with all elements */}
+        <div className="hidden items-center justify-between gap-6 sm:flex">
+          {/* Developer logo */}
+          <a
+            href="https://cristianb.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 transition-opacity hover:opacity-80"
+          >
+            <img
+              src={devLogoSrc}
+              alt="CristianBDev"
+              width={1492}
+              height={500}
+              loading="lazy"
+              className="h-10 w-auto object-contain"
+            />
+          </a>
+
+          {/* Legal / attribution */}
+          <div className="flex-1 text-center text-xs leading-relaxed text-muted-foreground">
             <p>
               {t("footer.developed")}{" "}
-              <span className="font-medium text-[var(--color-text-primary)]">CristianBDev</span>.
-            </p>
-            <p className="mt-0.5">
-              {t("footer.usage")}
+              <a
+                href="https://cristianb.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground transition-colors hover:text-primary"
+              >
+                CristianBDev
+              </a>
+              . {t("footer.usage")}
             </p>
           </div>
 
-          {/* Right: Contact and copyright */}
-          <div className="shrink-0 text-right text-xs text-[var(--color-text-muted)]">
-            <a
-              href="mailto:hi@cristianb.dev"
-              className="block text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-brand)]"
-            >
-              hi@cristianb.dev
-            </a>
-            <span className="mt-1 block">&copy; {currentYear} CristianBDev</span>
+          {/* Partners + Contact */}
+          <div className="flex shrink-0 items-center gap-5">
+            {/* Partner logos */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.vetinst.no/en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+              >
+                <img
+                  src={vetinstSrc}
+                  alt={t("footer.vetinstAlt")}
+                  width={260}
+                  height={64}
+                  loading="lazy"
+                  className="h-10 w-auto object-contain"
+                />
+              </a>
+              <a
+                href="https://eupahw.eu/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-80"
+              >
+                <img
+                  src="/partners/eupahw-logo-color.png"
+                  alt={t("footer.eupahwAlt")}
+                  width={2440}
+                  height={911}
+                  loading="lazy"
+                  className={`h-11 w-auto object-contain${isDark ? " brightness-0 invert" : ""}`}
+                />
+              </a>
+            </div>
+
+            {/* Divider */}
+            <div className="h-8 w-px bg-[var(--color-border-subtle)]" />
+
+            {/* Contact */}
+            <div className="text-right text-xs text-muted-foreground">
+              <a
+                href="mailto:hi@cristianb.dev"
+                className="block text-muted-foreground transition-colors hover:text-primary"
+              >
+                hi@cristianb.dev
+              </a>
+              <span className="mt-0.5 block">&copy; {currentYear} CristianBDev</span>
+            </div>
           </div>
         </div>
 
-        {/* Mobile layout - stacked, centered */}
+        {/* Mobile: stacked layout */}
         <div className="flex flex-col items-center gap-4 sm:hidden">
-          <Image
-            src="/cristianbdev-logo.png"
-            alt="CristianBDev"
-            width={120}
-            height={40}
-            className="h-auto"
-            priority={false}
-          />
-          <div className="text-center text-[11px] leading-relaxed text-[var(--color-text-secondary)]">
+          {/* Partners */}
+          <div className="flex items-center gap-3">
+            <a
+              href="https://www.vetinst.no/en"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={vetinstSrc}
+                alt={t("footer.vetinstAlt")}
+                width={260}
+                height={64}
+                loading="lazy"
+                className="h-8 w-auto object-contain"
+              />
+            </a>
+            <a
+              href="https://eupahw.eu/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+                <img
+                  src="/partners/eupahw-logo-color.png"
+                  alt={t("footer.eupahwAlt")}
+                  width={2440}
+                  height={911}
+                  loading="lazy"
+                  className={`h-7 w-auto object-contain${isDark ? " brightness-0 invert" : ""}`}
+                />
+            </a>
+          </div>
+
+          {/* Divider */}
+          <div className="w-full h-px bg-[var(--color-border-subtle)]" />
+
+          {/* Legal */}
+          <div className="text-center text-2xs leading-relaxed text-muted-foreground">
             <p>
               {t("footer.developed")}{" "}
-              <span className="font-medium text-[var(--color-text-primary)]">CristianBDev</span>.
+              <a
+                href="https://cristianb.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground transition-colors hover:text-primary"
+              >
+                CristianBDev
+              </a>.
             </p>
-            <p className="mt-0.5">
-              {t("footer.usage")}
-            </p>
+            <p className="mt-0.5">{t("footer.usage")}</p>
           </div>
-          <div className="text-center text-[11px] text-[var(--color-text-muted)]">
+
+          {/* Developer logo + contact */}
+          <div className="flex items-center gap-3">
             <a
-              href="mailto:hi@cristianb.dev"
-              className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-brand)]"
+              href="https://cristianb.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
             >
-              hi@cristianb.dev
+              <img
+                src={devLogoSrc}
+                alt="CristianBDev"
+                width={1492}
+                height={500}
+                loading="lazy"
+                className="h-7 w-auto object-contain"
+              />
             </a>
-            <span className="ml-2">&middot;</span>
-            <span className="ml-2">&copy; {currentYear} CristianBDev</span>
+            <div className="text-center text-2xs text-muted-foreground">
+              <a
+                href="mailto:hi@cristianb.dev"
+                className="text-muted-foreground transition-colors hover:text-primary"
+              >
+                hi@cristianb.dev
+              </a>
+              <span className="ml-1.5">&middot;</span>
+              <span className="ml-1.5">&copy; {currentYear}</span>
+            </div>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { DEFAULT_PROJECT_UID, normalizeRole, parseFacilityId } from "@/lib/access-control";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 type ManagedRole = "admin" | "producer";
 
@@ -13,6 +14,9 @@ type CreateManagedUserBody = {
   projectUid?: string;
 };
 
+const ADMIN_USERS_RATE_LIMIT = 10;
+const ADMIN_USERS_RATE_WINDOW_MS = 60_000;
+
 function isManagedRole(value: unknown): value is ManagedRole {
   return value === "admin" || value === "producer";
 }
@@ -21,16 +25,18 @@ function normalizeEmail(value: unknown): string {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
-function buildDefaultPassword(email: string): string {
-  return `${email}.bioDash`;
-}
+function getInvitationRedirectUrl(request: Request): string | undefined {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (configured) {
+    return `${configured}/en/dashboard`;
+  }
 
-function buildUsernameFromEmail(email: string): string {
-  const [local = "user", domain = "bio"] = email.split("@");
-  const domainBase = domain.split(".")[0] || "bio";
-  const raw = `${local}_${domainBase}`;
-  const username = raw.replace(/[^a-zA-Z0-9_]/g, "_").replace(/_+/g, "_").slice(0, 30);
-  return username.length >= 3 ? username : `${username}usr`;
+  const origin = request.headers.get("origin");
+  if (origin) {
+    return `${origin.replace(/\/$/, "")}/en/dashboard`;
+  }
+
+  return undefined;
 }
 
 async function isCurrentUserAdmin() {
@@ -42,6 +48,12 @@ async function isCurrentUserAdmin() {
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rate = checkRateLimit(`admin-users:${ip}`, ADMIN_USERS_RATE_LIMIT, ADMIN_USERS_RATE_WINDOW_MS);
+  if (!rate.allowed) {
+    return rateLimitResponse(rate.retryAfterSeconds);
+  }
+
   if (!(await isCurrentUserAdmin())) {
     return NextResponse.json({ errorCode: "unauthorized" }, { status: 403 });
   }
@@ -66,8 +78,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ errorCode: "facilityRequired" }, { status: 400 });
   }
 
-  const password = buildDefaultPassword(email);
-
   const publicMetadata =
     role === "producer"
       ? {
@@ -88,8 +98,6 @@ export async function POST(request: Request) {
     if (existing.data.length > 0) {
       const current = existing.data[0];
       const updated = await client.users.updateUser(current.id, {
-        password,
-        skipPasswordChecks: true,
         publicMetadata: {
           ...(current.publicMetadata ?? {}),
           ...publicMetadata,
@@ -103,29 +111,25 @@ export async function POST(request: Request) {
         role,
         projectUid,
         facilityId: role === "producer" ? facilityId : null,
-        password,
       });
     }
 
-    const created = await client.users.createUser({
-      emailAddress: [email],
-      username: buildUsernameFromEmail(email),
-      password,
-      skipPasswordChecks: true,
+    const redirectUrl = getInvitationRedirectUrl(request);
+    const invitation = await client.invitations.createInvitation({
+      emailAddress: email,
       publicMetadata,
+      ...(redirectUrl ? { redirectUrl } : {}),
     });
 
     return NextResponse.json({
-      status: "created",
-      userId: created.id,
+      status: "invited",
+      invitationId: invitation.id,
       email,
       role,
       projectUid,
       facilityId: role === "producer" ? facilityId : null,
-      password,
     });
-  } catch (error: unknown) {
-    console.error("Admin users API error", error);
+  } catch {
     return NextResponse.json({ errorCode: "generic" }, { status: 500 });
   }
 }

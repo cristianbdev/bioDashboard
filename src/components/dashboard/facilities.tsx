@@ -8,14 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveVerticalBarLayout, truncateChartLabel } from "@/components/charts/chart-card";
+import { getAdaptiveVerticalBarLayout } from "@/components/charts/chart-card";
+import { EChartsChart } from "@/components/charts/echarts-chart";
+import { useChartTheme } from "@/hooks/useChartTheme";
+import { buildExternalInternalComparisonOption, buildHorizontalGroupedBarOption, buildSectionRadarOption } from "@/lib/chart-options";
+import { buildSectionRadarData } from "@/lib/chart-data/section-radar";
+import type { SectionRadarData } from "@/lib/chart-data/section-radar";
+import type { AppRole } from "@/lib/access-control";
+import { PrintReportButton } from "./print-report-button";
+import { resolveMixedColor } from "@/lib/chart-theme";
+import type { AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import type { DashboardData, FacilitySummary, RuleStatus, SubcategoryChecklist } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
 import { RiskBadge } from "./cards";
 import { InfoTitle } from "./info-title";
 import { ActionPlanCard } from "./action-plan-card";
+import { ChartDataTable } from "@/components/charts/chart-data-table";
 
 type Props = {
   facilities: FacilitySummary[];
@@ -23,20 +32,20 @@ type Props = {
   onSelect: (id: number) => void;
   t: (key: string, values?: Record<string, string | number>) => string;
   sectionAverages: DashboardData["sectionAverages"];
+  networkStats?: DashboardData["stats"];
   readOnlySelection?: boolean;
   isProducerView?: boolean;
+  role?: AppRole;
+  locale?: AppLocale;
 };
 
-// Update to theme colors - use CSS variables for dark mode support
-const FACILITY_COLORS = {
-  external: "var(--color-brand)",
-  internal: "var(--color-chart-8)",
-};
-
-const AVERAGE_COLORS = {
-  external: "color-mix(in srgb, var(--color-brand) 60%, transparent)",
-  internal: "color-mix(in srgb, var(--color-chart-8) 60%, transparent)",
-};
+function buildRadarTableRows(data: SectionRadarData): (string | number)[][] {
+  return data.indicators.map((indicator, index) => [
+    indicator.name,
+    data.series[0]?.values[index] ?? 0,
+    data.series[1]?.values[index] ?? 0,
+  ]);
+}
 
 export function FacilitiesView({
   facilities,
@@ -44,9 +53,13 @@ export function FacilitiesView({
   onSelect,
   t,
   sectionAverages,
+  networkStats,
   readOnlySelection = false,
   isProducerView = false,
+  role = "admin",
+  locale = "en",
 }: Props) {
+  const { colors } = useChartTheme();
   const peerAverage = useMemo(() => {
     if (sectionAverages.length === 0) return undefined;
     return Math.round(sectionAverages.reduce((acc, s) => acc + s.score, 0) / sectionAverages.length);
@@ -66,19 +79,93 @@ export function FacilitiesView({
       .slice(0, 3);
   }, [currentFacility, t]);
 
-  if (!currentFacility) return null;
+  const benchmarkData = useMemo(() => {
+    if (!currentFacility) return [];
+    return currentFacility.sectionScores.map((section) => {
+      const average =
+        sectionAverages.find((item) => item.section === section.section && item.side === section.side)?.score ?? 0;
+      return {
+        section: translateSectionLabel(section.section, t),
+        side: section.side,
+        facility: section.score,
+        average,
+      };
+    });
+  }, [currentFacility, sectionAverages, t]);
 
-  const benchmarkData = currentFacility.sectionScores.map((section) => {
-    const average = sectionAverages.find((item) => item.section === section.section && item.side === section.side)?.score ?? 0;
-    return {
-      section: translateSectionLabel(section.section, t),
-      side: section.side,
-      facility: section.score,
-      average,
-    };
-  });
-  const longestBenchmarkLabel = benchmarkData.reduce((max, item) => Math.max(max, item.section.length), 0);
-  const benchmarkLayout = getAdaptiveVerticalBarLayout(benchmarkData.length, longestBenchmarkLabel);
+  const benchmarkOption = useMemo(() => {
+    if (benchmarkData.length === 0) return undefined;
+    const externalAvg = resolveMixedColor("--color-brand", 60);
+    const internalAvg = resolveMixedColor("--color-chart-8", 60);
+    const chart8 = colors.chart[7] ?? colors.brand;
+    const longestBenchmarkLabel = benchmarkData.reduce((max, item) => Math.max(max, item.section.length), 0);
+    const benchmarkLayout = getAdaptiveVerticalBarLayout(benchmarkData.length, longestBenchmarkLabel);
+
+    return buildHorizontalGroupedBarOption({
+      categories: benchmarkData.map((entry) => entry.section),
+      series: [
+        {
+          name: t("facilities.networkAverage"),
+          values: benchmarkData.map((entry) => entry.average),
+          colors: benchmarkData.map((entry) => (entry.side === "external" ? externalAvg : internalAvg)),
+        },
+        {
+          name: t("table.facility"),
+          values: benchmarkData.map((entry) => entry.facility),
+          colors: benchmarkData.map((entry) => (entry.side === "external" ? colors.brand : chart8)),
+        },
+      ],
+      colors,
+      yAxisWidth: Math.min(132, benchmarkLayout.yAxisWidth),
+      scoreLabel: t("table.facility"),
+    });
+  }, [benchmarkData, colors, t]);
+
+  const externalInternalOption = useMemo(() => {
+    if (!currentFacility) return undefined;
+    return buildExternalInternalComparisonOption({
+      externalScore: currentFacility.externalScore,
+      internalScore: currentFacility.internalScore,
+      colors,
+      externalLabel: t("overview.external"),
+      internalLabel: t("overview.internal"),
+    });
+  }, [colors, currentFacility, t]);
+
+  const externalRadarData = useMemo(() => {
+    if (!currentFacility) return undefined;
+    return buildSectionRadarData(
+      [
+        { name: currentFacility.name, sectionScores: currentFacility.sectionScores, side: "external" },
+        { name: t("facilities.networkAverage"), sectionScores: sectionAverages.map((item) => ({ section: item.section, side: item.side, score: item.score, positives: 0, total: 0 })), side: "external" },
+      ],
+      "external",
+      t,
+    );
+  }, [currentFacility, sectionAverages, t]);
+
+  const internalRadarData = useMemo(() => {
+    if (!currentFacility) return undefined;
+    return buildSectionRadarData(
+      [
+        { name: currentFacility.name, sectionScores: currentFacility.sectionScores, side: "internal" },
+        { name: t("facilities.networkAverage"), sectionScores: sectionAverages.map((item) => ({ section: item.section, side: item.side, score: item.score, positives: 0, total: 0 })), side: "internal" },
+      ],
+      "internal",
+      t,
+    );
+  }, [currentFacility, sectionAverages, t]);
+
+  const externalRadarOption = useMemo(
+    () => (externalRadarData ? buildSectionRadarOption({ data: externalRadarData, colors }) : undefined),
+    [colors, externalRadarData],
+  );
+  const internalRadarOption = useMemo(
+    () => (internalRadarData ? buildSectionRadarOption({ data: internalRadarData, colors }) : undefined),
+    [colors, internalRadarData],
+  );
+
+  if (!currentFacility) return null;
 
   return (
     <div className="space-y-6 min-w-0">
@@ -93,49 +180,48 @@ export function FacilitiesView({
       )}
 
       {/* Hero Facility Details */}
-      <Card className="card-flat overflow-hidden">
-        <div className="h-2 w-full bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-chart-8)]" />
+      <Card className="card-flat overflow-hidden border-t-4 border-t-primary">
         <CardHeader className="pb-2">
           <InfoTitle title={t("facilities.information")} info={t("info.facilityDiagnostics")} />
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3 flex-1">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">{currentFacility.name}</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">{currentFacility.name}</h2>
                 <RiskBadge level={currentFacility.riskLevel} label={t(`risk.${currentFacility.riskLevel.toLowerCase()}`)} />
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-text-secondary)]">
-                <span className="flex items-center gap-1.5 bg-[var(--color-surface-base)] px-2.5 py-1 rounded-md">
-                  <MapPin className="h-4 w-4 text-[var(--color-brand)]" />
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5 bg-background px-2.5 py-1 rounded-md">
+                  <MapPin className="h-4 w-4 text-primary" />
                   {currentFacility.basedOn ?? currentFacility.location ?? t("facilities.noData")}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
-                <Badge variant="secondary" className="bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)]">{currentFacility.species ?? t("facilities.noData")}</Badge>
-                <Badge variant="outline" className="border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]">{currentFacility.productionSystem ?? t("facilities.noData")}</Badge>
-                <Badge variant="outline" className="border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]">{currentFacility.productionType ?? t("facilities.noData")}</Badge>
+                <Badge variant="secondary" className="bg-popover text-foreground">{currentFacility.species ?? t("facilities.noData")}</Badge>
+                <Badge variant="outline" className="border-border text-muted-foreground">{currentFacility.productionSystem ?? t("facilities.noData")}</Badge>
+                <Badge variant="outline" className="border-border text-muted-foreground">{currentFacility.productionType ?? t("facilities.noData")}</Badge>
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-[var(--color-surface-base)] border border-[var(--color-border-subtle)] px-8 py-6 shrink-0">
-              <span className="text-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-1">{t("table.score")}</span>
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-background border border-border px-8 py-6 shrink-0">
+              <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground mb-1">{t("table.score")}</span>
               <div className="flex items-baseline gap-1">
                 <span
                   className={`text-5xl font-black font-scientific ${
                     currentFacility.score >= 70
-                      ? "text-[var(--color-success)]"
+                      ? "text-success"
                       : currentFacility.score >= 50
-                      ? "text-[var(--color-warning)]"
-                      : "text-[var(--color-danger)]"
+                      ? "text-warning"
+                      : "text-destructive"
                   }`}
                 >
                   {currentFacility.score}
                 </span>
-                <span className="text-lg font-medium text-[var(--color-text-secondary)]">/100</span>
+                <span className="text-lg font-medium text-muted-foreground">/100</span>
               </div>
               {isProducerView && (
-                <p className="mt-2 text-xs text-[var(--color-text-secondary)] text-center max-w-[200px]">
+                <p className="mt-2 text-xs text-muted-foreground text-center max-w-[200px]">
                   {currentFacility.score < 50
                     ? t("facilities.scoreHero.below50", { score: currentFacility.score })
                     : currentFacility.score < 70
@@ -144,13 +230,73 @@ export function FacilitiesView({
                 </p>
               )}
               {isProducerView && peerAverage !== undefined && (
-                <p className="mt-2 text-xs text-[var(--color-text-muted)] text-center max-w-[200px]">
+                <p className="mt-2 text-xs text-muted-foreground text-center max-w-[200px]">
                   {t("facilities.peerComparison", { score: currentFacility.score, peerAverage, species: currentFacility.species ?? "", region: currentFacility.basedOn ?? currentFacility.location ?? "" })}</p>
               )}
             </div>
           </div>
+
+          {role !== "public" ? (
+            <PrintReportButton
+              facility={currentFacility}
+              networkStats={networkStats}
+              sectionAverages={sectionAverages}
+              locale={locale}
+              t={t}
+            />
+          ) : null}
         </CardContent>
       </Card>
+
+      {/* External vs Internal + Radar */}
+      <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
+        <Card className="card-flat">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("facilities.externalInternalComparison")} info={t("info.facilityExternalInternal")} />
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <EChartsChart option={externalInternalOption} />
+            <ChartDataTable
+              caption={t("facilities.externalInternalComparison")}
+              headers={[t("charts.chartDataTableLabel"), t("charts.chartDataTableScore")]}
+              rows={[
+                [t("overview.external"), currentFacility.externalScore],
+                [t("overview.internal"), currentFacility.internalScore],
+              ]}
+            />
+          </CardContent>
+        </Card>
+        <Card className="card-flat">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("charts.sectionRadarExternal")} info={t("info.sectionRadarExternal")} />
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <EChartsChart option={externalRadarOption} />
+            {externalRadarData ? (
+              <ChartDataTable
+                caption={t("charts.sectionRadarExternal")}
+                headers={[t("charts.chartDataTableSection"), t("table.facility"), t("facilities.networkAverage")]}
+                rows={buildRadarTableRows(externalRadarData)}
+              />
+            ) : null}
+          </CardContent>
+        </Card>
+        <Card className="card-flat">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("charts.sectionRadarInternal")} info={t("info.sectionRadarInternal")} />
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <EChartsChart option={internalRadarOption} />
+            {internalRadarData ? (
+              <ChartDataTable
+                caption={t("charts.sectionRadarInternal")}
+                headers={[t("charts.chartDataTableSection"), t("table.facility"), t("facilities.networkAverage")]}
+                rows={buildRadarTableRows(internalRadarData)}
+              />
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Core Insights */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -161,38 +307,13 @@ export function FacilitiesView({
           </CardHeader>
           <CardContent className="h-[340px] md:h-[380px] xl:h-[420px]">
             <div role="img" aria-label={`${t("facilities.benchmark")}. ${benchmarkData.length} ${t("facilities.benchmarkAriaSuffix")}`} className="h-full w-full">
-              <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
-                <BarChart data={benchmarkData} layout="vertical" margin={{ left: 8, right: 20, top: 10, bottom: 10 }} barGap={2} barSize={benchmarkLayout.barSize}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} />
-                <YAxis
-                  type="category"
-                  dataKey="section"
-                  width={Math.min(132, benchmarkLayout.yAxisWidth)}
-                  tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
-                  tickFormatter={(value: string) => truncateChartLabel(value, 22)}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip
-                  contentStyle={CHART_TOOLTIP_STYLE}
-                  cursor={CHART_TOOLTIP_CURSOR}
-                  formatter={(value) => [`${value}/100`, t("table.score")]}
-                />
-                <Bar dataKey="average" name={t("facilities.networkAverage")} radius={[0, 4, 4, 0]} maxBarSize={12}>
-                  {benchmarkData.map((entry) => (
-                    <Cell key={`${entry.section}-average`} fill={entry.side === "external" ? AVERAGE_COLORS.external : AVERAGE_COLORS.internal} />
-                  ))}
-                </Bar>
-                <Bar dataKey="facility" name={t("table.facility")} radius={[0, 4, 4, 0]} maxBarSize={12}>
-                  {benchmarkData.map((entry) => (
-                    <Cell key={`${entry.section}-facility`} fill={entry.side === "external" ? FACILITY_COLORS.external : FACILITY_COLORS.internal} />
-                  ))}
-                  <LabelList dataKey="facility" position="right" fontSize={10} fill="var(--color-text-primary)" fontWeight={600} />
-                </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <EChartsChart option={benchmarkOption} />
             </div>
+            <ChartDataTable
+              caption={t("facilities.benchmark")}
+              headers={[t("charts.chartDataTableSection"), t("charts.chartDataTableScore"), t("charts.chartDataTableAverage")]}
+              rows={benchmarkData.map((d) => [d.section, d.facility, d.average])}
+            />
           </CardContent>
         </Card>
 
@@ -218,25 +339,25 @@ export function FacilitiesView({
       </div>
 
       {/* Risks & Suggestions (Prioritized for Producer) */}
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight pt-4">{t("facilities.riskAndSuggestions")}</h3>
+      <h3 className="text-xl font-semibold text-foreground tracking-tight pt-4">{t("facilities.riskAndSuggestions")}</h3>
       <div className="grid gap-6 lg:grid-cols-3">
         <RiskCard
           color="rose"
-          icon={<AlertTriangle className="h-5 w-5 text-[var(--color-danger)]" />}
+          icon={<AlertTriangle className="h-5 w-5" />}
           title={t("facilities.risks.high")}
           items={currentFacility.highRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="amber"
-          icon={<AlertCircle className="h-5 w-5 text-[var(--color-warning)]" />}
+          icon={<AlertCircle className="h-5 w-5" />}
           title={t("facilities.risks.medium")}
           items={currentFacility.moderateRiskFactors}
           emptyLabel={t("facilities.noData")}
         />
         <RiskCard
           color="emerald"
-          icon={<CheckCircle2 className="h-5 w-5 text-[var(--color-success)]" />}
+          icon={<CheckCircle2 className="h-5 w-5" />}
           title={t("facilities.risks.positive")}
           items={currentFacility.positivePractices}
           emptyLabel={t("facilities.noData")}
@@ -244,7 +365,7 @@ export function FacilitiesView({
       </div>
 
       {/* Operational Details */}
-      <h3 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight pt-4">{t("tabs.operational")}</h3>
+      <h3 className="text-xl font-semibold text-foreground tracking-tight pt-4">{t("tabs.operational")}</h3>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="card-flat">
           <CardHeader className="pb-2">
@@ -270,10 +391,10 @@ export function FacilitiesView({
       </div>
 
       {/* Full Checklist - Redesigned with Sticky Navigation and Cards */}
-      <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+      <div className="card-flat overflow-hidden gap-0 py-0 shadow-none">
+        <div className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-[var(--color-text-secondary)]" />
+            <ClipboardList className="h-5 w-5 text-muted-foreground" />
             <InfoTitle title={t("facilities.subcategoryChecklist")} info={t("info.subcategoryChecklist")} />
           </div>
         </div>
@@ -297,6 +418,7 @@ function ChecklistView({
   const [activeSection, setActiveSection] = useState<string>(checklist[0]?.section ?? "");
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Calculate compliance stats for each section
   const sectionStats = useMemo(() => {
@@ -342,14 +464,14 @@ function ChecklistView({
   return (
     <div ref={containerRef} className="relative">
       {/* Section Header with Navigation Hint */}
-      <div className="bg-[var(--color-surface-base)] px-4 py-3 border-b border-[var(--color-border-subtle)]">
-        <p className="text-sm text-[var(--color-text-secondary)]">
+      <div className="bg-background px-4 py-3 border-b border-border">
+        <p className="text-sm text-muted-foreground">
           {t("checklist.navigationHint")}
         </p>
       </div>
 
       {/* Horizontal Scrollable Navigation */}
-      <div id="checklist-nav-bar" className="bg-[var(--color-raised)] border-b border-[var(--color-border-subtle)] sticky top-0 z-30 shadow-sm">
+      <div id="checklist-nav-bar" className="bg-card border-b border-border sticky top-0 z-30 shadow-sm">
         <div className="flex gap-3 p-4 overflow-x-auto scroll-smooth snap-x">
           {sectionStats.map((stats) => {
             const isActive = activeSection === stats.section;
@@ -364,37 +486,37 @@ function ChecklistView({
                   "hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2",
                   isActive 
                     ? isExternal 
-                      ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10 shadow-md" 
+                      ? "border-primary bg-primary/10 shadow-md" 
                       : "border-[var(--color-chart-8)] bg-[var(--color-chart-8)]/10 shadow-md"
-                    : "border-[var(--color-border-subtle)] bg-[var(--color-raised)] hover:border-[var(--color-brand)]/60 hover:bg-[var(--color-surface-base)]",
+                    : "border-border bg-card hover:border-primary/60 hover:bg-background",
                   isExternal ? "focus:ring-[var(--color-brand)]/50" : "focus:ring-[var(--color-chart-8)]/50"
                 )}
               >
                 {/* Side indicator dot */}
                 <div className={cn(
                   "w-3 h-3 rounded-full shrink-0",
-                  isExternal ? "bg-[var(--color-brand)]" : "bg-[var(--color-chart-8)]",
+                  isExternal ? "bg-primary" : "bg-[var(--color-chart-8)]",
                   isActive && "ring-2 ring-offset-1 ring-[var(--color-text-primary)]/20"
                 )} />
                 
                 <div className="flex flex-col items-start">
                   <span className={cn(
                     "text-sm font-semibold leading-tight whitespace-nowrap",
-                    isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)]"
+                    isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                   )}>
                     {translateSectionLabel(stats.section, t)}
                   </span>
-                  <div className="flex items-center gap-2 text-[11px] mt-0.5">
+                  <div className="flex items-center gap-2 text-2xs mt-0.5">
                     <span className={cn(
                       "font-medium",
                       stats.compliant === (stats.total - stats.notApplicable) 
-                        ? "text-[var(--color-success)]" 
-                        : isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"
+                        ? "text-success" 
+                        : isActive ? "text-foreground" : "text-muted-foreground"
                     )}>
                       {stats.compliant}/{stats.total - stats.notApplicable}
                     </span>
                     {stats.nonCompliant > 0 && (
-                      <span className="text-[var(--color-danger)] font-semibold flex items-center gap-0.5">
+                      <span className="text-destructive font-semibold flex items-center gap-0.5">
                         <AlertCircle className="h-3 w-3" />
                         {stats.nonCompliant}
                       </span>
@@ -406,32 +528,33 @@ function ChecklistView({
           })}
         </div>
       </div>
+      <div ref={sentinelRef} className="h-0" aria-hidden="true" />
 
       {/* Section Content with Cards Grid */}
-      <div className="bg-[var(--color-raised)] px-4 py-6 space-y-10">
+      <div className="bg-card px-4 py-6 space-y-10">
         {checklist.map((subcategory, index) => (
           <section
             key={subcategory.section}
             ref={setSectionRef(subcategory.section)}
             data-section={subcategory.section}
             className={cn(
-              index > 0 && "pt-8 border-t-2 border-[var(--color-border-subtle)]"
+              index > 0 && "pt-8 border-t-2 border-border"
             )}
           >
             {/* Section Header - Prominent */}
             <div className={cn(
               "flex items-center gap-3 mb-6 p-4 rounded-xl",
               subcategory.side === "external" 
-                ? "bg-[var(--color-brand)]/8 border border-[var(--color-brand)]/20" 
+                ? "bg-primary/8 border border-primary/20" 
                 : "bg-[var(--color-chart-8)]/8 border border-[var(--color-chart-8)]/20"
             )}>
               <div className={cn(
                 "w-1.5 h-8 rounded-full",
-                subcategory.side === "external" ? "bg-[var(--color-brand)]" : "bg-[var(--color-chart-8)]"
+                subcategory.side === "external" ? "bg-primary" : "bg-[var(--color-chart-8)]"
               )} />
               <div className="flex-1">
-                <h4 className="text-lg font-bold text-[var(--color-text-primary)]">{translateSectionLabel(subcategory.section, t)}</h4>
-                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                <h4 className="text-lg font-bold text-foreground">{translateSectionLabel(subcategory.section, t)}</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {subcategory.items.length} {t("checklist.questions")} • {subcategory.items.filter((i) => i.compliant).length} {t("checklist.compliant")}
                 </p>
               </div>
@@ -440,8 +563,8 @@ function ChecklistView({
                 className={cn(
                   "text-xs px-2 py-1",
                   subcategory.side === "external" 
-                    ? "border-[var(--color-brand)] text-[var(--color-brand)] bg-[var(--color-raised)] font-semibold" 
-                    : "border-[var(--color-chart-8)] text-[var(--color-chart-8)] bg-[var(--color-raised)] font-semibold"
+                    ? "border-primary text-primary bg-card font-semibold" 
+                    : "border-[var(--color-chart-8)] text-[var(--color-chart-8)] bg-card font-semibold"
                 )}
               >
                 {subcategory.side === "external" ? t("overview.external") : t("overview.internal")}
@@ -459,7 +582,7 @@ function ChecklistView({
       </div>
 
       {/* Back to Top Button */}
-      <ChecklistBackToTopButton containerRef={containerRef} t={t} />
+      <ChecklistBackToTopButton containerRef={containerRef} sentinelRef={sentinelRef} t={t} />
     </div>
   );
 }
@@ -467,80 +590,37 @@ function ChecklistView({
 // Back to Top Button Component
 function ChecklistBackToTopButton({ 
   containerRef,
+  sentinelRef,
   t
 }: { 
   containerRef: React.RefObject<HTMLDivElement | null>;
+  sentinelRef: React.RefObject<HTMLDivElement | null>;
   t: (key: string) => string;
 }) {
   const [isVisible, setIsVisible] = useState(false);
-  const navBarRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    // Find the sticky nav bar inside the container by ID
-    const navBar = container.querySelector('#checklist-nav-bar') as HTMLDivElement;
-    if (navBar) {
-      navBarRef.current = navBar;
-    }
-  }, [containerRef]);
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const container = containerRef.current;
-      const navBar = navBarRef.current;
-      
-      if (!container) {
-        setIsVisible(false);
-        return;
-      }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0 }
+    );
 
-      // Get positions
-      const containerRect = container.getBoundingClientRect();
-      const scrollY = window.scrollY;
-      
-      // Find the navigation bar element
-      let navBarBottom = 0;
-      if (navBar) {
-        const navBarRect = navBar.getBoundingClientRect();
-        navBarBottom = navBarRect.bottom;
-      } else {
-        // Fallback: find nav bar by ID
-        const navBarEl = document.getElementById('checklist-nav-bar');
-        if (navBarEl) {
-          const navBarRect = navBarEl.getBoundingClientRect();
-          navBarBottom = navBarRect.bottom;
-        }
-      }
-      
-      // Show button when the nav bar is scrolled out of view (bottom < 0)
-      // AND we've scrolled past the beginning of the checklist
-      const isNavOutOfView = navBarBottom < 0;
-      
-      // Only show after scrolling some distance into the checklist
-      const containerTopAbsolute = containerRect.top + scrollY;
-      const hasScrolledIntoChecklist = scrollY > containerTopAbsolute + 100;
-      
-      setIsVisible(isNavOutOfView && hasScrolledIntoChecklist);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Check initial state
-    
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [containerRef]);
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [sentinelRef]);
 
   const scrollToTop = () => {
     const container = containerRef.current;
     if (container) {
-      // Get the container's position and scroll to it
       const rect = container.getBoundingClientRect();
       const absoluteTop = rect.top + window.scrollY;
-      
-      // Scroll to just above the container
       window.scrollTo({
-        top: absoluteTop - 80, // 80px offset for better visibility
+        top: absoluteTop - 80,
         behavior: "smooth"
       });
     }
@@ -553,7 +633,7 @@ function ChecklistBackToTopButton({
       onClick={scrollToTop}
       className={cn(
         "fixed bottom-6 right-6 z-[35] flex items-center gap-2 px-4 py-3 rounded-full",
-        "bg-[var(--color-brand)] text-white shadow-lg hover:bg-[var(--color-brand)]/90",
+        "btn-brand shadow-lg",
         "transition-all duration-300 hover:shadow-xl hover:scale-105",
         "focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 focus:ring-offset-2"
       )}
@@ -574,30 +654,30 @@ function ChecklistCard({
   t: (key: string) => string;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-raised)] p-3 sm:p-4">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4">
       {/* Question */}
-      <h5 className="text-sm font-medium text-[var(--color-text-primary)] leading-relaxed mb-3">
+      <h5 className="text-sm font-medium text-foreground leading-relaxed mb-3">
         {item.label}
       </h5>
 
       {/* Answer & Status Row */}
-      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-[var(--color-border-subtle)]/60">
+      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-border/60">
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-[var(--color-text-secondary)]">{t("table.answer")}:</span>
-          <span className="font-medium text-[var(--color-text-primary)]">{item.answer}</span>
+          <span className="text-muted-foreground">{t("table.answer")}:</span>
+          <span className="font-medium text-foreground">{item.answer}</span>
         </div>
         
         {!item.applicable ? (
-          <Badge variant="secondary" className="bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] text-xs">
+          <Badge variant="secondary" className="bg-popover text-muted-foreground text-xs">
             {t("status.notApplicable")}
           </Badge>
         ) : item.compliant ? (
-          <Badge variant="secondary" className="bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/20 text-xs">
+          <Badge variant="secondary" className="bg-success/10 text-success border border-success/20 text-xs">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             {t("status.compliant")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="bg-[var(--color-danger)]/10 text-[var(--color-danger)] border border-[var(--color-danger)]/20 text-xs">
+          <Badge variant="secondary" className="bg-destructive/10 text-destructive border border-destructive/20 text-xs">
             <AlertCircle className="h-3 w-3 mr-1" />
             {t("status.nonCompliant")}
           </Badge>
@@ -607,12 +687,12 @@ function ChecklistCard({
       {/* Recommendation */}
       {item.recommendation && (
         <div className="flex items-start gap-2 text-sm">
-          <Lightbulb className="h-4 w-4 text-[var(--color-warning)] shrink-0 mt-0.5" />
+          <Lightbulb className="h-4 w-4 text-warning shrink-0 mt-0.5" />
           <div>
-            <span className="text-[var(--color-warning)] font-medium text-xs uppercase tracking-wide">
+            <span className="text-warning font-medium text-xs uppercase tracking-wide">
               {t("table.recommendation")}
             </span>
-            <p className="text-[var(--color-text-secondary)] mt-0.5 leading-relaxed">
+            <p className="text-muted-foreground mt-0.5 leading-relaxed">
               {item.recommendation}
             </p>
           </div>
@@ -625,31 +705,31 @@ function ChecklistCard({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 items-center">
-      <span className="text-[var(--color-text-secondary)] text-sm">{label}</span>
-      <span className="text-right font-medium text-[var(--color-text-primary)]">{value}</span>
+      <span className="text-muted-foreground text-sm">{label}</span>
+      <span className="text-right font-medium text-foreground">{value}</span>
     </div>
   );
 }
 
 function RuleRow({ rule, t }: { rule: RuleStatus; t: (key: string) => string }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl border border-[var(--color-border-subtle)] px-4 py-3 bg-[var(--color-surface-base)]">
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl border border-border px-4 py-3 bg-background">
       <div className="space-y-1.5 flex-1">
-        <p className="text-sm font-medium text-[var(--color-text-primary)]">{rule.label}</p>
-        <p className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1.5">
+        <p className="text-sm font-medium text-foreground">{rule.label}</p>
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-chart-8)]" />
           {t("table.answer")}: <span className="font-medium">{rule.answer}</span>
         </p>
       </div>
       <div className="shrink-0 mt-2 sm:mt-0">
         {!rule.applicable ? (
-          <Badge variant="secondary" className="bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)]">{t("status.notApplicable")}</Badge>
+          <Badge variant="secondary" className="bg-popover text-muted-foreground">{t("status.notApplicable")}</Badge>
         ) : rule.matched ? (
-          <Badge variant="secondary" className="bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/20">
+          <Badge variant="secondary" className="bg-success/10 text-success border border-success/20">
             {t("status.yes")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="bg-[var(--color-danger)]/10 text-[var(--color-danger)] border border-[var(--color-danger)]/20">
+          <Badge variant="secondary" className="bg-destructive/10 text-destructive border border-destructive/20">
             {t("status.no")}
           </Badge>
         )}
@@ -658,6 +738,27 @@ function RuleRow({ rule, t }: { rule: RuleStatus; t: (key: string) => string }) 
   );
 }
 
+const RISK_CARD_VARIANT = {
+  rose: {
+    accent: "border-t-[var(--color-danger)]",
+    tint: "text-destructive",
+    iconWrap: "border-destructive/20 bg-destructive/10",
+    bullet: AlertTriangle,
+  },
+  amber: {
+    accent: "border-t-[var(--color-warning)]",
+    tint: "text-warning",
+    iconWrap: "border-warning/20 bg-warning/10",
+    bullet: AlertCircle,
+  },
+  emerald: {
+    accent: "border-t-[var(--color-success)]",
+    tint: "text-success",
+    iconWrap: "border-success/20 bg-success/10",
+    bullet: CheckCircle2,
+  },
+} as const;
+
 function RiskCard({
   color,
   icon,
@@ -665,39 +766,43 @@ function RiskCard({
   items,
   emptyLabel,
 }: {
-  color: "rose" | "amber" | "emerald";
+  color: keyof typeof RISK_CARD_VARIANT;
   icon: ReactNode;
   title: string;
   items: string[];
   emptyLabel: string;
 }) {
-  const border = {
-    rose: "border-t-4 border-t-[var(--color-danger)]",
-    amber: "border-t-4 border-t-[var(--color-warning)]",
-    emerald: "border-t-4 border-t-[var(--color-success)]",
-  }[color];
-  const IconBullet = color === "rose" ? AlertTriangle : color === "amber" ? AlertCircle : CheckCircle2;
-  const iconColor = color === "rose" ? "text-[var(--color-danger)]" : color === "amber" ? "text-[var(--color-warning)]" : "text-[var(--color-success)]";
+  const variant = RISK_CARD_VARIANT[color];
+  const IconBullet = variant.bullet;
+
   return (
-    <Card className={`card-flat ${border}`}>
-      <CardHeader className="pb-3 bg-[var(--color-raised)] rounded-t-xl">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[var(--color-raised)] rounded-lg shadow-sm border border-[var(--color-border-subtle)]">{icon}</div>
-          <CardTitle className="text-base font-semibold text-[var(--color-text-primary)]">{title}</CardTitle>
+    <Card className={cn("card-flat gap-0 border-t-4 py-0 shadow-none", variant.accent)}>
+      <CardHeader className="border-b border-border pb-4 pt-5">
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
+              variant.iconWrap,
+              variant.tint,
+            )}
+          >
+            {icon}
+          </div>
+          <CardTitle className="text-base font-semibold text-foreground">{title}</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="py-4">
         {items.length > 0 ? (
           <ul className="space-y-3">
             {items.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--color-text-primary)]">
-                <IconBullet className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
-                <span className="leading-snug">{item}</span>
+              <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <IconBullet className={cn("mt-0.5 h-4 w-4 shrink-0", variant.tint)} aria-hidden />
+                <span className="leading-snug text-foreground">{item}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-[var(--color-text-secondary)] italic">{emptyLabel}</p>
+          <p className="text-sm text-muted-foreground italic">{emptyLabel}</p>
         )}
       </CardContent>
     </Card>
@@ -739,19 +844,19 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
 
   const getRiskColor = (level: string) => {
     switch (level) {
-      case "HIGH": return "bg-[var(--color-danger)]/10 text-[var(--color-danger)] border-[var(--color-danger)]/20";
-      case "MEDIUM": return "bg-[var(--color-warning)]/10 text-[var(--color-warning)] border-[var(--color-warning)]/20";
-      case "LOW": return "bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20";
-      case "NEGLIGIBLE": return "bg-[var(--color-muted)]/10 text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
-      default: return "bg-[var(--color-muted)]/10 text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
+      case "HIGH": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "MEDIUM": return "bg-warning/10 text-warning border-warning/20";
+      case "LOW": return "bg-success/10 text-success border-success/20";
+      case "NEGLIGIBLE": return "bg-[var(--color-muted)]/10 text-muted-foreground border-[var(--color-border-default)]";
+      default: return "bg-[var(--color-muted)]/10 text-muted-foreground border-[var(--color-border-default)]";
     }
   };
 
   const getRiskDot = (level: string) => {
     switch (level) {
-      case "HIGH": return "bg-[var(--color-danger)]";
-      case "MEDIUM": return "bg-[var(--color-warning)]";
-      case "LOW": return "bg-[var(--color-success)]";
+      case "HIGH": return "bg-destructive";
+      case "MEDIUM": return "bg-warning";
+      case "LOW": return "bg-success";
       case "NEGLIGIBLE": return "bg-[var(--color-muted)]";
       default: return "bg-[var(--color-muted)]";
     }
@@ -768,11 +873,11 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-[var(--color-brand)]" />
-            <CardTitle className="text-base font-semibold text-[var(--color-text-primary)]">
+            <Building2 className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold text-foreground">
               {t("tabs.facilitiesSelect")}
               {!isExpanded && (
-                <span className="ml-2 text-sm font-normal text-[var(--color-text-secondary)]">
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
                   ({t("table.facilities")}: {facilities.length})
                 </span>
               )}
@@ -780,7 +885,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
           </div>
           <div className="flex items-center gap-2">
             {!isExpanded && currentFacility && (
-              <span className="hidden sm:inline text-sm text-[var(--color-text-secondary)] mr-2">
+              <span className="hidden sm:inline text-sm text-muted-foreground mr-2">
                 {currentFacility.name}
               </span>
             )}
@@ -788,7 +893,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 gap-1.5 text-xs"
+              className="min-h-11 gap-1.5 text-xs"
             >
               {isExpanded ? (
                 <>
@@ -810,19 +915,22 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
         <CardContent className="space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-secondary)]" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`${t("actions.search")} ${t("table.facilities")}...`}
-              className="pl-10 bg-[var(--color-raised)] border-[var(--color-border-subtle)]"
+              aria-label={t("actions.searchFacilities")}
+              className="pl-10 bg-card border-border"
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--color-surface-base)]"
+                aria-label={t("actions.clearSearch")}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-full hover:bg-background"
               >
-                <X className="h-3.5 w-3.5 text-[var(--color-text-secondary)]" />
+                <X className="h-4 w-4 text-muted-foreground" />
               </button>
             )}
           </div>
@@ -834,23 +942,23 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                 size="sm"
                 onClick={() => setRiskFilter("all")}
                 className={cn(
-                  "h-7 text-xs border-[var(--color-border-subtle)]",
-                  riskFilter === "all" && "bg-[var(--color-brand)] text-white border-[var(--color-brand)]"
+                  "min-h-11 text-xs border-border",
+                  riskFilter === "all" && "bg-primary text-primary-foreground border-primary"
                 )}
               >
                 {t("overview.filterAll")}
               </Button>
               {availableRisks.map((risk) => (
-                <Button
-                  key={risk}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRiskFilter(risk)}
-                  className={cn(
-                    "h-7 text-xs border-[var(--color-border-subtle)] gap-1.5",
-                    riskFilter === risk && getRiskColor(risk)
-                  )}
-                >
+              <Button
+                key={risk}
+                variant="outline"
+                size="sm"
+                onClick={() => setRiskFilter(risk)}
+                className={cn(
+                  "min-h-11 text-xs border-border gap-1.5",
+                  riskFilter === risk && getRiskColor(risk)
+                )}
+              >
                   <span className={cn("h-2 w-2 rounded-full", getRiskDot(risk))} />
                   {t(`risk.${risk.toLowerCase()}`)}
                 </Button>
@@ -861,7 +969,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
           <div className="border rounded-lg overflow-hidden">
             <div className="max-h-[280px] overflow-y-auto">
               {filteredFacilities.length === 0 ? (
-                <div className="p-8 text-center text-sm text-[var(--color-text-secondary)]">
+                <div className="p-8 text-center text-sm text-muted-foreground">
                   {t("charts.noData")}
                 </div>
               ) : (
@@ -871,31 +979,31 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                       key={facility.id}
                       onClick={() => handleSelect(facility.id)}
                       className={cn(
-                        "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors hover:bg-[var(--color-surface-base)]",
-                        currentFacility.id === facility.id && "bg-[var(--color-brand)]/5 border-l-2 border-l-[var(--color-brand)]"
+                        "w-full px-4 py-3 flex items-center gap-3 text-left transition-colors hover:bg-background",
+                        currentFacility.id === facility.id && "bg-primary/5 border-l-2 border-l-primary"
                       )}
                     >
                       {/* Selection indicator */}
                       <div className={cn(
                         "h-4 w-4 rounded-full border-2 flex-shrink-0",
                         currentFacility.id === facility.id
-                          ? "border-[var(--color-brand)] bg-[var(--color-brand)]"
-                          : "border-[var(--color-border-subtle)]"
+                          ? "border-primary bg-primary"
+                          : "border-border"
                       )}>
                         {currentFacility.id === facility.id && (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[var(--color-text-inverse)]" />
                         )}
                       </div>
 
                       {/* Facility info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm text-[var(--color-text-primary)] truncate">
+                          <span className="font-medium text-sm text-foreground truncate">
                             {facility.name}
                           </span>
                           <span className={cn("h-2 w-2 rounded-full flex-shrink-0", getRiskDot(facility.riskLevel))} />
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)] mt-0.5">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                           <span>{facility.location || facility.basedOn}</span>
                           {facility.species && (
                             <>
@@ -909,9 +1017,9 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
                       {/* Score badge */}
                       <div className={cn(
                         "flex-shrink-0 text-xs font-semibold px-2 py-1 rounded",
-                        facility.score >= 70 ? "bg-[var(--color-success)]/10 text-[var(--color-success)]" :
-                        facility.score >= 50 ? "bg-[var(--color-warning)]/10 text-[var(--color-warning)]" :
-                        "bg-[var(--color-danger)]/10 text-[var(--color-danger)]"
+                        facility.score >= 70 ? "bg-success/10 text-success" :
+                        facility.score >= 50 ? "bg-warning/10 text-warning" :
+                        "bg-destructive/10 text-destructive"
                       )}>
                         {facility.score}
                       </div>
@@ -923,17 +1031,17 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
           </div>
 
           {/* Quick stats */}
-          <div className="flex flex-wrap gap-4 text-xs text-[var(--color-text-secondary)] pt-1">
+          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-1">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-danger)]" />
+              <span className="h-2 w-2 rounded-full bg-destructive" />
               {facilities.filter(f => f.riskLevel === "HIGH").length} {t("metrics.high.title")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-warning)]" />
+              <span className="h-2 w-2 rounded-full bg-warning" />
               {facilities.filter(f => f.riskLevel === "MEDIUM").length} {t("metrics.medium.title")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
+              <span className="h-2 w-2 rounded-full bg-success" />
               {facilities.filter(f => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length} {t("metrics.low.title")}
             </span>
           </div>
@@ -943,16 +1051,16 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
       {/* Collapsed view summary */}
       {!isExpanded && currentFacility && (
         <CardContent className="pt-0 pb-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--color-surface-base)] border border-[var(--color-border-subtle)]">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
             <div className={cn(
               "h-3 w-3 rounded-full",
               getRiskDot(currentFacility.riskLevel)
             )} />
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-[var(--color-text-primary)] truncate">
+              <p className="font-medium text-sm text-foreground truncate">
                 {currentFacility.name}
               </p>
-              <p className="text-xs text-[var(--color-text-secondary)]">
+              <p className="text-xs text-muted-foreground">
                 {t("facilities.selector.selected")} • {t("table.score")}: {currentFacility.score}/100
               </p>
             </div>
@@ -960,7 +1068,7 @@ function FacilitySelector({ facilities, currentFacility, onSelect, t }: Facility
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(true)}
-              className="h-7 text-xs shrink-0"
+              className="min-h-11 text-xs shrink-0"
             >
               {t("facilities.selector.show")}
             </Button>

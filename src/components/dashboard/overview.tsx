@@ -1,14 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
-import { MapLibreFacilitiesMap } from "./MapLibreFacilitiesMap";
+import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Radar, Shield, Waves } from "lucide-react";
 import { CoveragePill, MetricCard } from "./cards";
+import { DashboardPageHeading } from "./dashboard-page-heading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChartCard, CHART_TOOLTIP_CURSOR, CHART_TOOLTIP_STYLE, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, truncateChartLabel, type ChartCardHeight } from "@/components/charts/chart-card";
+import { ChartCard, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, type ChartCardHeight } from "@/components/charts/chart-card";
+import { EChartsChart } from "@/components/charts/echarts-chart";
+import { useChartTheme } from "@/hooks/useChartTheme";
+import { buildDonutOption, buildExternalInternalComparisonOption, buildSectionRadarOption, buildSectionScoreBarOption, buildVerticalBarOption } from "@/lib/chart-options";
+import { buildNetworkRadarFromAverages } from "@/lib/chart-data/section-radar";
+import type { AppRole } from "@/lib/access-control";
+import { filterRestrictedMapPoints, type CityMapPoint } from "@/lib/map-privacy";
+import type { ChartThemeColors } from "@/lib/chart-theme";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
+import { ChartDataTable } from "@/components/charts/chart-data-table";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
@@ -16,6 +24,18 @@ import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { FloatingFilters } from "./floating-filters";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
+
+const MapLibreFacilitiesMap = dynamic(
+  () => import("./MapLibreFacilitiesMap").then((mod) => mod.MapLibreFacilitiesMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-border bg-popover">
+        <div className="h-10 w-10 animate-pulse rounded-full bg-[var(--color-border-subtle)]" aria-hidden />
+      </div>
+    ),
+  },
+);
 
 export type FilterState = {
   speciesFilter: string;
@@ -36,18 +56,8 @@ type Props = {
   t: (key: string) => string;
   locale: AppLocale;
   externalFilters?: FilterState;
+  role?: AppRole;
 };
-
-const CHART_PALETTE = [
-  "var(--color-chart-1)",
-  "var(--color-chart-2)",
-  "var(--color-chart-3)",
-  "var(--color-chart-4)",
-  "var(--color-chart-5)",
-  "var(--color-chart-6)",
-  "var(--color-chart-7)",
-  "var(--color-chart-8)",
-];
 
 function average(values: number[]) {
   if (values.length === 0) return 0;
@@ -96,10 +106,10 @@ function filteredSectionAverages(base: DashboardData["sectionAverages"], facilit
   });
 }
 
-function sectionColor(score: number) {
-  if (score >= 70) return "var(--color-success)";
-  if (score >= 50) return "var(--color-warning)";
-  return "var(--color-danger)";
+function sectionColor(score: number, colors: ChartThemeColors) {
+  if (score >= 70) return colors.success;
+  if (score >= 50) return colors.warning;
+  return colors.danger;
 }
 
 function riskLabelToBarColor(kind: "high" | "positive") {
@@ -138,7 +148,7 @@ export function useOverviewFilters(data: DashboardData): FilterState {
   };
 }
 
-export function Overview({ data, t, locale, externalFilters }: Props) {
+export function Overview({ data, t, locale, externalFilters, role = "public" }: Props) {
   // Use external filters if provided (from parent), otherwise use internal state
   const internalFilters = useOverviewFilters(data);
   const filters = externalFilters ?? internalFilters;
@@ -181,15 +191,20 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     return () => observer.disconnect();
   }, []);
 
+  const overviewFacilities = useMemo(
+    () => data.overviewFacilities ?? data.facilities,
+    [data.overviewFacilities, data.facilities],
+  );
+
   const filteredFacilities = useMemo(() => {
-    return data.facilities.filter((facility) => {
+    return overviewFacilities.filter((facility) => {
       if (speciesFilter !== "all" && facility.species !== speciesFilter) return false;
       if (systemFilter !== "all" && facility.productionSystem !== systemFilter) return false;
       const facilityLocation = facility.basedOn ?? facility.location;
       if (locationFilter !== "all" && facilityLocation !== locationFilter) return false;
       return true;
     });
-  }, [data.facilities, speciesFilter, systemFilter, locationFilter]);
+  }, [overviewFacilities, speciesFilter, systemFilter, locationFilter]);
 
   const sectionAverages = useMemo(
     () => filteredSectionAverages(data.sectionAverages, filteredFacilities),
@@ -199,10 +214,18 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     () => sectionAverages.map((item) => ({ ...item, section: translateSectionLabel(item.section, t) })),
     [sectionAverages, t],
   );
-  const sectionLongestLabel = translatedSectionAverages.reduce((max, item) => Math.max(max, item.section.length), 0);
-  const sectionLayout = getAdaptiveVerticalBarLayout(translatedSectionAverages.length, sectionLongestLabel);
-
   const avgScore = average(filteredFacilities.map((f) => f.score));
+  const avgExternalScore = average(filteredFacilities.map((f) => f.externalScore));
+  const avgInternalScore = average(filteredFacilities.map((f) => f.internalScore));
+  const restrictedCityPoints = useMemo<CityMapPoint[] | undefined>(() => {
+    if (role === "admin" || !data.restrictedMapPoints) return undefined;
+    return filterRestrictedMapPoints(data.restrictedMapPoints, filteredFacilities);
+  }, [data.restrictedMapPoints, filteredFacilities, role]);
+  const visibleProducerFacility = useMemo(() => {
+    if (!data.producerMapFacility) return undefined;
+    const isVisible = filteredFacilities.some((facility) => facility.id === data.producerMapFacility?.id);
+    return isVisible ? data.producerMapFacility : undefined;
+  }, [data.producerMapFacility, filteredFacilities]);
   const highRiskCount = filteredFacilities.filter((f) => f.riskLevel === "HIGH").length;
   const lowRiskCount = filteredFacilities.filter((f) => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length;
 
@@ -286,19 +309,17 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       {/* Section 1: Header + KPIs - This ref is used to detect scroll */}
       <section ref={headerRef} className="space-y-4">
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
-          <div>
-            <h2 className="text-dashboard-title">{t("tabs.overview")}</h2>
-            <p className="mt-1 text-dashboard-subtitle">{t("overview.subtitle")}</p>
-          </div>
+          <DashboardPageHeading title={t("tabs.overview")} subtitle={t("overview.subtitle")} />
           {/* Mobile floating filters button */}
           <button
             type="button"
             onClick={() => setIsMobileFiltersOpen(true)}
-            className="lg:hidden flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg"
+            aria-label={t("overview.openFilters")}
+            className="btn-brand flex min-h-11 items-center gap-2 rounded-full px-4 py-2.5 shadow-lg lg:hidden"
           >
             <span className="text-sm font-medium">{t("overview.filters")}</span>
             {hasActiveFilters && (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
                 {[speciesFilter, systemFilter, locationFilter].filter(f => f !== "all").length}
               </span>
             )}
@@ -324,7 +345,14 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
         <Card className="card-flat xl:col-span-2">
           <CardContent className="p-3 sm:p-4">
             <div className="h-[320px] sm:h-[360px] md:h-[420px] lg:h-[460px] xl:h-[480px]">
-              <MapLibreFacilitiesMap filteredFacilities={filteredFacilities} t={t} locale={locale} />
+              <MapLibreFacilitiesMap
+                filteredFacilities={filteredFacilities}
+                restrictedCityPoints={restrictedCityPoints}
+                producerOwnFacility={visibleProducerFacility}
+                t={t}
+                locale={locale}
+                role={role}
+              />
             </div>
           </CardContent>
         </Card>
@@ -344,8 +372,59 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
               emptySubtitle={emptyStateProps.subtitle}
               blockingFilters={emptyStateProps.blockingFilters}
               onClearAll={emptyStateProps.onClearAll}
+              caption={t("charts.scoreDistribution")}
+              t={t}
             />
           </div>
+        </ChartCard>
+      </section>
+
+      {/* Section 2b: External vs Internal + Radar charts */}
+      <section className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
+        <ChartCard
+          title={t("charts.externalInternalCompliance")}
+          info={t("info.externalInternalCompliance")}
+          icon={<BarChart3 className="h-4 w-4" />}
+          height="md"
+          className="xl:col-span-1"
+          ariaLabel={t("charts.externalInternalCompliance")}
+        >
+          <ExternalInternalChart
+            externalScore={avgExternalScore}
+            internalScore={avgInternalScore}
+            emptyStateProps={emptyStateProps}
+            t={t}
+          />
+        </ChartCard>
+        <ChartCard
+          title={t("charts.sectionRadarExternal")}
+          info={t("info.sectionRadarExternal")}
+          icon={<Radar className="h-4 w-4" />}
+          height="md"
+          ariaLabel={t("charts.sectionRadarExternal")}
+        >
+          <SectionRadarChart
+            sectionAverages={sectionAverages}
+            side="external"
+            seriesName={t("overview.external")}
+            emptyStateProps={emptyStateProps}
+            t={t}
+          />
+        </ChartCard>
+        <ChartCard
+          title={t("charts.sectionRadarInternal")}
+          info={t("info.sectionRadarInternal")}
+          icon={<Radar className="h-4 w-4" />}
+          height="md"
+          ariaLabel={t("charts.sectionRadarInternal")}
+        >
+          <SectionRadarChart
+            sectionAverages={sectionAverages}
+            side="internal"
+            seriesName={t("overview.internal")}
+            emptyStateProps={emptyStateProps}
+            t={t}
+          />
         </ChartCard>
       </section>
 
@@ -361,27 +440,7 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
           {translatedSectionAverages.length === 0 ? (
             <EmptyChartState {...emptyStateProps} />
           ) : (
-            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
-              <BarChart data={translatedSectionAverages} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }} barSize={sectionLayout.barSize}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  type="category"
-                  dataKey="section"
-                  width={sectionLayout.yAxisWidth}
-                  tick={{ fontSize: 11, fill: "var(--color-text-primary)" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
-                <Bar dataKey="score" radius={[0, 6, 6, 0]}>
-                  {translatedSectionAverages.map((entry) => (
-                    <Cell key={entry.section} fill={sectionColor(entry.score)} />
-                  ))}
-                  <LabelList dataKey="score" position="right" fontSize={11} fill="var(--color-text-primary)" />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <SectionScoresChart data={translatedSectionAverages} caption={t("charts.sectionDetail")} t={t} />
           )}
         </ChartCard>
       </section>
@@ -406,13 +465,13 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       <section className="space-y-4">
         <CollapsibleSection title={t("tabs.operational")} defaultOpen={false}>
           <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
-            <ChartBlock title={t("charts.waterMonitoring")} info={t("info.waterMonitoring")} data={waterMonitoring} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
-            <ChartBlock title={t("charts.mortalityDisposal")} info={t("info.mortalityDisposal")} data={mortalityDisposal} labelKey="method" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
-            <ChartBlock title={t("charts.intakeWaterTreatmentApplied")} info={t("info.intakeWaterTreatmentApplied")} data={intakeWaterTreatmentApplied} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
-            <ChartBlock title={t("charts.waterParametersMeasured")} info={t("info.waterParametersMeasured")} data={waterParametersMeasured} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
-            <ChartBlock title={t("charts.personalTraining")} info={t("info.personalTraining")} data={personnelTrainingTopics} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
-            <ChartBlock title={t("charts.records")} info={t("info.records")} data={recordsCoverage} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
-            <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} />
+      <ChartBlock title={t("charts.waterMonitoring")} info={t("info.waterMonitoring")} data={waterMonitoring} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.waterMonitoring")} />
+            <ChartBlock title={t("charts.mortalityDisposal")} info={t("info.mortalityDisposal")} data={mortalityDisposal} labelKey="method" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.mortalityDisposal")} />
+            <ChartBlock title={t("charts.intakeWaterTreatmentApplied")} info={t("info.intakeWaterTreatmentApplied")} data={intakeWaterTreatmentApplied} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.intakeWaterTreatmentApplied")} />
+            <ChartBlock title={t("charts.waterParametersMeasured")} info={t("info.waterParametersMeasured")} data={waterParametersMeasured} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.waterParametersMeasured")} />
+            <ChartBlock title={t("charts.personalTraining")} info={t("info.personalTraining")} data={personnelTrainingTopics} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.personalTraining")} />
+            <ChartBlock title={t("charts.records")} info={t("info.records")} data={recordsCoverage} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.records")} />
+            <ChartBlock title={t("charts.sops")} info={t("info.sops")} data={sopsCoverage} labelKey="label" valueKey="count" emptyStateProps={emptyStateProps} t={t} caption={t("charts.sops")} />
           </div>
         </CollapsibleSection>
       </section>
@@ -421,14 +480,14 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
       <button
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
-        className={`lg:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg transition-all duration-300 ${
+        className={`btn-brand lg:hidden fixed bottom-20 right-4 z-40 flex min-h-11 items-center gap-2 rounded-full px-4 py-2 shadow-lg transition-all duration-300 ${
           showDesktopFloating ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
         aria-label={t("overview.openFilters")}
       >
         <span className="text-sm font-medium">{t("overview.filters")}</span>
         {hasActiveFilters && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
             {[speciesFilter, systemFilter, locationFilter].filter((f) => f !== "all").length}
           </span>
         )}
@@ -502,17 +561,17 @@ function FactorList({ title, factors, color, emptyStateProps, t }: { title: stri
   return (
     <Card className="card-flat">
       <CardContent className="space-y-4 p-5">
-        <h4 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h4>
+        <h4 className="text-base font-semibold text-foreground">{title}</h4>
         {factors.length === 0 ? (
           <EmptyChartState title={emptyStateProps?.title ?? t("charts.noData")} subtitle={emptyStateProps?.subtitle ?? t("charts.tryFilters")} blockingFilters={emptyStateProps?.blockingFilters} onClearAll={emptyStateProps?.onClearAll} />
         ) : (
           factors.map((item) => (
             <div key={item.factor} className="space-y-2">
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="font-medium text-[var(--color-text-primary)]">{item.factor}</span>
-                <Badge variant="outline" className="text-[var(--color-text-secondary)]">{item.count}</Badge>
+                <span className="font-medium text-foreground">{item.factor}</span>
+                <Badge variant="outline" className="text-muted-foreground">{item.count}</Badge>
               </div>
-              <div className="h-2 rounded-full bg-[var(--color-surface-base)]">
+              <div className="h-2 rounded-full bg-background">
                 <div
                   className="h-2 rounded-full"
                   style={{ width: `${(item.count / (factors[0]?.count || 1)) * 100}%`, backgroundColor: barColor }}
@@ -526,7 +585,7 @@ function FactorList({ title, factors, color, emptyStateProps, t }: { title: stri
   );
 }
 
-function ChartBlock({ title, info, data, labelKey, valueKey, height, emptyStateProps, t }: { title: string; info?: string; data: Record<string, string | number>[]; labelKey: string; valueKey: string; height?: ChartCardHeight; emptyStateProps?: EmptyChartStateProps; t: (key: string) => string }) {
+function ChartBlock({ title, info, data, labelKey, valueKey, height, emptyStateProps, t, caption }: { title: string; info?: string; data: Record<string, string | number>[]; labelKey: string; valueKey: string; height?: ChartCardHeight; emptyStateProps?: EmptyChartStateProps; t: (key: string) => string; caption?: string }) {
   const nonZeroCount = data.filter((item) => Number(item[valueKey] ?? 0) > 0).length;
   const effectiveCount = nonZeroCount > 0 ? nonZeroCount : data.length;
 
@@ -546,23 +605,45 @@ function ChartBlock({ title, info, data, labelKey, valueKey, height, emptyStateP
         emptySubtitle={emptyStateProps?.subtitle ?? t("charts.tryFilters")}
         blockingFilters={emptyStateProps?.blockingFilters}
         onClearAll={emptyStateProps?.onClearAll}
+        caption={caption}
+        t={t}
       />
     </ChartCard>
   );
 }
 
-function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; barColor?: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
-  if (data.length === 0) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
-  }
+function SectionScoresChart({ data, caption, t }: { data: { section: string; score: number }[]; caption?: string; t: (key: string) => string }) {
+  const { colors } = useChartTheme();
+  const option = useMemo(
+    () =>
+      buildSectionScoreBarOption({
+        data,
+        colors,
+        getBarColor: (score) => sectionColor(score, colors),
+      }),
+    [data, colors],
+  );
+
+  return (
+    <>
+      <EChartsChart option={option} />
+      {caption && (
+        <ChartDataTable
+          caption={caption}
+          headers={[t("charts.chartDataTableSection"), t("charts.chartDataTableScore")]}
+          rows={data.map((d) => [d.section, d.score])}
+        />
+      )}
+    </>
+  );
+}
+
+function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emptySubtitle, blockingFilters, onClearAll, caption, t }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; barColor?: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"]; caption?: string; t: (key: string) => string }) {
+  const { colors } = useChartTheme();
 
   const nonZeroData = data.filter((item) => Number(item[valueKey] ?? 0) > 0);
   const chartData = nonZeroData.length > 0 ? nonZeroData : data;
   const hasAnyValue = chartData.some((item) => Number(item[valueKey] ?? 0) > 0);
-
-  if (!hasAnyValue) {
-    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
-  }
 
   const longestLabel = chartData.reduce((max, item) => {
     const label = String(item[labelKey] ?? "");
@@ -570,93 +651,169 @@ function SimpleVerticalBar({ data, labelKey, valueKey, barColor, emptyTitle, emp
   }, 0);
   const layout = getAdaptiveVerticalBarLayout(chartData.length, longestLabel);
 
-  return (
-    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
-      <BarChart data={chartData} layout="vertical" margin={{ top: 8, right: layout.rightMargin, left: layout.leftMargin ?? 8, bottom: 8 }} barSize={layout.barSize}>
-        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border-subtle)" />
-        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} axisLine={false} tickLine={false} />
-        <YAxis
-          type="category"
-          dataKey={labelKey}
-          width={layout.yAxisWidth}
-          tick={{ fontSize: 11, fill: "var(--color-text-primary)" }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(value: string) => truncateChartLabel(value, 24)}
-        />
-        <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={CHART_TOOLTIP_CURSOR} />
-        <Bar dataKey={valueKey} radius={[0, 4, 4, 0]}>
-          {chartData.map((_, index) => (
-            <Cell key={index} fill={barColor ?? CHART_PALETTE[index % CHART_PALETTE.length]} />
-          ))}
-          {layout.showValues ? <LabelList dataKey={valueKey} position="right" fontSize={11} fill="var(--color-text-primary)" /> : null}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+  const option = useMemo(
+    () =>
+      buildVerticalBarOption({
+        data: chartData,
+        labelKey,
+        valueKey,
+        colors,
+        barColor,
+        showValueLabels: layout.showValues,
+        allowDecimals: false,
+        domainMax: Math.max(...chartData.map((item) => Number(item[valueKey] ?? 0)), 1) * 1.1,
+      }),
+    [chartData, labelKey, valueKey, colors, barColor, layout.showValues],
   );
-}
 
-function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, blockingFilters, onClearAll }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"] }) {
   if (data.length === 0) {
     return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
-  const hasAnyValue = data.some((item) => Number(item[valueKey] ?? 0) > 0);
   if (!hasAnyValue) {
     return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
   }
 
-  const total = data.reduce((sum, item) => sum + Number(item[valueKey] ?? 0), 0);
+  return (
+    <>
+      <EChartsChart option={option} />
+      {caption && (
+        <ChartDataTable
+          caption={caption}
+          headers={[t("charts.chartDataTableLabel"), t("charts.chartDataTableValue")]}
+          rows={data.map((item) => [String(item[labelKey]), Number(item[valueKey])])}
+        />
+      )}
+    </>
+  );
+}
+
+function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, blockingFilters, onClearAll, caption, t }: { data: Record<string, string | number>[]; labelKey: string; valueKey: string; emptyTitle?: string; emptySubtitle?: string; blockingFilters?: EmptyChartStateProps["blockingFilters"]; onClearAll?: EmptyChartStateProps["onClearAll"]; caption?: string; t: (key: string) => string }) {
+  const { colors } = useChartTheme();
+  const hasAnyValue = data.some((item) => Number(item[valueKey] ?? 0) > 0);
+
+  const option = useMemo(
+    () =>
+      buildDonutOption({
+        data,
+        labelKey,
+        valueKey,
+        colors,
+        totalLabel: "Total",
+      }),
+    [data, labelKey, valueKey, colors],
+  );
+
+  if (data.length === 0) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
+  }
+
+  if (!hasAnyValue) {
+    return <EmptyChartState title={emptyTitle} subtitle={emptySubtitle} blockingFilters={blockingFilters} onClearAll={onClearAll} />;
+  }
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* Chart area */}
-      <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius="55%"
-              outerRadius="75%"
-              paddingAngle={2}
-              dataKey={valueKey}
-              nameKey={labelKey}
-              stroke="none"
-            >
-              {data.map((_, index) => (
-                <Cell key={index} fill={CHART_PALETTE[index % CHART_PALETTE.length]} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={CHART_TOOLTIP_STYLE}
-              cursor={CHART_TOOLTIP_CURSOR}
-              formatter={(value, name) => {
-                const numericValue = typeof value === "number" ? value : Number(value ?? 0);
-                return [`${numericValue} (${((numericValue / total) * 100).toFixed(1)}%)`, String(name)] as [string, string];
-              }}
-            />
-            {/* Center label */}
-            <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-primary)]" fontSize={24} fontWeight={700}>
-              {total}
-            </text>
-            <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" className="fill-[var(--color-text-secondary)]" fontSize={11}>
-              Total
-            </text>
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="min-h-0 flex-1">
+        <EChartsChart option={option} />
       </div>
-
-      {/* Legend below chart */}
-      <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 px-2 py-2 shrink-0">
+      <div className="flex shrink-0 flex-wrap justify-center gap-x-3 gap-y-1.5 px-2 py-2">
         {data.map((item, index) => (
           <div key={index} className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_PALETTE[index % CHART_PALETTE.length] }} />
-            <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">{String(item[labelKey])}</span>
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: colors.chart[index % colors.chart.length] }}
+            />
+            <span className="whitespace-nowrap text-xs text-muted-foreground">{String(item[labelKey])}</span>
           </div>
         ))}
       </div>
+      {caption && (
+        <ChartDataTable
+          caption={caption}
+          headers={[t("charts.chartDataTableLabel"), t("charts.chartDataTableCount")]}
+          rows={data.map((item) => [String(item[labelKey]), Number(item[valueKey])])}
+        />
+      )}
     </div>
+  );
+}
+
+function ExternalInternalChart({
+  externalScore,
+  internalScore,
+  emptyStateProps,
+  t,
+}: {
+  externalScore: number;
+  internalScore: number;
+  emptyStateProps: EmptyChartStateProps;
+  t: (key: string) => string;
+}) {
+  const { colors } = useChartTheme();
+  const option = useMemo(
+    () =>
+      buildExternalInternalComparisonOption({
+        externalScore,
+        internalScore,
+        colors,
+        externalLabel: t("overview.external"),
+        internalLabel: t("overview.internal"),
+      }),
+    [colors, externalScore, internalScore, t],
+  );
+
+  if (externalScore === 0 && internalScore === 0) {
+    return <EmptyChartState {...emptyStateProps} />;
+  }
+
+  return (
+    <>
+      <EChartsChart option={option} />
+      <ChartDataTable
+        caption={t("charts.externalInternalCompliance")}
+        headers={[t("charts.chartDataTableLabel"), t("charts.chartDataTableScore")]}
+        rows={[
+          [t("overview.external"), externalScore],
+          [t("overview.internal"), internalScore],
+        ]}
+      />
+    </>
+  );
+}
+
+function SectionRadarChart({
+  sectionAverages,
+  side,
+  seriesName,
+  emptyStateProps,
+  t,
+}: {
+  sectionAverages: DashboardData["sectionAverages"];
+  side: "external" | "internal";
+  seriesName: string;
+  emptyStateProps: EmptyChartStateProps;
+  t: (key: string) => string;
+}) {
+  const { colors } = useChartTheme();
+  const radarData = useMemo(
+    () => buildNetworkRadarFromAverages(sectionAverages, side, t, seriesName),
+    [sectionAverages, side, seriesName, t],
+  );
+  const option = useMemo(() => buildSectionRadarOption({ data: radarData, colors }), [radarData, colors]);
+
+  if (sectionAverages.length === 0) {
+    return <EmptyChartState {...emptyStateProps} />;
+  }
+
+  return (
+    <>
+      <EChartsChart option={option} />
+      <ChartDataTable
+        caption={side === "external" ? t("charts.sectionRadarExternal") : t("charts.sectionRadarInternal")}
+        headers={[t("charts.chartDataTableSection"), t("charts.chartDataTableScore")]}
+        rows={radarData.indicators.map((indicator, index) => [indicator.name, radarData.series[0]?.values[index] ?? 0])}
+      />
+    </>
   );
 }

@@ -10,6 +10,8 @@
     "demo": "Standard-UID",
     "close": "Lukk",
     "search": "Søk",
+    "searchFacilities": "Søk etter anlegg",
+    "clearSearch": "Tøm søk",
     "show": "Vis",
     "hide": "Skjul"
   },
@@ -25,17 +27,17 @@
     "facilitiesSelect": "Velg anlegg"
   },
   "sections": {
-    "environment": "Miljø",
-    "introduction": "Introduksjon",
+    "environment": "Miljø og omgivelser",
+    "introduction": "Introduksjon av levende dyr",
     "water": "Vann",
     "fomites": "Fomitter",
-    "biovectors": "Biovektorer",
-    "personnel": "Personell",
-    "management": "Drift",
-    "health": "Helse",
-    "vmp": "VMP",
+    "biovectors": "Vektorer",
+    "personnel": "Personell og besøkende",
+    "management": "Produksjon og anlegg",
+    "health": "Helse og velferd",
+    "vmp": "Veterinærmedisinske produkter",
     "equipment": "Utstyr",
-    "sop": "SOP"
+    "sop": "Registre og SOP-er"
   },
   "datasource": {
     "title": "Datakilde",
@@ -56,13 +58,17 @@
   "producer": {
     "myFacility": "Mitt anlegg",
     "myFacilityShort": "Anlegg",
-    "globalOverview": "Global oversikt"
+    "globalOverview": "Global oversikt",
+    "summary": "Sammendrag"
   },
   "theme": {
     "toggle": "Bytt tema",
     "dark": "Mørk",
     "light": "Lys",
     "system": "System"
+  },
+  "filters": {
+    "removeFilter": "Fjern filter for {filter}"
   },
   "overview": {
     "filters": "Filtre",
@@ -106,6 +112,8 @@
     "mapCoverageSubtitle": "Koordinater rapportert av anlegg",
     "practiceCoverage": "Dekning av praksiser (nøkkelpraksiser for biosikkerhet)",
     "externalInternalCompliance": "Ekstern vs intern etterlevelse",
+    "sectionRadarExternal": "Radar for ekstern biosikkerhet",
+    "sectionRadarInternal": "Radar for intern biosikkerhet",
     "scoreDistribution": "Poengfordeling",
     "sectionDetail": "Detalj per seksjon",
     "highRiskFactors": "Faktorer med høy risiko",
@@ -118,7 +126,17 @@
     "records": "Registreringer",
     "sops": "SOP-er",
     "noData": "Ingen data tilgjengelig",
-    "tryFilters": "Juster filtrene eller prøv igjen senere"
+    "tryFilters": "Juster filtrene eller prøv igjen senere",
+    "chartDataTableCaption": "Diagramdata",
+    "chartDataTableLabel": "Etikett",
+    "chartDataTableValue": "Verdi",
+    "chartDataTableScore": "Poeng",
+    "chartDataTableSection": "Seksjon",
+    "chartDataTableFacility": "Anlegg",
+    "chartDataTableAverage": "Gjennomsnitt",
+    "chartDataTableGroup": "Gruppe",
+    "chartDataTableCount": "Antall",
+    "chartUpdated": "Diagram oppdatert"
   },
   "map": {
     "dark": "Mørk",
@@ -130,7 +148,19 @@
     "fullscreen": "Fullskjerm",
     "zoomIn": "Zoom inn",
     "zoomOut": "Zoom ut",
-    "noGeo": "Ingen anlegg med geolokasjonsdata"
+    "noGeo": "Ingen anlegg med geolokasjonsdata",
+    "markerAria": "Anlegg {name}. Risikonivå: {risk}. Poeng: {score}.",
+    "clusterAria": "Gruppe med {count} anlegg. Klikk for å zoome inn og se individuelle markører.",
+    "cityClusterAria": "Gruppe med {cities} byer og {count} anlegg. Klikk for å zoome inn og se bymarkører.",
+    "cityMarkerAria": "{city}. {count} anlegg.",
+    "cityPopupTitle": "Oversikt per by",
+    "facilityCount": "{count, plural, one {# anlegg} other {# anlegg}}",
+    "zoomLimitNotice": "Kartzoom er begrenset for å beskytte anleggenes personvern.",
+    "cityLegend": "Markører viser byer og antall anlegg",
+    "areaLegend": "Markører viser geografiske områder og antall anlegg",
+    "ownFacilityLegend": "Ditt anlegg (eksakt plassering)",
+    "ownFacilityAria": "Ditt anlegg {name}. Risikonivå: {risk}. Poeng: {score}.",
+    "producerZoomLimitNotice": "Kartzoom er begrenset for å beskytte andre anlegg. Ditt anlegg vises på eksakt plassering."
   },
   "coverage": {
     "quarantine": "Karantene ved ankomst",
@@ -165,9 +195,47 @@
       "show": "Vis velgeren",
       "hide": "Skjul velgeren",
       "selected": "Valgt anlegg"
+    },
+    "printReport": "Skriv ut rapport",
+    "downloadReport": "Last ned PDF",
+    "externalInternalComparison": "Ekstern vs intern poengsum",
+    "actionPlan": "Handlingsplan",
+    "noActionItems": "Ingen prioriterte tiltak identifisert.",
+    "topPriorities": "Topprioriteter",
+    "riskSummary": "Risikosammendrag",
+    "peerComparison": "Din poengsum er {score}/100 vs nettverksgjennomsnitt {peerAverage} for {species} i {region}.",
+    "scoreHero": {
+      "below50": "Poeng {score}/100 — betydelig forbedring nødvendig.",
+      "below70": "Poeng {score}/100 — rom for forbedring.",
+      "good": "Poeng {score}/100 — god biosikkerhetsprestasjon."
+    },
+    "scoreSummary": {
+      "title": "Poengsammendrag"
     }
   },
+  "report": {
+    "title": "Biosikkerhetsvurderingsrapport",
+    "generatedOn": "Generert",
+    "scores": "Poeng",
+    "overallScore": "Samlet poengsum",
+    "externalScore": "Ekstern biosikkerhet",
+    "internalScore": "Intern biosikkerhet",
+    "responses": "Svar fra undersøkelsen",
+    "recommendations": "Anbefalinger",
+    "charts": "Diagrammer",
+    "noRecommendations": "Ingen anbefalinger for dette anlegget."
+  },
+  "surveyInvite": {
+    "title": "Er du en akvakulturprodusent?",
+    "description": "Delta i vår biosikkerhetsundersøkelse og få en gratis vurdering av anleggets biosikkerhetspraksis.",
+    "benefit1": "Gratis personlig biosikkerhetspoeng for ditt anlegg",
+    "benefit2": "Handlingsbare anbefalinger for å forbedre praksisen din",
+    "benefit3": "Sammenlign resultatene dine med nettverksgjennomsnittet",
+    "participate": "Ta undersøkelsen",
+    "dismiss": "Ikke nå"
+  },
   "comparative": {
+    "subtitle": "Sammenlign anlegg på tvers av produksjonssystem, arter, lokasjon og risikoprofiler.",
     "filters": "Sammenligningsfiltre",
     "openFilters": "Åpne filtre",
     "scoreBySystem": "Poeng etter produksjonssystem",
@@ -182,9 +250,14 @@
     "riskMatrixLegend": "Grønn = tiltak anvendt, Rød = risiko",
     "tableTitle": "Sammenligningstabell",
     "groupsAriaSuffix": "grupper.",
-    "heatmapAriaSuffix": "Varmekart over anlegg etter underkategori."
+    "heatmapAriaSuffix": "Varmekart over anlegg etter underkategori.",
+    "addAnalysis": "Vis mer analyse",
+    "hideAnalysis": "Skjul tilleggsanalyse",
+    "viewAsList": "Vis som liste",
+    "viewAsChart": "Vis som diagram"
   },
   "info": {
+    "moreInformation": "Mer informasjon",
     "overviewFilters": "Filtrer oversikten etter art, produksjonssystem og lokasjon.",
     "mapCoverage": "Kart over land/regioner basert på anleggskoordinater.",
     "practiceCoverage": "Adopsjonsgrad for sentrale biosikkerhetspraksiser.",
@@ -201,12 +274,16 @@
     "sops": "Rapportert dekning av SOP-er.",
     "facilityDiagnostics": "Kjerneinformasjon for valgt anlegg.",
     "facilityBenchmark": "Anleggets poeng sammenlignet med nettverksgjennomsnittet per underkategori.",
+    "sectionRadarExternal": "Gjennomsnittspoeng på tvers av eksterne biosikkerhetsunderkategorier.",
+    "sectionRadarInternal": "Gjennomsnittspoeng på tvers av interne biosikkerhetsunderkategorier.",
+    "facilityExternalInternal": "Sammenligning av eksterne og interne biosikkerhetspoeng for valgt anlegg.",
     "animalHealthMonitoring": "Overvåkingsfrekvens for atferd, obduksjon og diagnostikk.",
     "subcategoryChecklist": "Spørsmål per underkategori med etterlevelsesstatus.",
     "comparativeCharts": "Gjennomsnittsscore gruppert etter valgt kategori.",
     "comparativeFilters": "Filtrer matriser, grafer og tabell etter driftsattributter.",
     "riskMatrix": "Røde celler indikerer risiko for introduksjon/spredning av sykdom.",
-    "table": "Sammenligning på anleggsnivå for filtrerte poster."
+    "table": "Sammenligning på anleggsnivå for filtrerte poster.",
+    "moreInformation": "Mer informasjon"
   },
   "methodology": {
     "title": "Scoremetodikk",
@@ -235,13 +312,15 @@
     "role": "Rolle",
     "facility": "Anlegg",
     "facilityPlaceholder": "Velg anlegg",
-    "password": "Standardpassord",
-    "passwordPolicyHint": "Passordmønster: e-post + .bioDash",
+    "invitationHint": "Nye brukere får en sikker e-postinvitasjon for å sette passord. Eksisterende brukere oppdateres uten at passordet endres.",
     "create": "Opprett eller oppdater bruker",
     "creating": "Oppretter...",
     "success": {
       "title": "Bruker lagret",
-      "message": "Bruker opprettet/oppdatert"
+      "message": "Bruker opprettet/oppdatert",
+      "invited": "Invitasjon sendt",
+      "updated": "Bruker oppdatert",
+      "invitationEmail": "De mottar en e-post for å fullføre innlogging og velge passord."
     },
     "error": {
       "title": "Feil ved brukeroppsett",
@@ -301,6 +380,10 @@
     "usage": "Kun autorisert for Norsk Veterinærinstitutt til forskningsformål.",
     "inquiries": "Forespørsler",
     "copyright": "Alle rettigheter forbeholdt.",
+    "atlasAlt": "Atlas Biosecurity",
+    "partnersLabel": "I samarbeid med",
+    "vetinstAlt": "Veterinærinstituttet",
+    "eupahwAlt": "European Partnership Animal Health & Welfare",
     "links": {
       "title": "Ressurser",
       "methodology": "Metodikk",
@@ -328,10 +411,15 @@
     "missingToken": "KoboToolbox-tokenet er ikke konfigurert",
     "koboApiError": "Klarte ikke å laste Kobo-data",
     "koboAssetApiError": "Klarte ikke å laste Kobo-skjemadata",
+    "facilityNotConfigured": "Produsentkontoen din er ikke knyttet til et anlegg. Kontakt en administrator.",
+    "facilityNotFound": "Det tildelte anlegget finnes ikke i dette prosjektet. Kontakt en administrator for å verifisere anleggs-ID.",
+    "producerAccessTitle": "Anleggstilgang utilgjengelig",
+    "assignedFacilityId": "Tildelt anleggs-ID",
+    "rateLimited": "For mange forespørsler. Vent litt og prøv igjen.",
     "unexpected": "Uventet feil"
   },
   "meta": {
-    "title": "Biosikkerhetsdashboard",
-    "description": "Dashboard for å visualisere biosikkerhetsresultater i akvakultur fra KoboToolbox."
+    "title": "Atlas Biosecurity",
+    "description": "Dashboard for biosikkerhetsovervåking i akvakultur med vurdering av anlegg og risikoanalyse."
   }
 }

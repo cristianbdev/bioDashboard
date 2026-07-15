@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,6 +52,7 @@ export function DesktopFloatingFilter({
 }: DesktopFloatingFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const titleId = useId();
+  const baseId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export function DesktopFloatingFilter({
           onClick={() => setIsOpen(true)}
           className={cn(
             "flex items-center gap-2 rounded-full px-5 py-6 shadow-xl",
-            "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90",
+            "btn-brand",
             "transition-all duration-200 hover:scale-105 hover:shadow-2xl",
           )}
           aria-label={labels.openButtonAria}
@@ -101,7 +103,7 @@ export function DesktopFloatingFilter({
           <SlidersHorizontal className="h-5 w-5" />
           <span className="text-sm font-semibold">{labels.openButton}</span>
           {activeCount > 0 && (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)] shadow-sm">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-card text-xs font-bold text-primary shadow-sm">
               {activeCount}
             </span>
           )}
@@ -121,15 +123,15 @@ export function DesktopFloatingFilter({
           <div
             ref={panelRef}
             className={cn(
-              "relative w-full max-w-md rounded-2xl bg-[var(--color-raised)] shadow-2xl",
+              "relative w-full max-w-md rounded-2xl bg-card shadow-2xl",
               "max-h-[80vh] overflow-y-auto",
               "animate-in zoom-in-95 duration-200",
             )}
           >
-            <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-5 py-4">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className="h-5 w-5 text-[var(--color-brand)]" />
-                <p id={titleId} className="font-semibold text-[var(--color-text-primary)]">
+                <SlidersHorizontal className="h-5 w-5 text-primary" />
+                <p id={titleId} className="font-semibold text-foreground">
                   {labels.title}
                 </p>
               </div>
@@ -137,7 +139,7 @@ export function DesktopFloatingFilter({
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
-                className="h-9 w-9 text-[var(--color-text-secondary)]"
+                className="h-11 w-11 text-muted-foreground"
                 aria-label={labels.close}
               >
                 <X className="h-5 w-5" />
@@ -145,11 +147,13 @@ export function DesktopFloatingFilter({
             </div>
 
             <div className="space-y-4 p-5">
-              {selectControls.map((control) => (
+              {selectControls.map((control) => {
+                const triggerId = `${baseId}-${control.id}`;
+                return (
                 <div key={control.id} className="space-y-2">
-                  <p className="text-xs font-medium text-[var(--color-text-secondary)]">{control.placeholder}</p>
+                  <label htmlFor={triggerId} className="text-xs font-medium text-muted-foreground">{control.placeholder}</label>
                   <Select value={control.value} onValueChange={control.onChange}>
-                    <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+                    <SelectTrigger id={triggerId} className="w-full border-border bg-background">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -162,11 +166,12 @@ export function DesktopFloatingFilter({
                     </SelectContent>
                   </Select>
                 </div>
-              ))}
+              );
+              })}
 
               {visibleFilters.length > 0 && (
-                <div className="border-t border-[var(--color-border-subtle)] pt-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+                <div className="border-t border-border pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {labels.activeFilters}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -174,19 +179,13 @@ export function DesktopFloatingFilter({
                       <Badge
                         key={filter.label}
                         variant="secondary"
-                        className="border border-[var(--color-brand)]/20 bg-[var(--color-brand)]/10 pr-1.5 text-[var(--color-brand)]"
+                        className="border border-primary/20 bg-primary/10 pr-1.5 text-primary"
                       >
                         <span className="max-w-[150px] truncate">
                           {filter.label}: {filter.activeValue}
                         </span>
                         {filter.onClear && (
-                          <button
-                            type="button"
-                            onClick={filter.onClear}
-                            className="-mr-1 ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                          <FilterClearButton onClick={filter.onClear} filterName={filter.label} className="-mr-1 ml-1.5" />
                         )}
                       </Badge>
                     ))}
@@ -199,7 +198,7 @@ export function DesktopFloatingFilter({
                   {labels.close}
                 </Button>
                 {activeCount > 0 && (
-                  <Button variant="ghost" onClick={onClearAll} className="text-[var(--color-brand)]">
+                  <Button variant="ghost" onClick={onClearAll} className="text-primary">
                     {labels.clearAll}
                   </Button>
                 )}

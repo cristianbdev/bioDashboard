@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, UserPlus } from "lucide-react";
+import { AlertCircle, CheckCircle2, Mail, UserPlus } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { FacilitySummary } from "@/lib/kobo";
+import { DashboardPageHeading } from "./dashboard-page-heading";
 
 type Props = {
   facilities: FacilitySummary[];
@@ -18,7 +19,7 @@ type Props = {
 
 type ManagedRole = "producer" | "admin";
 
-type ApiErrorCode = "unauthorized" | "invalidJson" | "invalidEmail" | "facilityRequired" | "generic";
+type ApiErrorCode = "unauthorized" | "invalidJson" | "invalidEmail" | "facilityRequired" | "generic" | "rateLimited";
 
 const USER_ERROR_KEYS: Record<ApiErrorCode, string> = {
   unauthorized: "users.error.unauthorized",
@@ -26,6 +27,7 @@ const USER_ERROR_KEYS: Record<ApiErrorCode, string> = {
   invalidEmail: "users.error.invalidEmail",
   facilityRequired: "users.error.facilityRequired",
   generic: "users.error.generic",
+  rateLimited: "errors.rateLimited",
 };
 
 const ROLE_LABEL_KEYS: Record<ManagedRole, string> = {
@@ -34,13 +36,13 @@ const ROLE_LABEL_KEYS: Record<ManagedRole, string> = {
 };
 
 type ApiResult = {
-  status: "created" | "updated";
+  status: "created" | "updated" | "invited";
   email: string;
   role: ManagedRole;
-  userId: string;
+  userId?: string;
+  invitationId?: string;
   projectUid: string;
   facilityId: number | null;
-  password: string;
 };
 
 export function UserManagementView({ facilities, projectUid, t }: Props) {
@@ -106,17 +108,18 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
   return (
     <div className="space-y-6">
+      <DashboardPageHeading title={t("users.title")} subtitle={t("users.subtitle")} />
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-[var(--color-text-primary)]">
+          <div className="flex items-center gap-2 text-foreground">
             <UserPlus className="h-4 w-4" />
-            <h3 className="text-base font-semibold">{t("users.title")}</h3>
+            <h2 className="text-base font-semibold">{t("users.create")}</h2>
           </div>
           <CardDescription>{t("users.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="user-email" className="text-sm font-medium text-[var(--color-text-secondary)]">
+            <label htmlFor="user-email" className="text-sm font-medium text-muted-foreground">
               {t("users.email")}
             </label>
             <Input
@@ -130,7 +133,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label htmlFor="user-role" className="text-sm font-medium text-[var(--color-text-secondary)]">
+              <label htmlFor="user-role" className="text-sm font-medium text-muted-foreground">
                 {t("users.role")}
               </label>
               <Select value={role} onValueChange={(value) => setRole(value as ManagedRole)}>
@@ -146,7 +149,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
 
             {role === "producer" && (
               <div className="space-y-2">
-                <label htmlFor="user-facility" className="text-sm font-medium text-[var(--color-text-secondary)]">
+                <label htmlFor="user-facility" className="text-sm font-medium text-muted-foreground">
                   {t("users.facility")}
                 </label>
                 <Select value={facilityId} onValueChange={setFacilityId}>
@@ -165,7 +168,7 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
             )}
           </div>
 
-          <p className="text-xs text-[var(--color-text-muted)]">{t("users.passwordPolicyHint")}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{t("users.invitationHint")}</p>
 
           <Button onClick={onCreateUser} disabled={loading} className="h-11 sm:h-9">
             {loading ? t("users.creating") : t("users.create")}
@@ -182,18 +185,24 @@ export function UserManagementView({ facilities, projectUid, t }: Props) {
       )}
 
       {result && (
-        <Alert>
-          <CheckCircle2 className="h-4 w-4" />
+        <Alert className="border-primary/20 bg-card">
+          <CheckCircle2 className="h-4 w-4 text-success" />
           <AlertTitle>{t("users.success.title")}</AlertTitle>
-          <AlertDescription>
-            {t("users.success.message")}: {result.email} ({t(ROLE_LABEL_KEYS[result.role])})
-            <br />
-            {t("users.password")}: <span className="font-semibold">{result.password}</span>
+          <AlertDescription className="space-y-2">
+            <p>
+              {result.status === "invited" ? t("users.success.invited") : t("users.success.updated")}: {result.email} (
+              {t(ROLE_LABEL_KEYS[result.role])})
+            </p>
+            {result.status === "invited" ? (
+              <p className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <span>{t("users.success.invitationEmail")}</span>
+              </p>
+            ) : null}
             {result.facilityId ? (
-              <>
-                <br />
+              <p className="text-sm text-muted-foreground">
                 {t("users.facility")}: {result.facilityId}
-              </>
+              </p>
             ) : null}
           </AlertDescription>
         </Alert>

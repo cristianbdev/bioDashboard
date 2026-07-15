@@ -1,33 +1,26 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Filter, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 
-import {
-  ChartCard,
-  CHART_TOOLTIP_CURSOR,
-  CHART_TOOLTIP_STYLE,
-  getAdaptiveChartHeight,
-  truncateChartLabel,
-} from "@/components/charts/chart-card";
+import { ChartCard, getAdaptiveChartHeight } from "@/components/charts/chart-card";
+import { EChartsChart } from "@/components/charts/echarts-chart";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
+import { ChartDataTable } from "@/components/charts/chart-data-table";
+import { useChartTheme } from "@/hooks/useChartTheme";
 import type { DashboardData, FacilitySummary } from "@/lib/kobo";
-import { translateSectionLabel } from "@/lib/section-labels";
-import { useChartColors, type ChartColors } from "@/hooks/useChartColors";
+import { buildComparisonBarOption, buildHeatmapOption } from "@/lib/chart-options";
+import { resolveChartTokenColor } from "@/lib/chart-theme";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { RiskBadge } from "./cards";
+import { DashboardPageHeading } from "./dashboard-page-heading";
 import { InfoTitle } from "./info-title";
 import { DesktopFloatingFilter } from "./desktop-floating-filter";
 import { MobileHeatmapTable } from "./mobile-heatmap-table";
-
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
+import { ComparativeFilterPanel } from "./comparative-filter-panel";
 
 type Props = {
   data: DashboardData;
@@ -56,98 +49,8 @@ function avgByField(
     .sort((a, b) => b.count - a.count);
 }
 
-function buildHeatmapOption(
-  facilities: FacilitySummary[],
-  side: "external" | "internal",
-  title: string,
-  t: (key: string) => string,
-  colors: ChartColors,
-) {
-  type HeatmapTooltipParam = {
-    data: [number, number, number, number];
-  };
-
-  const rows = facilities.flatMap((facility) =>
-    facility.sectionScores
-      .filter((section) => section.side === side)
-      .map((section) => ({
-        facility: facility.name,
-        subcategory: translateSectionLabel(section.section, t),
-        value: section.score >= 70 ? 1 : 0,
-        score: section.score,
-      })),
-  );
-
-  if (rows.length === 0) return undefined;
-
-  const facilitiesAxis = Array.from(new Set(rows.map((row) => row.facility)));
-  const subcategoriesAxis = Array.from(new Set(rows.map((row) => row.subcategory)));
-
-  return {
-    title: {
-      text: title,
-      left: "center",
-      textStyle: { fontSize: 14, fontWeight: 600, color: colors.textPrimary },
-    },
-    backgroundColor: "transparent",
-    tooltip: {
-      position: "top",
-      backgroundColor: colors.raised,
-      borderColor: colors.borderSubtle,
-      textStyle: { color: colors.textPrimary },
-      formatter: (params: HeatmapTooltipParam) => {
-        const facility = facilitiesAxis[params.data[0]];
-        const subcategory = subcategoriesAxis[params.data[1]];
-        const score = params.data[3];
-        const status = params.data[2] ? t("status.compliant") : t("status.nonCompliant");
-        return `${facility}<br/>${subcategory}<br/>${t("table.score")}: ${score}/100<br/>${status}`;
-      },
-    },
-    textStyle: { color: colors.textPrimary },
-    grid: { top: 56, left: 90, right: 20, bottom: 80 },
-    xAxis: {
-      type: "category",
-      data: facilitiesAxis,
-      axisLabel: { rotate: 40, fontSize: 10, color: colors.textSecondary },
-      axisLine: { lineStyle: { color: colors.borderDefault } },
-      splitArea: { show: true, areaStyle: { color: [colors.surfaceBase, colors.surfaceElevated] } },
-      splitLine: { lineStyle: { color: colors.borderSubtle } },
-    },
-    yAxis: {
-      type: "category",
-      data: subcategoriesAxis,
-      axisLabel: { fontSize: 11, color: colors.textSecondary },
-      axisLine: { lineStyle: { color: colors.borderDefault } },
-      splitArea: { show: true, areaStyle: { color: [colors.surfaceBase, colors.surfaceElevated] } },
-      splitLine: { lineStyle: { color: colors.borderSubtle } },
-    },
-    visualMap: {
-      min: 0,
-      max: 1,
-      orient: "horizontal",
-      left: "center",
-      bottom: 12,
-      precision: 0,
-      text: [t("status.compliant"), t("status.nonCompliant")],
-      textStyle: { color: colors.textPrimary },
-      inRange: { color: [colors.danger, colors.warning, colors.success] },
-    },
-    series: [
-      {
-        type: "heatmap",
-        data: rows.map((row) => [
-          facilitiesAxis.indexOf(row.facility),
-          subcategoriesAxis.indexOf(row.subcategory),
-          row.value,
-          row.score,
-        ]),
-      },
-    ],
-  };
-}
-
 export function ComparativeView({ data, t, onSelectFacility }: Props) {
-  const colors = useChartColors();
+  const { colors } = useChartTheme();
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [productionTypeFilter, setProductionTypeFilter] = useState<string>("all");
   const [systemFilter, setSystemFilter] = useState<string>("all");
@@ -228,6 +131,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 
   const [showAllCharts, setShowAllCharts] = useState(false);
   const [showHeatmapAsList, setShowHeatmapAsList] = useState(false);
+  const isMdUp = useMediaQuery("(min-width: 768px)");
 
   const emptyStateProps: EmptyChartStateProps = filteredFacilities.length === 0 ? {
     title: t("charts.noData"),
@@ -246,10 +150,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
     <div className="space-y-6 min-w-0">
       {/* Section Header with Mobile Filter Button */}
       <div ref={headerRef} className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
-        <div>
-          <h2 className="text-dashboard-title">{t("tabs.comparative")}</h2>
-          <p className="mt-1 text-dashboard-subtitle">{t("info.comparativeCharts")}</p>
-        </div>
+        <DashboardPageHeading title={t("tabs.comparative")} subtitle={t("comparative.subtitle")} />
         {/* Mobile filter button removed - filters are now inline below */}
       </div>
 
@@ -257,312 +158,66 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
       <button
         type="button"
         onClick={() => setIsMobileFiltersOpen(true)}
-        className={`lg:hidden fixed right-4 z-40 flex items-center gap-2 rounded-full bg-[var(--color-brand)] px-4 py-2 text-white shadow-lg transition-all duration-300 ${
+        aria-label={t("comparative.openFilters")}
+        className={`btn-brand fixed right-4 z-40 flex min-h-11 items-center gap-2 rounded-full px-4 py-2.5 shadow-lg transition-all duration-300 lg:hidden ${
           showFloatingFilters ? "bottom-6 translate-y-0 opacity-100" : "bottom-6 pointer-events-none translate-y-4 opacity-0"
         }`}
-        aria-label={t("comparative.openFilters")}
       >
         <Filter className="h-4 w-4" />
         <span className="text-sm font-medium">{t("comparative.filters")}</span>
         {hasActiveFilters && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
             {[locationFilter, productionTypeFilter, systemFilter, speciesFilter, waterSourceFilter].filter((f) => f !== "all").length}
           </span>
         )}
       </button>
 
-      {/* Mobile Filters - Always visible on mobile (inline at top) */}
+      {/* Mobile inline filters */}
       <div className="lg:hidden">
-        <Card className="card-flat">
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
-              <Filter className="h-4 w-4" />
-              <span>{t("comparative.filters")}</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {/* Location Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
-                <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("overview.filterLocation")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {locationOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Production Type Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</label>
-                <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.productionType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {productionTypeOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* System Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</label>
-                <Select value={systemFilter} onValueChange={setSystemFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.system")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {systemOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Species Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</label>
-                <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.species")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {speciesOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Water Source Filter */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</label>
-                <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.water")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {waterSourceOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Active Filters Summary */}
-            {hasActiveFilters && (
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-3">
-                {locationFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("overview.filterLocation")}: {locationFilter}
-                    <button onClick={() => setLocationFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {productionTypeFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.productionType")}: {productionTypeFilter}
-                    <button onClick={() => setProductionTypeFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {systemFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.system")}: {systemFilter}
-                    <button onClick={() => setSystemFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {speciesFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.species")}: {speciesFilter}
-                    <button onClick={() => setSpeciesFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {waterSourceFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.water")}: {waterSourceFilter}
-                    <button onClick={() => setWaterSourceFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 text-xs text-[var(--color-brand)]"
-                  onClick={clearAllFilters}
-                >
-                  {t("overview.clearAll")}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ComparativeFilterPanel
+          variant="inline-mobile"
+          title={t("comparative.filters")}
+          filters={[
+            { id: "location", label: t("overview.filterLocation"), value: locationFilter, options: locationOptions, placeholder: t("overview.filterLocation"), onChange: setLocationFilter },
+            { id: "productionType", label: t("table.productionType"), value: productionTypeFilter, options: productionTypeOptions, placeholder: t("table.productionType"), onChange: setProductionTypeFilter },
+            { id: "system", label: t("table.system"), value: systemFilter, options: systemOptions, placeholder: t("table.system"), onChange: setSystemFilter },
+            { id: "species", label: t("table.species"), value: speciesFilter, options: speciesOptions, placeholder: t("table.species"), onChange: setSpeciesFilter },
+            { id: "waterSource", label: t("table.water"), value: waterSourceFilter, options: waterSourceOptions, placeholder: t("table.water"), onChange: setWaterSourceFilter },
+          ]}
+          activeBadges={[
+            ...(locationFilter !== "all" ? [{ label: t("overview.filterLocation"), value: locationFilter, onClear: () => setLocationFilter("all") }] : []),
+            ...(productionTypeFilter !== "all" ? [{ label: t("table.productionType"), value: productionTypeFilter, onClear: () => setProductionTypeFilter("all") }] : []),
+            ...(systemFilter !== "all" ? [{ label: t("table.system"), value: systemFilter, onClear: () => setSystemFilter("all") }] : []),
+            ...(speciesFilter !== "all" ? [{ label: t("table.species"), value: speciesFilter, onClear: () => setSpeciesFilter("all") }] : []),
+            ...(waterSourceFilter !== "all" ? [{ label: t("table.water"), value: waterSourceFilter, onClear: () => setWaterSourceFilter("all") }] : []),
+          ]}
+          onClearAll={clearAllFilters}
+          t={t}
+        />
       </div>
 
-      {/* Desktop Filters - Always visible on desktop */}
+      {/* Desktop inline filters */}
       <div className="hidden lg:block">
-        <Card className="card-flat">
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[var(--color-brand)]">
-              <Filter className="h-4 w-4" />
-              <span>{t("comparative.filters")}</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {/* Location Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</label>
-                <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("overview.filterLocation")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {locationOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Production Type Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</label>
-                <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.productionType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {productionTypeOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* System Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</label>
-                <Select value={systemFilter} onValueChange={setSystemFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.system")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {systemOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Species Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</label>
-                <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.species")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {speciesOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Water Source Filter */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</label>
-                <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-                  <SelectTrigger className="h-10 w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)] text-[var(--color-text-primary)] hover:border-[var(--color-brand)]/40 focus:border-[var(--color-brand)] focus:ring-1 focus:ring-[var(--color-brand)]">
-                    <SelectValue placeholder={t("table.water")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                    {waterSourceOptions.map((value) => (
-                      <SelectItem key={value} value={value}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Active Filters Summary */}
-            {hasActiveFilters && (
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-subtle)] pt-3">
-                {locationFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("overview.filterLocation")}: {locationFilter}
-                    <button onClick={() => setLocationFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {productionTypeFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.productionType")}: {productionTypeFilter}
-                    <button onClick={() => setProductionTypeFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {systemFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.system")}: {systemFilter}
-                    <button onClick={() => setSystemFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {speciesFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.species")}: {speciesFilter}
-                    <button onClick={() => setSpeciesFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {waterSourceFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-surface-base)] text-[var(--color-text-secondary)] flex items-center gap-1 pr-1">
-                    {t("table.water")}: {waterSourceFilter}
-                    <button onClick={() => setWaterSourceFilter("all")} className="ml-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 text-xs text-[var(--color-brand)]"
-                  onClick={clearAllFilters}
-                >
-                  {t("overview.clearAll")}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ComparativeFilterPanel
+          variant="inline-desktop"
+          title={t("comparative.filters")}
+          filters={[
+            { id: "location", label: t("overview.filterLocation"), value: locationFilter, options: locationOptions, placeholder: t("overview.filterLocation"), onChange: setLocationFilter },
+            { id: "productionType", label: t("table.productionType"), value: productionTypeFilter, options: productionTypeOptions, placeholder: t("table.productionType"), onChange: setProductionTypeFilter },
+            { id: "system", label: t("table.system"), value: systemFilter, options: systemOptions, placeholder: t("table.system"), onChange: setSystemFilter },
+            { id: "species", label: t("table.species"), value: speciesFilter, options: speciesOptions, placeholder: t("table.species"), onChange: setSpeciesFilter },
+            { id: "waterSource", label: t("table.water"), value: waterSourceFilter, options: waterSourceOptions, placeholder: t("table.water"), onChange: setWaterSourceFilter },
+          ]}
+          activeBadges={[
+            ...(locationFilter !== "all" ? [{ label: t("overview.filterLocation"), value: locationFilter, onClear: () => setLocationFilter("all") }] : []),
+            ...(productionTypeFilter !== "all" ? [{ label: t("table.productionType"), value: productionTypeFilter, onClear: () => setProductionTypeFilter("all") }] : []),
+            ...(systemFilter !== "all" ? [{ label: t("table.system"), value: systemFilter, onClear: () => setSystemFilter("all") }] : []),
+            ...(speciesFilter !== "all" ? [{ label: t("table.species"), value: speciesFilter, onClear: () => setSpeciesFilter("all") }] : []),
+            ...(waterSourceFilter !== "all" ? [{ label: t("table.water"), value: waterSourceFilter, onClear: () => setWaterSourceFilter("all") }] : []),
+          ]}
+          onClearAll={clearAllFilters}
+          t={t}
+        />
       </div>
 
       {/* Mobile Filters Bottom Sheet */}
@@ -572,144 +227,26 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
         title={t("comparative.filters")}
         closeLabel={t("navigation.closeMenu")}
       >
-        <div className="space-y-4">
-          {/* Location Filter */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("overview.filterLocation")}</p>
-            <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                {locationOptions.map((value) => (
-                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Production Type Filter */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.productionType")}</p>
-            <Select value={productionTypeFilter} onValueChange={setProductionTypeFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                {productionTypeOptions.map((value) => (
-                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* System Filter */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.system")}</p>
-            <Select value={systemFilter} onValueChange={setSystemFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                {systemOptions.map((value) => (
-                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Species Filter */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.species")}</p>
-            <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                {speciesOptions.map((value) => (
-                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Water Source Filter */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{t("table.water")}</p>
-            <Select value={waterSourceFilter} onValueChange={setWaterSourceFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-raised)]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("overview.filterAll")}</SelectItem>
-                {waterSourceOptions.map((value) => (
-                  <SelectItem key={value} value={value}>{value}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Active filters summary */}
-          {hasActiveFilters && (
-            <div className="border-t border-[var(--color-border-subtle)] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{t("overview.activeFilters")}</p>
-              <div className="flex flex-wrap gap-2">
-                {locationFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
-                    {t("overview.filterLocation")}: {locationFilter}
-                    <button onClick={() => setLocationFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {productionTypeFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
-                    {t("table.productionType")}: {productionTypeFilter}
-                    <button onClick={() => setProductionTypeFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {systemFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
-                    {t("table.system")}: {systemFilter}
-                    <button onClick={() => setSystemFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {speciesFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
-                    {t("table.species")}: {speciesFilter}
-                    <button onClick={() => setSpeciesFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {waterSourceFilter !== "all" && (
-                  <Badge variant="secondary" className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5">
-                    {t("table.water")}: {waterSourceFilter}
-                    <button onClick={() => setWaterSourceFilter("all")} className="ml-1.5 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={clearAllFilters}
-                className="mt-3 text-xs text-[var(--color-brand)]"
-              >
-                {t("overview.clearAll")}
-              </Button>
-            </div>
-          )}
-        </div>
+        <ComparativeFilterPanel
+          variant="sheet"
+          title={t("comparative.filters")}
+          filters={[
+            { id: "location", label: t("overview.filterLocation"), value: locationFilter, options: locationOptions, placeholder: t("overview.filterLocation"), onChange: setLocationFilter },
+            { id: "productionType", label: t("table.productionType"), value: productionTypeFilter, options: productionTypeOptions, placeholder: t("table.productionType"), onChange: setProductionTypeFilter },
+            { id: "system", label: t("table.system"), value: systemFilter, options: systemOptions, placeholder: t("table.system"), onChange: setSystemFilter },
+            { id: "species", label: t("table.species"), value: speciesFilter, options: speciesOptions, placeholder: t("table.species"), onChange: setSpeciesFilter },
+            { id: "waterSource", label: t("table.water"), value: waterSourceFilter, options: waterSourceOptions, placeholder: t("table.water"), onChange: setWaterSourceFilter },
+          ]}
+          activeBadges={[
+            ...(locationFilter !== "all" ? [{ label: t("overview.filterLocation"), value: locationFilter, onClear: () => setLocationFilter("all") }] : []),
+            ...(productionTypeFilter !== "all" ? [{ label: t("table.productionType"), value: productionTypeFilter, onClear: () => setProductionTypeFilter("all") }] : []),
+            ...(systemFilter !== "all" ? [{ label: t("table.system"), value: systemFilter, onClear: () => setSystemFilter("all") }] : []),
+            ...(speciesFilter !== "all" ? [{ label: t("table.species"), value: speciesFilter, onClear: () => setSpeciesFilter("all") }] : []),
+            ...(waterSourceFilter !== "all" ? [{ label: t("table.water"), value: waterSourceFilter, onClear: () => setWaterSourceFilter("all") }] : []),
+          ]}
+          onClearAll={clearAllFilters}
+          t={t}
+        />
       </BottomSheet>
 
       <DesktopFloatingFilter
@@ -743,10 +280,10 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title={t("comparative.scoreBySystem")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySystem.length)} ariaLabel={`${t("comparative.scoreBySystem")}. ${charts.bySystem.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" emptyStateProps={emptyStateProps} t={t} />
+          <ComparisonBar data={charts.bySystem} color="var(--color-chart-2)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreBySystem")} />
         </ChartCard>
         <ChartCard title={t("comparative.scoreByProductionType")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byProductionType.length)} ariaLabel={`${t("comparative.scoreByProductionType")}. ${charts.byProductionType.length} ${t("comparative.groupsAriaSuffix")}`}>
-          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" emptyStateProps={emptyStateProps} t={t} />
+          <ComparisonBar data={charts.byProductionType} color="var(--color-chart-1)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreByProductionType")} />
         </ChartCard>
       </div>
 
@@ -754,22 +291,22 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
         <>
           <div className="grid gap-6 lg:grid-cols-2">
             <ChartCard title={t("comparative.scoreByEducation")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byEducation.length)} ariaLabel={`${t("comparative.scoreByEducation")}. ${charts.byEducation.length} ${t("comparative.groupsAriaSuffix")}`}>
-              <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" emptyStateProps={emptyStateProps} t={t} />
+              <ComparisonBar data={charts.byEducation} color="var(--color-chart-4)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreByEducation")} />
             </ChartCard>
             <ChartCard title={t("comparative.scoreByMarket")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byMarket.length)} ariaLabel={`${t("comparative.scoreByMarket")}. ${charts.byMarket.length} ${t("comparative.groupsAriaSuffix")}`}>
-              <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" emptyStateProps={emptyStateProps} t={t} />
+              <ComparisonBar data={charts.byMarket} color="var(--color-chart-7)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreByMarket")} />
             </ChartCard>
           </div>
 
           <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
             <ChartCard title={t("comparative.scoreByYears")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byYears.length)} ariaLabel={`${t("comparative.scoreByYears")}. ${charts.byYears.length} ${t("comparative.groupsAriaSuffix")}`}>
-              <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" emptyStateProps={emptyStateProps} t={t} />
+              <ComparisonBar data={charts.byYears} color="var(--color-chart-3)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreByYears")} />
             </ChartCard>
             <ChartCard title={t("comparative.scoreBySpecies")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.bySpecies.length)} ariaLabel={`${t("comparative.scoreBySpecies")}. ${charts.bySpecies.length} ${t("comparative.groupsAriaSuffix")}`}>
-              <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" emptyStateProps={emptyStateProps} t={t} />
+              <ComparisonBar data={charts.bySpecies} color="var(--color-chart-5)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreBySpecies")} />
             </ChartCard>
             <ChartCard title={t("comparative.scoreByWater")} info={t("info.comparativeCharts")} height={getAdaptiveChartHeight(charts.byWaterSource.length)} ariaLabel={`${t("comparative.scoreByWater")}. ${charts.byWaterSource.length} ${t("comparative.groupsAriaSuffix")}`}>
-              <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" emptyStateProps={emptyStateProps} t={t} />
+              <ComparisonBar data={charts.byWaterSource} color="var(--color-chart-6)" emptyStateProps={emptyStateProps} t={t} caption={t("comparative.scoreByWater")} />
             </ChartCard>
           </div>
         </>
@@ -778,14 +315,15 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
       <div className="flex justify-center">
         <button
           onClick={() => setShowAllCharts(!showAllCharts)}
-          className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-base)] hover:border-[var(--color-brand)]/40"
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-background hover:border-primary/40"
         >
           {showAllCharts ? t("comparative.hideAnalysis") : t("comparative.addAnalysis")}
         </button>
       </div>
 
-      {/* Desktop heatmaps (md+ always visible via ECharts) */}
-      <div className="hidden md:grid gap-6 lg:grid-cols-2">
+      {/* Desktop heatmaps (md+) */}
+      {isMdUp ? (
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card className="card-flat">
           <CardHeader className="pb-2">
             <InfoTitle title={t("comparative.riskMatrixExternal")} info={t("info.riskMatrix")} />
@@ -794,7 +332,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <CardContent className="h-[460px]">
             {externalHeatmap ? (
               <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+                <EChartsChart option={externalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
               </div>
             ) : (
               <EmptyChartState {...emptyStateProps} />
@@ -810,7 +348,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           <CardContent className="h-[460px]">
             {internalHeatmap ? (
               <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+                <EChartsChart option={internalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
               </div>
             ) : (
               <EmptyChartState {...emptyStateProps} />
@@ -818,13 +356,15 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </CardContent>
         </Card>
       </div>
+      ) : null}
 
       {/* Mobile: toggle between chart and scrollable table */}
-      <div className="md:hidden space-y-4">
+      {!isMdUp ? (
+      <div className="space-y-4">
         <div className="flex justify-center">
           <button
             onClick={() => setShowHeatmapAsList(!showHeatmapAsList)}
-            className="flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-raised)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface-base)]"
+            className="flex cursor-pointer items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-background"
           >
             {showHeatmapAsList ? t("comparative.viewAsChart") : t("comparative.viewAsList")}
           </button>
@@ -844,7 +384,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <CardContent className="h-[460px]">
                 {externalHeatmap ? (
                   <div role="img" aria-label={`${t("comparative.riskMatrixExternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                    <ReactECharts style={{ height: "100%", width: "100%" }} option={externalHeatmap} />
+                    <EChartsChart option={externalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
                   </div>
                 ) : (
                   <EmptyChartState {...emptyStateProps} />
@@ -860,7 +400,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
               <CardContent className="h-[460px]">
                 {internalHeatmap ? (
                   <div role="img" aria-label={`${t("comparative.riskMatrixInternal")}. ${t("comparative.heatmapAriaSuffix")}`} className="h-full w-full">
-                    <ReactECharts style={{ height: "100%", width: "100%" }} option={internalHeatmap} />
+                    <EChartsChart option={internalHeatmap} emptyFallback={<EmptyChartState {...emptyStateProps} />} />
                   </div>
                 ) : (
                   <EmptyChartState {...emptyStateProps} />
@@ -870,6 +410,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
           </div>
         )}
       </div>
+      ) : null}
 
       <Card className="card-flat">
         <CardHeader className="pb-2">
@@ -900,7 +441,7 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                       tabIndex={0}
                       role="button"
                       aria-label={`${t("table.facility")}: ${facility.name}. ${t("table.score")}: ${facility.score}. ${t("table.risk")}: ${t(`risk.${facility.riskLevel.toLowerCase()}`)}`}
-                      className="cursor-pointer hover:bg-[var(--color-surface-elevated)] focus-visible:bg-[var(--color-surface-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)]"
+                      className="cursor-pointer hover:bg-popover focus-visible:bg-popover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)]"
                       onClick={() => onSelectFacility(facility.id)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
@@ -914,10 +455,10 @@ export function ComparativeView({ data, t, onSelectFacility }: Props) {
                         <span
                           className={`font-semibold ${
                             facility.score >= 70
-                              ? "text-[var(--color-success)]"
+                              ? "text-success"
                               : facility.score >= 50
-                              ? "text-[var(--color-warning)]"
-                              : "text-[var(--color-danger)]"
+                              ? "text-warning"
+                              : "text-destructive"
                           }`}
                         >
                           {facility.score}
@@ -947,42 +488,44 @@ function ComparisonBar({
   color,
   emptyStateProps,
   t,
+  caption,
 }: {
   data: { name: string; avgScore: number; count: number }[];
   color: string;
   emptyStateProps?: EmptyChartStateProps;
   t: (key: string) => string;
+  caption?: string;
 }) {
+  const { colors } = useChartTheme();
+  const barColor = resolveChartTokenColor(color, colors);
+
+  const option = useMemo(
+    () =>
+      data.length > 0
+        ? buildComparisonBarOption({
+            data,
+            barColor,
+            colors,
+            scoreLabel: t("table.score"),
+          })
+        : undefined,
+    [data, barColor, colors, t],
+  );
+
   if (data.length === 0) {
     return <EmptyChartState {...(emptyStateProps ?? {})} />;
   }
 
-  const isDense = data.length > 4;
-  const xAxisHeight = isDense ? 52 : 30;
-  const barSize = Math.max(18, Math.min(46, Math.floor(230 / Math.max(1, data.length))));
   return (
-    <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 500, height: 300 }}>
-      <BarChart data={data} margin={{ left: 4, right: 12, top: 8, bottom: isDense ? 8 : 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-subtle)" />
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
-          tickFormatter={(value: string) => truncateChartLabel(value, 18)}
-          tickLine={false}
-          axisLine={false}
-          interval={0}
-          angle={isDense ? -14 : 0}
-          textAnchor={isDense ? "end" : "middle"}
-          height={xAxisHeight}
+    <>
+      <EChartsChart option={option} />
+      {caption && (
+        <ChartDataTable
+          caption={caption}
+          headers={[t("charts.chartDataTableGroup"), t("charts.chartDataTableCount"), t("charts.chartDataTableScore")]}
+          rows={data.map((d) => [d.name, d.count, d.avgScore])}
         />
-        <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }} tickLine={false} axisLine={false} width={34} />
-        <Tooltip
-          contentStyle={CHART_TOOLTIP_STYLE}
-          cursor={CHART_TOOLTIP_CURSOR}
-          formatter={(value, _name, props) => [`${value}/100 (${props.payload.count})`, t("table.score")]}
-        />
-        <Bar dataKey="avgScore" fill={color} radius={[4, 4, 0, 0]} maxBarSize={50} barSize={barSize} />
-      </BarChart>
-    </ResponsiveContainer>
+      )}
+    </>
   );
 }

@@ -35,7 +35,7 @@ export function MobileHeatmapTable({ facilities, side, title, t }: Props) {
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-[var(--color-text-primary)]">{title}</h4>
+      <h4 className="text-sm font-semibold text-foreground">{title}</h4>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -55,15 +55,15 @@ export function MobileHeatmapTable({ facilities, side, title, t }: Props) {
                   return (
                     <TableCell key={f.id} className="text-center">
                       {cell ? (
-                        <span className={`inline-flex h-8 w-8 items-center justify-center rounded-md text-xs font-bold ${
+                        <span className={`inline-flex h-11 w-11 items-center justify-center rounded-md text-xs font-bold ${
                           cell.compliant
-                            ? "bg-[var(--color-success)]/10 text-[var(--color-success)]"
-                            : "bg-[var(--color-danger)]/10 text-[var(--color-danger)]"
+                            ? "bg-success/10 text-success"
+                            : "bg-destructive/10 text-destructive"
                         }`}>
                           {cell.score}
                         </span>
                       ) : (
-                        <span className="text-xs text-[var(--color-text-muted)]">—</span>
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
                   );

@@ -9,6 +9,10 @@ export type KoboApiResponse = {
 };
 
 export type KoboAssetResponse = {
+  deployment__links?: {
+    url?: string;
+    single_url?: string;
+  };
   content?: {
     survey?: Array<{
       type?: string;
@@ -107,6 +111,16 @@ export type FacilitySummary = {
     sopsCoverage: string[];
   };
   geolocation?: [number, number];
+  /** Grid cell key assigned for restricted map aggregation (no precise coordinates). */
+  mapAreaKey?: string;
+};
+
+export type RestrictedMapPoint = {
+  city: string;
+  count: number;
+  lat: number;
+  lng: number;
+  gridKey: string;
 };
 
 export type DashboardData = {
@@ -171,6 +185,12 @@ export type DashboardData = {
   riskMatrixExternal: { facility: string; subcategory: string; value: number; score: number }[];
   riskMatrixInternal: { facility: string; subcategory: string; value: number; score: number }[];
   locations: { facility: string; location?: string; lat: number; lon: number }[];
+  restrictedMapPoints?: RestrictedMapPoint[];
+  /** Network-wide facilities for producer global overview (no exact geolocation). */
+  overviewFacilities?: FacilitySummary[];
+  /** Producer's own facility with exact geolocation for map display. */
+  producerMapFacility?: FacilitySummary;
+  surveyUrl?: string;
   scoringMethodology: {
     sideWeights: { external: number; internal: number };
     subcategoryWeights: { section: string; side: "external" | "internal"; weight: number }[];

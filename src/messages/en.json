@@ -10,6 +10,8 @@
     "demo": "Default UID",
     "close": "Close",
     "search": "Search",
+    "searchFacilities": "Search facilities",
+    "clearSearch": "Clear search",
     "show": "Show",
     "hide": "Hide"
   },
@@ -25,17 +27,17 @@
     "facilitiesSelect": "Select facility"
   },
   "sections": {
-    "environment": "Environment",
-    "introduction": "Introduction",
+    "environment": "Environment and surroundings",
+    "introduction": "Introduction of live animals",
     "water": "Water",
     "fomites": "Fomites",
     "biovectors": "Biovectors",
-    "personnel": "Personnel",
-    "management": "Management",
-    "health": "Health",
-    "vmp": "VMP",
+    "personnel": "Personnel and visitors",
+    "management": "Production and facilities",
+    "health": "Health and welfare",
+    "vmp": "Veterinary medicinal products",
     "equipment": "Equipment",
-    "sop": "SOP"
+    "sop": "Records and SOPs"
   },
   "datasource": {
     "title": "Data source",
@@ -56,13 +58,17 @@
   "producer": {
     "myFacility": "My Facility",
     "myFacilityShort": "Facility",
-    "globalOverview": "Overview (Global)"
+    "globalOverview": "Overview (Global)",
+    "summary": "Summary"
   },
   "theme": {
     "toggle": "Toggle theme",
     "dark": "Dark",
     "light": "Light",
     "system": "System"
+  },
+  "filters": {
+    "removeFilter": "Remove {filter} filter"
   },
   "overview": {
     "filters": "Overview filters",
@@ -106,6 +112,8 @@
     "mapCoverageSubtitle": "Coordinates reported by facilities",
     "practiceCoverage": "Practice Coverage (Key Biosecurity Practices)",
     "externalInternalCompliance": "External vs Internal Compliance",
+    "sectionRadarExternal": "External Biosecurity Radar",
+    "sectionRadarInternal": "Internal Biosecurity Radar",
     "scoreDistribution": "Score Distribution",
     "sectionDetail": "Section Detail",
     "highRiskFactors": "High Risk Factors",
@@ -118,7 +126,17 @@
     "records": "Records",
     "sops": "SOPs",
     "noData": "No data available",
-    "tryFilters": "Adjust your filters or check back later"
+    "tryFilters": "Adjust your filters or check back later",
+    "chartDataTableCaption": "Chart data",
+    "chartDataTableLabel": "Label",
+    "chartDataTableValue": "Value",
+    "chartDataTableScore": "Score",
+    "chartDataTableSection": "Section",
+    "chartDataTableFacility": "Facility",
+    "chartDataTableAverage": "Average",
+    "chartDataTableGroup": "Group",
+    "chartDataTableCount": "Count",
+    "chartUpdated": "Chart updated"
   },
   "map": {
     "dark": "Dark",
@@ -130,7 +148,19 @@
     "fullscreen": "Fullscreen",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "noGeo": "No facilities with geolocation data"
+    "noGeo": "No facilities with geolocation data",
+    "markerAria": "Facility {name}. Risk level: {risk}. Score: {score}.",
+    "clusterAria": "Cluster of {count} facilities. Click to zoom in and view individual markers.",
+    "cityClusterAria": "Cluster of {cities} cities with {count} facilities. Click to zoom in and view city markers.",
+    "cityMarkerAria": "{city}. {count} facilities.",
+    "cityPopupTitle": "City overview",
+    "facilityCount": "{count, plural, one {# facility} other {# facilities}}",
+    "zoomLimitNotice": "Map zoom is limited to protect facility privacy.",
+    "cityLegend": "Markers show cities and facility counts",
+    "areaLegend": "Markers show geographic areas and facility counts",
+    "ownFacilityLegend": "Your facility (exact location)",
+    "ownFacilityAria": "Your facility {name}. Risk level: {risk}. Score: {score}.",
+    "producerZoomLimitNotice": "Map zoom is limited to protect other facilities. Your facility is shown at its exact location."
   },
   "coverage": {
     "quarantine": "Quarantine on arrival",
@@ -165,9 +195,47 @@
       "show": "Show selector",
       "hide": "Hide selector",
       "selected": "Selected facility"
+    },
+    "printReport": "Print report",
+    "downloadReport": "Download PDF",
+    "externalInternalComparison": "External vs internal score",
+    "actionPlan": "Action plan",
+    "noActionItems": "No priority actions identified.",
+    "topPriorities": "Top priorities",
+    "riskSummary": "Risk summary",
+    "peerComparison": "Your score is {score}/100 vs network average {peerAverage} for {species} in {region}.",
+    "scoreHero": {
+      "below50": "Score {score}/100 — significant improvement needed.",
+      "below70": "Score {score}/100 — room for improvement.",
+      "good": "Score {score}/100 — good biosecurity performance."
+    },
+    "scoreSummary": {
+      "title": "Score summary"
     }
   },
+  "report": {
+    "title": "Biosecurity Assessment Report",
+    "generatedOn": "Generated on",
+    "scores": "Scores",
+    "overallScore": "Overall score",
+    "externalScore": "External biosecurity",
+    "internalScore": "Internal biosecurity",
+    "responses": "Survey responses",
+    "recommendations": "Recommendations",
+    "charts": "Charts",
+    "noRecommendations": "No recommendations for this facility."
+  },
+  "surveyInvite": {
+    "title": "Are you an aquaculture producer?",
+    "description": "Participate in our biosecurity assessment survey and receive a free evaluation of your facility's biosecurity practices.",
+    "benefit1": "Free personalized biosecurity score for your facility",
+    "benefit2": "Actionable recommendations to improve your practices",
+    "benefit3": "Compare your results with the network average",
+    "participate": "Take the survey",
+    "dismiss": "Not now"
+  },
   "comparative": {
+    "subtitle": "Compare facilities across production systems, species, locations, and risk profiles.",
     "filters": "Comparative filters",
     "openFilters": "Open filters",
     "scoreBySystem": "Score by Production System",
@@ -182,9 +250,14 @@
     "riskMatrixLegend": "Green = biosecurity measure applied, Red = risk",
     "tableTitle": "Comparative Table",
     "groupsAriaSuffix": "groups.",
-    "heatmapAriaSuffix": "Heatmap of facilities by subcategory."
+    "heatmapAriaSuffix": "Heatmap of facilities by subcategory.",
+    "addAnalysis": "Show more analysis",
+    "hideAnalysis": "Hide additional analysis",
+    "viewAsList": "View as list",
+    "viewAsChart": "View as chart"
   },
   "info": {
+    "moreInformation": "More information",
     "overviewFilters": "Filter overview by species, production system and location.",
     "mapCoverage": "Map of countries/regions based on facility coordinates.",
     "practiceCoverage": "Adoption rate of key biosecurity practices.",
@@ -201,12 +274,16 @@
     "sops": "SOP coverage reported by facilities.",
     "facilityDiagnostics": "Core information for the selected facility.",
     "facilityBenchmark": "Facility score compared to network average by subcategory.",
+    "sectionRadarExternal": "Average scores across external biosecurity subcategories.",
+    "sectionRadarInternal": "Average scores across internal biosecurity subcategories.",
+    "facilityExternalInternal": "Comparison of external and internal biosecurity scores for the selected facility.",
     "animalHealthMonitoring": "Monitoring frequency for behaviour, necropsy and diagnostics.",
     "subcategoryChecklist": "Questions included per subcategory with compliance status.",
     "comparativeCharts": "Average score grouped by selected category.",
     "comparativeFilters": "Filter matrices, charts and table by operational attributes.",
     "riskMatrix": "Red cells indicate risk of disease introduction/spread.",
-    "table": "Facility-level comparison for filtered records."
+    "table": "Facility-level comparison for filtered records.",
+    "moreInformation": "More information"
   },
   "methodology": {
     "title": "Score Methodology",
@@ -235,13 +312,15 @@
     "role": "Role",
     "facility": "Facility",
     "facilityPlaceholder": "Select facility",
-    "password": "Default password",
-    "passwordPolicyHint": "Password pattern: email + .bioDash",
+    "invitationHint": "New users receive a secure email invitation to set their password. Existing users are updated without changing their password.",
     "create": "Create or update user",
     "creating": "Creating...",
     "success": {
       "title": "User saved",
-      "message": "User created/updated"
+      "message": "User created/updated",
+      "invited": "Invitation sent",
+      "updated": "User updated",
+      "invitationEmail": "They will receive an email to complete sign-in and choose a password."
     },
     "error": {
       "title": "User provisioning error",
@@ -301,6 +380,10 @@
     "usage": "Authorized exclusively for the Norwegian Veterinary Institute for research purposes.",
     "inquiries": "Inquiries",
     "copyright": "All rights reserved.",
+    "atlasAlt": "Atlas Biosecurity",
+    "partnersLabel": "In collaboration with",
+    "vetinstAlt": "Norwegian Veterinary Institute",
+    "eupahwAlt": "European Partnership Animal Health & Welfare",
     "links": {
       "title": "Resources",
       "methodology": "Methodology",
@@ -328,10 +411,15 @@
     "missingToken": "KoboToolbox token is not configured",
     "koboApiError": "Unable to load Kobo data",
     "koboAssetApiError": "Unable to load Kobo form metadata",
+    "facilityNotConfigured": "Your producer account is not linked to a facility. Contact an administrator.",
+    "facilityNotFound": "Your assigned facility was not found in this project. Contact an administrator to verify the facility ID.",
+    "producerAccessTitle": "Facility access unavailable",
+    "assignedFacilityId": "Assigned facility ID",
+    "rateLimited": "Too many requests. Please wait a moment and try again.",
     "unexpected": "Unexpected error"
   },
   "meta": {
-    "title": "Biosecurity Dashboard",
-    "description": "Dashboard for visualizing aquaculture biosecurity results from KoboToolbox."
+    "title": "Atlas Biosecurity",
+    "description": "Aquaculture biosecurity monitoring dashboard for facility assessment and risk analytics."
   }
 }

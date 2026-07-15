@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono, IBM_Plex_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { ATLAS_LOGO_ICONS } from "@/lib/brand/logo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,8 +22,12 @@ const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono-scientific",
 });
 export const metadata: Metadata = {
-  title: "Bio Dashboard",
-  description: "Dashboard para visualizar resultados de bioseguridad acuicola desde KoboToolbox.",
+  title: "Atlas Biosecurity",
+  description: "Dashboard for aquaculture biosecurity monitoring and facility assessment results.",
+  icons: {
+    icon: [...ATLAS_LOGO_ICONS],
+    apple: [...ATLAS_LOGO_ICONS],
+  },
 };
 
 export default async function RootLayout({
@@ -38,7 +43,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} antialiased min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="light" enableSystem storageKey="theme">
           <ClerkProvider>{children}</ClerkProvider>
         </ThemeProvider>
       </body>

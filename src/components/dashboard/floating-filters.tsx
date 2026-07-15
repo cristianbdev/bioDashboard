@@ -1,6 +1,8 @@
 "use client";
 
-import { Filter, X } from "lucide-react";
+import { useId } from "react";
+import { Filter } from "lucide-react";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/layout/bottom-sheet";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +57,9 @@ export function FloatingFilters({
   setLocationFilter,
   t,
 }: FloatingFiltersProps) {
+  const speciesId = useId();
+  const systemId = useId();
+  const locationId = useId();
   const activeCount = filters.filter((f) => f.allValue ? f.activeValue !== f.allValue : f.activeValue !== "" && f.activeValue !== "all").length;
 
   return (
@@ -65,7 +70,7 @@ export function FloatingFilters({
         onClick={onOpen}
         className={cn(
           "fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full px-4 py-3 shadow-lg transition-all lg:hidden",
-          "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90",
+          "btn-brand",
           "animate-in slide-in-from-bottom-4 duration-300",
         )}
         aria-label={t("overview.openFilters")}
@@ -73,7 +78,7 @@ export function FloatingFilters({
         <Filter className="h-4 w-4" />
         <span className="text-sm font-medium">{t("overview.filters")}</span>
         {activeCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-raised)] text-xs font-bold text-[var(--color-brand)]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-card text-xs font-bold text-primary">
             {activeCount}
           </span>
         )}
@@ -89,9 +94,9 @@ export function FloatingFilters({
         <div className="space-y-4">
           {/* Species filter */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{speciesPlaceholder}</p>
+            <label htmlFor={speciesId} className="text-xs font-medium text-muted-foreground">{speciesPlaceholder}</label>
             <Select value={speciesFilter} onValueChange={setSpeciesFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={speciesId} className="w-full border-border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -105,9 +110,9 @@ export function FloatingFilters({
 
           {/* System filter */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{systemPlaceholder}</p>
+            <label htmlFor={systemId} className="text-xs font-medium text-muted-foreground">{systemPlaceholder}</label>
             <Select value={systemFilter} onValueChange={setSystemFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={systemId} className="w-full border-border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -121,9 +126,9 @@ export function FloatingFilters({
 
           {/* Location filter */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{locationPlaceholder}</p>
+            <label htmlFor={locationId} className="text-xs font-medium text-muted-foreground">{locationPlaceholder}</label>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-full border-[var(--color-border-subtle)] bg-[var(--color-surface-base)]">
+              <SelectTrigger id={locationId} className="w-full border-border bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -137,8 +142,8 @@ export function FloatingFilters({
 
           {/* Active filters summary */}
           {activeCount > 0 && (
-            <div className="border-t border-[var(--color-border-subtle)] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">{t("overview.activeFilters")}</p>
+            <div className="border-t border-border pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("overview.activeFilters")}</p>
               <div className="flex flex-wrap gap-2">
                 {filters
                   .filter((f) => f.allValue ? f.activeValue !== f.allValue : f.activeValue !== "" && f.activeValue !== "all")
@@ -146,17 +151,11 @@ export function FloatingFilters({
                     <Badge
                       key={filter.label}
                       variant="secondary"
-                      className="bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20 pr-1.5"
+                      className="bg-primary/10 text-primary border border-primary/20 pr-1.5"
                     >
                       <span className="max-w-[150px] truncate">{filter.label}: {filter.activeValue}</span>
                       {filter.onClear && (
-                        <button
-                          type="button"
-                          onClick={filter.onClear}
-                          className="ml-1.5 -mr-1 rounded-full p-0.5 hover:bg-[var(--color-brand)]/20"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                        <FilterClearButton onClick={filter.onClear} filterName={filter.label} className="ml-1.5 -mr-1" />
                       )}
                     </Badge>
                   ))}
@@ -167,7 +166,7 @@ export function FloatingFilters({
                 onClick={() => {
                   onClearAll();
                 }}
-                className="mt-3 text-xs text-[var(--color-brand)]"
+                className="mt-3 min-h-11 text-xs text-primary"
               >
                 {t("overview.clearAll")}
               </Button>
