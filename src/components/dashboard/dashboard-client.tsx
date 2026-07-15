@@ -2,12 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Database, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { AdminLayout } from "@/components/dashboard/layouts/admin-layout";
 import { ProducerLayout } from "@/components/dashboard/layouts/producer-layout";
 import { PublicLayout } from "@/components/dashboard/layouts/public-layout";
@@ -333,51 +331,6 @@ export function DashboardClient({ initialUid, initialData, initialErrorCode }: D
               />
             ) : (
               <div className="flex-1 px-6 py-6">
-                <Card className="card-flat mb-6 transition-all duration-200 hover:border-primary/30 hover:shadow-md">
-                  <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg border border-border bg-background p-2">
-                        <Database className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{t("datasource.title")}</p>
-                        <p className="text-xs text-muted-foreground">{t("datasource.subtitle")}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
-                      <Input
-                        value={uid}
-                        onChange={(event) => setUid(event.target.value)}
-                        placeholder={t("datasource.projectUidPlaceholder")}
-                        className="h-9 border-border bg-card font-scientific text-sm text-foreground shadow-sm"
-                        disabled={!canUseCustomUid}
-                      />
-                      <div className="flex w-full gap-2 sm:w-auto">
-                        <Button
-                          size="sm"
-                          onClick={() => fetchData(uid)}
-                          disabled={!uid || state.status === "loading"}
-                          className="btn-brand flex-1 shadow-sm transition-all duration-200 hover:shadow-md sm:flex-none"
-                        >
-                          {state.status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : t("actions.load")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => fetchData(DEFAULT_PROJECT_UID)}
-                          className="flex-1 border-border bg-card text-foreground shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md sm:flex-none"
-                        >
-                          {t("actions.demo")}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                  {!canUseCustomUid ? (
-                    <p className="px-4 pb-4 text-xs text-muted-foreground">{t("datasource.lockedByRole")}</p>
-                  ) : null}
-                </Card>
-
                 {state.status === "error" ? (
                   <Alert variant="destructive" className="mb-6 shadow-sm">
                     <AlertTitle>{t("errors.title")}</AlertTitle>

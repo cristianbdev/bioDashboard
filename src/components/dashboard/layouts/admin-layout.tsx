@@ -281,13 +281,16 @@ export function AdminLayout({
         )}
 
         {/* Tab contents */}
-        {activeTab === "overview" && <OverviewClient data={data} t={t} locale={locale} externalFilters={externalFilters} />}
+        {activeTab === "overview" && <OverviewClient data={data} t={t} locale={locale} externalFilters={externalFilters} role={role} />}
         {activeTab === "facilities" && canAccessTab(role, "facilities") && (
           <FacilitiesView
             facilities={facilitiesForRole}
             currentFacility={currentFacilityForRole}
             onSelect={setSelectedFacility}
             readOnlySelection={role === "producer"}
+            role={role}
+            locale={locale}
+            networkStats={data.stats}
             t={t}
             sectionAverages={data.sectionAverages}
           />

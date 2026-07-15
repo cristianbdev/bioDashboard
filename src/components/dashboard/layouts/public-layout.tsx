@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { AppLocale } from "@/i18n/routing";
 import type { DashboardData } from "@/lib/kobo";
+import { SurveyInviteDialog } from "@/components/dashboard/survey-invite-dialog";
 
 const OverviewClient = dynamic(() => import("@/components/dashboard/overview").then((mod) => mod.Overview), {
   ssr: false,
@@ -20,7 +21,8 @@ type PublicLayoutProps = {
 export function PublicLayout({ data, t, locale }: PublicLayoutProps) {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-6">
-      <OverviewClient data={data} t={t} locale={locale} />
+      <SurveyInviteDialog surveyUrl={data.surveyUrl} t={t} />
+      <OverviewClient data={data} t={t} locale={locale} role="public" />
     </div>
   );
 }

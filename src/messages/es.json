@@ -27,17 +27,17 @@
     "facilitiesSelect": "Seleccionar instalación"
   },
   "sections": {
-    "environment": "Entorno",
-    "introduction": "Introducción",
+    "environment": "Entorno y alrededores",
+    "introduction": "Ingreso de animales vivos",
     "water": "Agua",
     "fomites": "Fómites",
-    "biovectors": "Biovectores",
-    "personnel": "Personal",
-    "management": "Gestión",
-    "health": "Salud",
-    "vmp": "VMP",
-    "equipment": "Equipos",
-    "sop": "SOP"
+    "biovectors": "Vectores",
+    "personnel": "Personal y visitantes",
+    "management": "Instalaciones y producción",
+    "health": "Sanidad y Bienestar Animal",
+    "vmp": "Productos Veterinarios",
+    "equipment": "Equipo",
+    "sop": "Registros y POEs"
   },
   "datasource": {
     "title": "Fuente de datos",
@@ -58,7 +58,8 @@
   "producer": {
     "myFacility": "Mi instalación",
     "myFacilityShort": "Mi predio",
-    "globalOverview": "Resumen global"
+    "globalOverview": "Resumen global",
+    "summary": "Resumen"
   },
   "theme": {
     "toggle": "Cambiar tema",
@@ -111,6 +112,8 @@
     "mapCoverageSubtitle": "Coordenadas reportadas por instalaciones",
     "practiceCoverage": "Cobertura de prácticas (prácticas clave de bioseguridad)",
     "externalInternalCompliance": "Cumplimiento externo vs interno",
+    "sectionRadarExternal": "Radar de bioseguridad externa",
+    "sectionRadarInternal": "Radar de bioseguridad interna",
     "scoreDistribution": "Distribución de puntajes",
     "sectionDetail": "Detalle por sección",
     "highRiskFactors": "Factores de riesgo alto",
@@ -147,7 +150,17 @@
     "zoomOut": "Alejar",
     "noGeo": "No hay instalaciones con datos de geolocalización",
     "markerAria": "Instalación {name}. Nivel de riesgo: {risk}. Puntaje: {score}.",
-    "clusterAria": "Grupo de {count} instalaciones. Haga clic para acercar y ver marcadores individuales."
+    "clusterAria": "Grupo de {count} instalaciones. Haga clic para acercar y ver marcadores individuales.",
+    "cityClusterAria": "Grupo de {cities} ciudades con {count} predios. Haga clic para acercar y ver los marcadores de ciudad.",
+    "cityMarkerAria": "{city}. {count} predios.",
+    "cityPopupTitle": "Resumen por ciudad",
+    "facilityCount": "{count, plural, one {# predio} other {# predios}}",
+    "zoomLimitNotice": "El zoom del mapa está limitado para proteger la privacidad de los predios.",
+    "cityLegend": "Los marcadores muestran ciudades y cantidad de predios",
+    "areaLegend": "Los marcadores muestran áreas geográficas y cantidad de predios",
+    "ownFacilityLegend": "Su predio (ubicación exacta)",
+    "ownFacilityAria": "Su predio {name}. Nivel de riesgo: {risk}. Puntaje: {score}.",
+    "producerZoomLimitNotice": "El zoom del mapa está limitado para proteger otros predios. Su predio se muestra en su ubicación exacta."
   },
   "coverage": {
     "quarantine": "Cuarentena al ingreso",
@@ -182,7 +195,44 @@
       "show": "Mostrar selector",
       "hide": "Ocultar selector",
       "selected": "Predio seleccionado"
+    },
+    "printReport": "Imprimir reporte",
+    "downloadReport": "Descargar PDF",
+    "externalInternalComparison": "Puntaje externo vs interno",
+    "actionPlan": "Plan de acción",
+    "noActionItems": "No se identificaron acciones prioritarias.",
+    "topPriorities": "Prioridades principales",
+    "riskSummary": "Resumen de riesgo",
+    "peerComparison": "Su puntaje es {score}/100 vs promedio de red {peerAverage} para {species} en {region}.",
+    "scoreHero": {
+      "below50": "Puntaje {score}/100 — se requiere mejora significativa.",
+      "below70": "Puntaje {score}/100 — hay margen de mejora.",
+      "good": "Puntaje {score}/100 — buen desempeño de bioseguridad."
+    },
+    "scoreSummary": {
+      "title": "Resumen de puntaje"
     }
+  },
+  "report": {
+    "title": "Reporte de evaluación de bioseguridad",
+    "generatedOn": "Generado el",
+    "scores": "Puntajes",
+    "overallScore": "Puntaje general",
+    "externalScore": "Bioseguridad externa",
+    "internalScore": "Bioseguridad interna",
+    "responses": "Respuestas de la encuesta",
+    "recommendations": "Recomendaciones",
+    "charts": "Gráficos",
+    "noRecommendations": "No hay recomendaciones para este predio."
+  },
+  "surveyInvite": {
+    "title": "¿Es usted un productor acuícola?",
+    "description": "Participe en nuestra encuesta de bioseguridad y reciba una evaluación gratuita de las prácticas de bioseguridad de su predio.",
+    "benefit1": "Puntaje de bioseguridad personalizado y gratuito para su predio",
+    "benefit2": "Recomendaciones accionables para mejorar sus prácticas",
+    "benefit3": "Compare sus resultados con el promedio de la red",
+    "participate": "Responder encuesta",
+    "dismiss": "Ahora no"
   },
   "comparative": {
     "subtitle": "Compara instalaciones por sistema productivo, especie, ubicación y perfiles de riesgo.",
@@ -224,6 +274,9 @@
     "sops": "Cobertura de POEs reportada por instalaciones.",
     "facilityDiagnostics": "Información clave de la instalación seleccionada.",
     "facilityBenchmark": "Comparación del predio frente al promedio por subcategoría.",
+    "sectionRadarExternal": "Puntajes promedio en subcategorías de bioseguridad externa.",
+    "sectionRadarInternal": "Puntajes promedio en subcategorías de bioseguridad interna.",
+    "facilityExternalInternal": "Comparación de puntajes de bioseguridad externa e interna del predio seleccionado.",
     "animalHealthMonitoring": "Frecuencia de monitoreo de comportamiento, necropsias y diagnósticos.",
     "subcategoryChecklist": "Preguntas incluidas por subcategoría con estado de cumplimiento.",
     "comparativeCharts": "Puntaje promedio agrupado por categoría.",

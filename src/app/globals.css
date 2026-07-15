@@ -296,10 +296,6 @@
   color: var(--color-danger);
 }
 
-.map-legend-dot {
-  background-color: var(--legend-dot-color, var(--color-muted));
-}
-
 .text-dashboard-title {
   @apply text-3xl font-bold tracking-tight;
   color: var(--color-text-primary);
@@ -488,5 +484,222 @@
 
   .card-flat-interactive:hover {
     transition: none;
+  }
+}
+
+.map-city-marker {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  line-height: 1;
+  appearance: none;
+  padding: 0;
+}
+
+.map-city-marker-medium {
+  width: 42px;
+  height: 42px;
+  font-size: 0.75rem;
+}
+
+.map-city-marker-large {
+  width: 52px;
+  height: 52px;
+  font-size: 0.8125rem;
+}
+
+.map-own-facility-marker {
+  appearance: none;
+  padding: 0;
+}
+
+.map-own-facility-marker-legend {
+  background-color: var(--color-brand);
+}
+
+.map-cluster-marker {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.map-cluster-marker-medium {
+  width: 38px;
+  height: 38px;
+}
+
+.map-cluster-marker-large {
+  width: 50px;
+  height: 50px;
+  font-size: 0.875rem;
+}
+
+.facility-popup-header {
+  background-color: color-mix(in oklab, var(--color-raised) 82%, var(--color-surface-base));
+}
+
+.report-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.report-chart-card {
+  break-inside: avoid;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.report-chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.report-chart-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.report-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.report-chart-label,
+.report-chart-value,
+.report-radar-label {
+  fill: #374151;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+}
+
+.report-chart-value {
+  text-anchor: end;
+}
+
+.report-chart-value-strong {
+  font-weight: 700;
+}
+
+.report-bar-track {
+  fill: #e5e7eb;
+}
+
+.report-bar-average {
+  fill: #94a3b8;
+}
+
+.report-bar-facility,
+.report-bar-external {
+  fill: #0f766e;
+}
+
+.report-bar-internal {
+  fill: #64748b;
+}
+
+.report-bar-network {
+  stroke: #334155;
+  stroke-dasharray: 4 3;
+  stroke-width: 2;
+}
+
+.report-radar-grid {
+  fill: none;
+  stroke: #d1d5db;
+  stroke-width: 1;
+}
+
+.report-radar-spoke {
+  stroke: #e5e7eb;
+  stroke-width: 1;
+}
+
+.report-radar-facility {
+  fill: rgb(15 118 110 / 18%);
+  stroke: #0f766e;
+  stroke-width: 2;
+}
+
+.report-radar-network {
+  fill: rgb(100 116 139 / 10%);
+  stroke: #64748b;
+  stroke-dasharray: 4 3;
+  stroke-width: 2;
+}
+
+.report-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  color: #4b5563;
+  font-size: 0.6875rem;
+}
+
+.report-legend-swatch {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-right: 0.25rem;
+  border-radius: 0.125rem;
+  vertical-align: -0.05rem;
+}
+
+.report-legend-line {
+  display: inline-block;
+  width: 1rem;
+  margin-right: 0.25rem;
+  border-top: 2px dashed #334155;
+  vertical-align: 0.15rem;
+}
+
+@media (max-width: 700px) {
+  .report-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-chart-card-wide {
+    grid-column: auto;
+  }
+}
+
+@media print {
+  .no-print,
+  header,
+  nav,
+  footer,
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-content"] {
+    display: none !important;
+  }
+
+  .facility-report {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .sr-only .facility-report {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+  }
+
+  .report-chart-card {
+    break-inside: avoid;
   }
 }

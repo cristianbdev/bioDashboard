@@ -1,13 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import Map, { FullscreenControl, MapRef, Marker, NavigationControl, Popup, ScaleControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { AlertTriangle, CheckCircle, Info, MapPin } from "lucide-react";
 import { useTheme } from "next-themes";
 import Supercluster from "supercluster";
 import type { AppLocale } from "@/i18n/routing";
+import type { AppRole } from "@/lib/access-control";
 import type { FacilitySummary } from "@/lib/kobo";
+import {
+  getMapMode,
+  isRestrictedMapMode,
+  RESTRICTED_CLUSTER_MAX_ZOOM,
+  RESTRICTED_MAX_ZOOM,
+  RESTRICTED_TARGET_SPAN_KM,
+  maxZoomForSpanKm,
+  type CityMapPoint,
+  type MapMode,
+} from "@/lib/map-privacy";
 import { cn } from "@/lib/utils";
 
 type PointProperties = {
@@ -15,11 +26,24 @@ type PointProperties = {
   facility: FacilitySummary;
 };
 
+type CityPointProperties = {
+  city: string;
+  count: number;
+};
+
+type ClusterAggregateProperties = {
+  facilityCount: number;
+  cityCount: number;
+};
+
 type Props = {
   filteredFacilities: FacilitySummary[];
   t: (key: string, values?: Record<string, unknown>) => string;
   locale?: AppLocale;
   className?: string;
+  role?: AppRole;
+  restrictedCityPoints?: CityMapPoint[];
+  producerOwnFacility?: FacilitySummary;
 };
 
 const MAP_STYLES = {
@@ -27,18 +51,24 @@ const MAP_STYLES = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
 } as const;
 
-const RISK_LEVELS: Array<{ level: FacilitySummary["riskLevel"]; labelKey: string; color: string }> = [
-  { level: "HIGH", labelKey: "map.riskHigh", color: "var(--color-danger)" },
-  { level: "MEDIUM", labelKey: "map.riskMedium", color: "var(--color-warning)" },
-  { level: "LOW", labelKey: "map.riskLow", color: "var(--color-success)" },
-  { level: "NEGLIGIBLE", labelKey: "map.riskNegligible", color: "var(--color-muted)" },
+const RISK_LEVELS: Array<{
+  level: FacilitySummary["riskLevel"];
+  labelKey: string;
+  markerClass: string;
+  textClass: string;
+}> = [
+  { level: "HIGH", labelKey: "map.riskHigh", markerClass: "bg-destructive", textClass: "text-destructive" },
+  { level: "MEDIUM", labelKey: "map.riskMedium", markerClass: "bg-warning", textClass: "text-warning" },
+  { level: "LOW", labelKey: "map.riskLow", markerClass: "bg-success", textClass: "text-success" },
+  { level: "NEGLIGIBLE", labelKey: "map.riskNegligible", markerClass: "bg-muted", textClass: "text-muted-foreground" },
 ];
 
-const FALLBACK_MARKER_COLOR = "var(--color-muted)";
+function facilityMarkerClass(level?: FacilitySummary["riskLevel"]) {
+  return RISK_LEVELS.find((entry) => entry.level === level)?.markerClass ?? "bg-muted";
+}
 
-function markerColorByRisk(level?: FacilitySummary["riskLevel"]) {
-  if (!level) return FALLBACK_MARKER_COLOR;
-  return RISK_LEVELS.find((entry) => entry.level === level)?.color ?? FALLBACK_MARKER_COLOR;
+function facilityTextClass(level?: FacilitySummary["riskLevel"]) {
+  return RISK_LEVELS.find((entry) => entry.level === level)?.textClass ?? "text-muted-foreground";
 }
 
 function createFallbackCircleImage(size: number = 22): ImageData {
@@ -52,8 +82,6 @@ function createFallbackCircleImage(size: number = 22): ImageData {
 
   const center = size / 2;
   const radius = center - 1;
-
-  // Create gradient for nicer appearance
   const gradient = ctx.createRadialGradient(center, center, 0, center, center, radius);
   gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
   gradient.addColorStop(0.7, "rgba(220, 220, 220, 1)");
@@ -67,17 +95,13 @@ function createFallbackCircleImage(size: number = 22): ImageData {
   return ctx.getImageData(0, 0, size, size);
 }
 
-// Pre-defined fallback images for common sprite patterns
 function getPreloadedImages(): Array<{ id: string; width: number; height: number; data: Uint8ClampedArray }> {
-  // Include more sizes to cover various sprite patterns
   const sizes = [8, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 32, 40];
   const images: Array<{ id: string; width: number; height: number; data: Uint8ClampedArray }> = [];
 
   for (const size of sizes) {
     const imageData = createFallbackCircleImage(size);
-    // Common circle sprite patterns - extract .data from ImageData
     images.push({ id: `circle-${size}`, width: size, height: size, data: imageData.data });
-    // Also add variations like circle-stroked, circle-11, etc.
     images.push({ id: `circle-stroked-${size}`, width: size, height: size, data: imageData.data });
   }
 
@@ -89,15 +113,62 @@ function formatNumber(n: number): string {
   return n.toString();
 }
 
-export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", className }: Props) {
+function cityMarkerClass(count: number) {
+  if (count >= 12) return "map-city-marker map-city-marker-large";
+  if (count >= 5) return "map-city-marker map-city-marker-medium";
+  return "map-city-marker";
+}
+
+function clusterMarkerClass(count: number) {
+  if (count >= 25) return "map-cluster-marker map-cluster-marker-large";
+  if (count >= 10) return "map-cluster-marker map-cluster-marker-medium";
+  return "map-cluster-marker";
+}
+
+function activateMarkerOnKeyDown(event: KeyboardEvent<HTMLButtonElement>, onActivate: () => void) {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  onActivate();
+}
+
+export function MapLibreFacilitiesMap({
+  filteredFacilities,
+  t,
+  locale = "en",
+  className,
+  role = "public",
+  restrictedCityPoints = [],
+  producerOwnFacility,
+}: Props) {
+  const mapMode: MapMode = getMapMode(role);
+  const isRestricted = isRestrictedMapMode(mapMode);
+  const isProducerMap = mapMode === "producer";
   const mapRef = useRef<MapRef>(null);
   const { resolvedTheme } = useTheme();
   const mapStyle = resolvedTheme === "dark" ? MAP_STYLES.dark : MAP_STYLES.light;
   const [selectedFacility, setSelectedFacility] = useState<FacilitySummary | null>(null);
+  const [selectedCity, setSelectedCity] = useState<CityMapPoint | null>(null);
   const [bounds, setBounds] = useState<[number, number, number, number]>([-180, -85, 180, 85]);
   const [zoom, setZoom] = useState(4);
+  const [restrictedMaxZoom, setRestrictedMaxZoom] = useState(RESTRICTED_MAX_ZOOM);
+
+  const cityPoints = useMemo(
+    () => (isRestricted ? restrictedCityPoints : []),
+    [isRestricted, restrictedCityPoints],
+  );
 
   const points = useMemo(() => {
+    if (isRestricted) {
+      return cityPoints.map((city) => ({
+        type: "Feature" as const,
+        properties: { city: city.city, count: city.count },
+        geometry: {
+          type: "Point" as const,
+          coordinates: [city.lng, city.lat],
+        },
+      }));
+    }
+
     return filteredFacilities
       .filter((facility) => facility.geolocation && facility.geolocation[0] && facility.geolocation[1])
       .map((facility) => ({
@@ -111,48 +182,90 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
           coordinates: [facility.geolocation![1], facility.geolocation![0]],
         },
       }));
-  }, [filteredFacilities]);
+  }, [cityPoints, filteredFacilities, isRestricted]);
 
   const supercluster = useMemo(() => {
-    const sc = new Supercluster<PointProperties>({
+    const sc = new Supercluster<PointProperties | CityPointProperties, ClusterAggregateProperties>({
       radius: 60,
-      maxZoom: 16,
+      maxZoom: isRestricted ? RESTRICTED_CLUSTER_MAX_ZOOM : 16,
+      map: (properties) => ({
+        facilityCount: "count" in properties ? properties.count : 1,
+        cityCount: "count" in properties ? 1 : 0,
+      }),
+      reduce: (accumulated, properties) => {
+        accumulated.facilityCount += properties.facilityCount;
+        accumulated.cityCount += properties.cityCount;
+      },
     });
     sc.load(points);
     return sc;
-  }, [points]);
+  }, [isRestricted, points]);
 
   const clusters = useMemo(() => supercluster.getClusters(bounds, zoom), [supercluster, bounds, zoom]);
 
   const center = useMemo(() => {
-    if (points.length === 0) return { lat: 4.5, lng: -74 };
-    const latitudes = points.map((point) => point.geometry.coordinates[1]);
-    const longitudes = points.map((point) => point.geometry.coordinates[0]);
+    const coordinateSets: Array<[number, number]> = points.map((point) => [
+      point.geometry.coordinates[1],
+      point.geometry.coordinates[0],
+    ]);
+
+    if (producerOwnFacility?.geolocation) {
+      coordinateSets.push([producerOwnFacility.geolocation[0], producerOwnFacility.geolocation[1]]);
+    }
+
+    if (coordinateSets.length === 0) return { lat: 4.5, lng: -74 };
+
+    const latitudes = coordinateSets.map(([lat]) => lat);
+    const longitudes = coordinateSets.map(([, lng]) => lng);
 
     return {
       lat: (Math.min(...latitudes) + Math.max(...latitudes)) / 2,
       lng: (Math.min(...longitudes) + Math.max(...longitudes)) / 2,
     };
-  }, [points]);
+  }, [points, producerOwnFacility]);
 
   const initialZoom = useMemo(() => {
-    if (points.length <= 1) return 10;
-    if (points.length <= 5) return 6;
-    return 4;
-  }, [points.length]);
+    if (points.length <= 1) return isRestricted ? 8 : 10;
+    if (points.length <= 5) return isRestricted ? 6 : 6;
+    return isRestricted ? 5 : 4;
+  }, [isRestricted, points.length]);
 
   const updateViewportState = useCallback(() => {
     if (!mapRef.current) return;
 
     const map = mapRef.current.getMap();
+    const currentZoom = mapRef.current.getZoom();
+
+    if (isRestricted && currentZoom > restrictedMaxZoom) {
+      mapRef.current.setZoom(restrictedMaxZoom);
+    }
+
     const b = map.getBounds();
     setBounds([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
     setZoom(mapRef.current.getZoom());
-  }, []);
+  }, [isRestricted, restrictedMaxZoom]);
+
+  const updateRestrictedMaxZoom = useCallback(() => {
+    if (!isRestricted || !mapRef.current) return;
+
+    const map = mapRef.current.getMap();
+    const nextMaxZoom = maxZoomForSpanKm(
+      RESTRICTED_TARGET_SPAN_KM,
+      map.getCenter().lat,
+      map.getContainer().clientWidth,
+    );
+
+    setRestrictedMaxZoom(nextMaxZoom);
+    map.setMaxZoom(nextMaxZoom);
+    if (map.getZoom() > nextMaxZoom) {
+      map.setZoom(nextMaxZoom);
+    }
+  }, [isRestricted]);
 
   const expandCluster = (clusterId: number, lng: number, lat: number) => {
     const expansionZoom = supercluster.getClusterExpansionZoom(clusterId);
-    mapRef.current?.flyTo({ center: [lng, lat], zoom: expansionZoom, duration: 500 });
+    const targetZoom = isRestricted ? Math.min(expansionZoom, restrictedMaxZoom) : expansionZoom;
+    mapRef.current?.flyTo({ center: [lng, lat], zoom: targetZoom, duration: 500 });
   };
 
   useEffect(() => {
@@ -177,7 +290,7 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
     }
   }, [t, mapStyle, points.length]);
 
-  if (points.length === 0) {
+  if (points.length === 0 && !producerOwnFacility?.geolocation) {
     return (
       <div className="flex h-full min-h-[220px] items-center justify-center rounded-xl border border-border bg-background px-4 text-center text-sm text-muted-foreground">
         {t("map.noGeo")}
@@ -185,12 +298,17 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
     );
   }
 
+  const totalFacilities = isRestricted
+    ? cityPoints.reduce((total, city) => total + city.count, 0) + (producerOwnFacility ? 1 : 0)
+    : points.length;
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
       <div className="relative flex-1 overflow-hidden rounded-xl border border-border bg-background">
         <Map
           ref={mapRef}
           mapStyle={mapStyle}
+          maxZoom={isRestricted ? restrictedMaxZoom : 22}
           initialViewState={{
             latitude: center.lat,
             longitude: center.lng,
@@ -199,12 +317,12 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
           style={{ width: "100%", height: "100%" }}
           onMove={updateViewportState}
           onZoom={updateViewportState}
+          onResize={updateRestrictedMaxZoom}
           onLoad={(event) => {
+            updateRestrictedMaxZoom();
             updateViewportState();
 
             const map = event.target;
-
-            // Pre-load fallback circle images to prevent missing sprite warnings
             const preloadedImages = getPreloadedImages();
             for (const img of preloadedImages) {
               if (!map.hasImage(img.id)) {
@@ -216,33 +334,24 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
               }
             }
 
-            // Add specific missing circle-11 immediately if not present
-            if (!map.hasImage('circle-11')) {
-              map.addImage('circle-11', {
+            if (!map.hasImage("circle-11")) {
+              map.addImage("circle-11", {
                 width: 11,
                 height: 11,
                 data: createFallbackCircleImage(11).data,
               });
             }
 
-            // Track processed images to avoid duplicate processing
             const processedImages = new Set<string>();
-
-            // Handle any remaining missing images (fallback for dynamic requests)
-            map.on('styleimagemissing', (e: { image?: { toString: () => string } }) => {
-              // Safely get image name, with fallback for undefined
-              const missingImageId = e.image?.toString() ?? 'unknown';
-
+            map.on("styleimagemissing", (e: { image?: { toString: () => string } }) => {
+              const missingImageId = e.image?.toString() ?? "unknown";
               if (processedImages.has(missingImageId)) return;
               processedImages.add(missingImageId);
 
-              // Only handle circle-related sprites
-              if (missingImageId.includes('circle')) {
+              if (missingImageId.includes("circle")) {
                 if (!map.hasImage(missingImageId)) {
-                  // Extract size from pattern like "circle-11" or create default
                   const sizeMatch = missingImageId.match(/circle.*-(\d+)/);
                   const size = sizeMatch ? parseInt(sizeMatch[1], 10) : 20;
-
                   map.addImage(missingImageId, {
                     width: size,
                     height: size,
@@ -252,7 +361,10 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
               }
             });
           }}
-          onClick={() => setSelectedFacility(null)}
+          onClick={() => {
+            setSelectedFacility(null);
+            setSelectedCity(null);
+          }}
           dragRotate={false}
           touchPitch={false}
         >
@@ -264,11 +376,13 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
             const [lng, lat] = cluster.geometry.coordinates;
 
             if ("cluster" in cluster.properties && cluster.properties.cluster) {
-              const pointCount = cluster.properties.point_count;
+              const clusterProps = cluster.properties as typeof cluster.properties & ClusterAggregateProperties;
+              const facilityCount = isRestricted ? clusterProps.facilityCount : clusterProps.point_count;
+              const clusterLabel = isRestricted
+                ? t("map.cityClusterAria", { cities: clusterProps.cityCount, count: facilityCount })
+                : t("map.clusterAria", { count: facilityCount });
               const clusterId = cluster.properties.cluster_id;
-              const size = Math.min(50, 30 + pointCount * 0.5);
-              const isLarge = pointCount >= 25;
-              const isMedium = pointCount >= 10 && pointCount < 25;
+              const activateCluster = () => expandCluster(clusterId, lng, lat);
 
               return (
                 <Marker
@@ -278,30 +392,61 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                   anchor="center"
                   onClick={(event) => {
                     event.originalEvent.stopPropagation();
-                    expandCluster(clusterId, lng, lat);
+                    activateCluster();
                   }}
                 >
-                  <div
-                    role="button"
+                  <button
+                    type="button"
                     tabIndex={0}
-                    aria-label={t("map.clusterAria", { count: pointCount })}
+                    onKeyDown={(event) => activateMarkerOnKeyDown(event, activateCluster)}
+                    aria-label={clusterLabel}
                     className={cn(
-                      "flex cursor-pointer select-none items-center justify-center rounded-full border-2 border-[var(--color-text-inverse)] font-bold text-[var(--color-text-inverse)] shadow-lg transition-transform hover:scale-110",
-                      isLarge ? "bg-destructive" : isMedium ? "bg-warning" : "bg-info",
+                      clusterMarkerClass(facilityCount),
+                      "cursor-pointer select-none rounded-full border-2 border-[var(--color-text-inverse)] font-bold text-[var(--color-text-inverse)] shadow-lg transition-transform hover:scale-110",
+                      facilityCount >= 25 ? "bg-destructive" : facilityCount >= 10 ? "bg-warning" : "bg-info",
                     )}
-                    style={{
-                      width: `${size}px`,
-                      height: `${size}px`,
-                      fontSize: size > 35 ? "14px" : "12px",
-                    }}
                   >
-                    {formatNumber(pointCount)}
-                  </div>
+                    {formatNumber(facilityCount)}
+                  </button>
                 </Marker>
               );
             }
 
-            const facility = cluster.properties.facility;
+            if (isRestricted) {
+              const cityProps = cluster.properties as CityPointProperties;
+              const activateCity = () => {
+                setSelectedCity({ city: cityProps.city, count: cityProps.count, lat, lng });
+                setSelectedFacility(null);
+              };
+
+              return (
+                <Marker
+                  key={`city-${cityProps.city}`}
+                  longitude={lng}
+                  latitude={lat}
+                  anchor="center"
+                  onClick={(event) => {
+                    event.originalEvent.stopPropagation();
+                    activateCity();
+                  }}
+                >
+                  <button
+                    type="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => activateMarkerOnKeyDown(event, activateCity)}
+                    aria-label={t("map.cityMarkerAria", { city: cityProps.city, count: cityProps.count })}
+                    className={cn(
+                      cityMarkerClass(cityProps.count),
+                      "cursor-pointer select-none rounded-full border-2 border-[var(--color-text-inverse)] bg-primary font-bold text-[var(--color-text-inverse)] shadow-lg transition-transform hover:scale-110",
+                    )}
+                  >
+                    {formatNumber(cityProps.count)}
+                  </button>
+                </Marker>
+              );
+            }
+
+            const facility = (cluster.properties as PointProperties).facility;
             if (!facility) return null;
 
             return (
@@ -313,24 +458,87 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
                 onClick={(event) => {
                   event.originalEvent.stopPropagation();
                   setSelectedFacility(facility);
+                  setSelectedCity(null);
                 }}
               >
-                <div
-                  role="button"
+                <button
+                  type="button"
                   tabIndex={0}
+                  onKeyDown={(event) =>
+                    activateMarkerOnKeyDown(event, () => {
+                      setSelectedFacility(facility);
+                      setSelectedCity(null);
+                    })
+                  }
                   aria-label={t("map.markerAria", {
                     name: facility.name,
                     risk: t(`risk.${facility.riskLevel.toLowerCase()}`),
                     score: facility.score,
                   })}
-                  className="h-5 w-5 cursor-pointer rounded-full border-2 border-[var(--color-text-inverse)] shadow-md transition-transform hover:scale-125"
-                  style={{ backgroundColor: markerColorByRisk(facility.riskLevel) }}
+                  className={cn(
+                    "h-5 w-5 cursor-pointer rounded-full border-2 border-[var(--color-text-inverse)] p-0 shadow-md transition-transform hover:scale-125",
+                    facilityMarkerClass(facility.riskLevel),
+                  )}
                 />
               </Marker>
             );
           })}
 
-          {selectedFacility?.geolocation ? (
+          {isProducerMap && producerOwnFacility?.geolocation ? (
+            <Marker
+              key={`producer-own-${producerOwnFacility.id}`}
+              longitude={producerOwnFacility.geolocation[1]}
+              latitude={producerOwnFacility.geolocation[0]}
+              anchor="center"
+              onClick={(event) => {
+                event.originalEvent.stopPropagation();
+                setSelectedFacility(producerOwnFacility);
+                setSelectedCity(null);
+              }}
+            >
+              <button
+                type="button"
+                tabIndex={0}
+                onKeyDown={(event) =>
+                  activateMarkerOnKeyDown(event, () => {
+                    setSelectedFacility(producerOwnFacility);
+                    setSelectedCity(null);
+                  })
+                }
+                aria-label={t("map.ownFacilityAria", {
+                  name: producerOwnFacility.name,
+                  risk: t(`risk.${producerOwnFacility.riskLevel.toLowerCase()}`),
+                  score: producerOwnFacility.score,
+                })}
+                className={cn(
+                  "map-own-facility-marker h-6 w-6 cursor-pointer rounded-full border-2 border-[var(--color-text-inverse)] p-0 shadow-md transition-transform hover:scale-125",
+                  facilityMarkerClass(producerOwnFacility.riskLevel),
+                )}
+              />
+            </Marker>
+          ) : null}
+
+          {isProducerMap && selectedFacility?.id === producerOwnFacility?.id && producerOwnFacility.geolocation ? (
+            <Popup
+              longitude={producerOwnFacility.geolocation[1]}
+              latitude={producerOwnFacility.geolocation[0]}
+              anchor="bottom"
+              onClose={() => setSelectedFacility(null)}
+              closeButton={false}
+              closeOnClick={false}
+              offset={[0, -12]}
+              className="z-50"
+            >
+              <FacilityPopup
+                facility={producerOwnFacility}
+                onClose={() => setSelectedFacility(null)}
+                t={t}
+                locale={locale}
+              />
+            </Popup>
+          ) : null}
+
+          {!isRestricted && selectedFacility?.geolocation ? (
             <Popup
               longitude={selectedFacility.geolocation[1]}
               latitude={selectedFacility.geolocation[0]}
@@ -344,31 +552,94 @@ export function MapLibreFacilitiesMap({ filteredFacilities, t, locale = "en", cl
               <FacilityPopup facility={selectedFacility} onClose={() => setSelectedFacility(null)} t={t} locale={locale} />
             </Popup>
           ) : null}
+
+          {isRestricted && selectedCity ? (
+            <Popup
+              longitude={selectedCity.lng}
+              latitude={selectedCity.lat}
+              anchor="bottom"
+              onClose={() => setSelectedCity(null)}
+              closeButton={false}
+              closeOnClick={false}
+              offset={[0, -16]}
+              className="z-50"
+            >
+              <CityPopup city={selectedCity} onClose={() => setSelectedCity(null)} t={t} />
+            </Popup>
+          ) : null}
         </Map>
       </div>
 
-      {/* Legend and Controls */}
       <div className="mt-3 flex flex-col gap-3 rounded-xl border border-border bg-card px-3 py-3 sm:px-4">
-        {/* Facility count (mobile) */}
         <div className="flex items-center justify-center md:hidden">
           <div className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm">
-            <span className="font-bold text-primary">{points.length}</span>
-            <span>{points.length === 1 ? t("table.facility") : t("tabs.facilities")}</span>
+            <span className="font-bold text-primary">{totalFacilities}</span>
+            <span>{totalFacilities === 1 ? t("table.facility") : t("tabs.facilities")}</span>
           </div>
         </div>
 
-        {/* Legend - Risk levels */}
+        {isRestricted ? (
+          <p className="text-center text-xs text-muted-foreground sm:text-left">
+            {isProducerMap ? t("map.producerZoomLimitNotice") : t("map.zoomLimitNotice")}
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
-          {RISK_LEVELS.map((entry) => (
-            <div key={entry.level} className="flex items-center gap-2 text-xs text-foreground">
-              <span
-                className="map-legend-dot h-3 w-3 rounded-full ring-1 ring-white shadow-sm"
-                style={{ "--legend-dot-color": entry.color } as React.CSSProperties}
-              />
-              <span>{t(entry.labelKey)}</span>
-            </div>
-          ))}
+          {isRestricted ? (
+            <>
+              <div className="flex items-center gap-2 text-xs text-foreground">
+                <MapPin className="h-3 w-3 text-primary" />
+                <span>{t("map.areaLegend")}</span>
+              </div>
+              {isProducerMap ? (
+                <div className="flex items-center gap-2 text-xs text-foreground">
+                  <span className="map-own-facility-marker-legend h-3 w-3 rounded-full ring-1 ring-white shadow-sm" />
+                  <span>{t("map.ownFacilityLegend")}</span>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            RISK_LEVELS.map((entry) => (
+              <div key={entry.level} className="flex items-center gap-2 text-xs text-foreground">
+                <span
+                  className={cn("h-3 w-3 rounded-full ring-1 ring-white shadow-sm", entry.markerClass)}
+                />
+                <span>{t(entry.labelKey)}</span>
+              </div>
+            ))
+          )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function CityPopup({
+  city,
+  onClose,
+  t,
+}: {
+  city: CityMapPoint;
+  onClose: () => void;
+  t: (key: string, values?: Record<string, unknown>) => string;
+}) {
+  return (
+    <div className="relative min-w-[220px] overflow-hidden rounded-lg border border-border bg-card shadow-xl">
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose();
+        }}
+        className="touch-target absolute right-2 top-2 z-20 rounded-full border border-border bg-popover text-muted-foreground hover:bg-background"
+        aria-label={t("actions.close")}
+      >
+        ×
+      </button>
+      <div className="space-y-2 px-4 py-4">
+        <p className="text-2xs font-semibold uppercase tracking-wider text-primary">{t("map.cityPopupTitle")}</p>
+        <h3 className="text-sm font-semibold text-foreground">{city.city}</h3>
+        <p className="text-xs text-muted-foreground">{t("map.facilityCount", { count: city.count })}</p>
       </div>
     </div>
   );
@@ -385,7 +656,7 @@ function FacilityPopup({
   t: (key: string, values?: Record<string, unknown>) => string;
   locale: AppLocale;
 }) {
-  const color = markerColorByRisk(facility.riskLevel);
+  const riskTextClass = facilityTextClass(facility.riskLevel);
   const Icon = facility.riskLevel === "HIGH" ? AlertTriangle : facility.riskLevel === "LOW" || facility.riskLevel === "NEGLIGIBLE" ? CheckCircle : Info;
 
   return (
@@ -402,13 +673,13 @@ function FacilityPopup({
         ×
       </button>
 
-      <div className="flex items-center gap-3 border-b border-border px-4 py-4" style={{ backgroundColor: "color-mix(in oklab, var(--color-raised) 82%, var(--color-surface-base))" }}>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background" style={{ color }}>
+      <div className="facility-popup-header flex items-center gap-3 border-b border-border px-4 py-4">
+        <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl bg-background", riskTextClass)}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0 pr-6">
           <h3 className="truncate text-sm font-semibold text-foreground">{facility.name}</h3>
-          <p className="text-2xs font-semibold uppercase tracking-wider" style={{ color }}>
+          <p className={cn("text-2xs font-semibold uppercase tracking-wider", riskTextClass)}>
             {t(`risk.${facility.riskLevel.toLowerCase()}`)}
           </p>
         </div>

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Shield, Waves } from "lucide-react";
+import { BarChart3, ClipboardList, DoorOpen, Droplets, Gauge, Leaf, MapPin, Radar, Shield, Waves } from "lucide-react";
 import { CoveragePill, MetricCard } from "./cards";
 import { DashboardPageHeading } from "./dashboard-page-heading";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartCard, getAdaptiveChartHeight, getAdaptiveVerticalBarLayout, type ChartCardHeight } from "@/components/charts/chart-card";
 import { EChartsChart } from "@/components/charts/echarts-chart";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import { buildDonutOption, buildSectionScoreBarOption, buildVerticalBarOption } from "@/lib/chart-options";
+import { buildDonutOption, buildExternalInternalComparisonOption, buildSectionRadarOption, buildSectionScoreBarOption, buildVerticalBarOption } from "@/lib/chart-options";
+import { buildNetworkRadarFromAverages } from "@/lib/chart-data/section-radar";
+import type { AppRole } from "@/lib/access-control";
+import { filterRestrictedMapPoints, type CityMapPoint } from "@/lib/map-privacy";
 import type { ChartThemeColors } from "@/lib/chart-theme";
 import { EmptyChartState, type EmptyChartStateProps } from "@/components/charts/empty-chart-state";
 import { ChartDataTable } from "@/components/charts/chart-data-table";
@@ -53,6 +56,7 @@ type Props = {
   t: (key: string) => string;
   locale: AppLocale;
   externalFilters?: FilterState;
+  role?: AppRole;
 };
 
 function average(values: number[]) {
@@ -144,7 +148,7 @@ export function useOverviewFilters(data: DashboardData): FilterState {
   };
 }
 
-export function Overview({ data, t, locale, externalFilters }: Props) {
+export function Overview({ data, t, locale, externalFilters, role = "public" }: Props) {
   // Use external filters if provided (from parent), otherwise use internal state
   const internalFilters = useOverviewFilters(data);
   const filters = externalFilters ?? internalFilters;
@@ -187,15 +191,20 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     return () => observer.disconnect();
   }, []);
 
+  const overviewFacilities = useMemo(
+    () => data.overviewFacilities ?? data.facilities,
+    [data.overviewFacilities, data.facilities],
+  );
+
   const filteredFacilities = useMemo(() => {
-    return data.facilities.filter((facility) => {
+    return overviewFacilities.filter((facility) => {
       if (speciesFilter !== "all" && facility.species !== speciesFilter) return false;
       if (systemFilter !== "all" && facility.productionSystem !== systemFilter) return false;
       const facilityLocation = facility.basedOn ?? facility.location;
       if (locationFilter !== "all" && facilityLocation !== locationFilter) return false;
       return true;
     });
-  }, [data.facilities, speciesFilter, systemFilter, locationFilter]);
+  }, [overviewFacilities, speciesFilter, systemFilter, locationFilter]);
 
   const sectionAverages = useMemo(
     () => filteredSectionAverages(data.sectionAverages, filteredFacilities),
@@ -206,6 +215,17 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
     [sectionAverages, t],
   );
   const avgScore = average(filteredFacilities.map((f) => f.score));
+  const avgExternalScore = average(filteredFacilities.map((f) => f.externalScore));
+  const avgInternalScore = average(filteredFacilities.map((f) => f.internalScore));
+  const restrictedCityPoints = useMemo<CityMapPoint[] | undefined>(() => {
+    if (role === "admin" || !data.restrictedMapPoints) return undefined;
+    return filterRestrictedMapPoints(data.restrictedMapPoints, filteredFacilities);
+  }, [data.restrictedMapPoints, filteredFacilities, role]);
+  const visibleProducerFacility = useMemo(() => {
+    if (!data.producerMapFacility) return undefined;
+    const isVisible = filteredFacilities.some((facility) => facility.id === data.producerMapFacility?.id);
+    return isVisible ? data.producerMapFacility : undefined;
+  }, [data.producerMapFacility, filteredFacilities]);
   const highRiskCount = filteredFacilities.filter((f) => f.riskLevel === "HIGH").length;
   const lowRiskCount = filteredFacilities.filter((f) => f.riskLevel === "LOW" || f.riskLevel === "NEGLIGIBLE").length;
 
@@ -325,7 +345,14 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
         <Card className="card-flat xl:col-span-2">
           <CardContent className="p-3 sm:p-4">
             <div className="h-[320px] sm:h-[360px] md:h-[420px] lg:h-[460px] xl:h-[480px]">
-              <MapLibreFacilitiesMap filteredFacilities={filteredFacilities} t={t} locale={locale} />
+              <MapLibreFacilitiesMap
+                filteredFacilities={filteredFacilities}
+                restrictedCityPoints={restrictedCityPoints}
+                producerOwnFacility={visibleProducerFacility}
+                t={t}
+                locale={locale}
+                role={role}
+              />
             </div>
           </CardContent>
         </Card>
@@ -349,6 +376,55 @@ export function Overview({ data, t, locale, externalFilters }: Props) {
               t={t}
             />
           </div>
+        </ChartCard>
+      </section>
+
+      {/* Section 2b: External vs Internal + Radar charts */}
+      <section className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
+        <ChartCard
+          title={t("charts.externalInternalCompliance")}
+          info={t("info.externalInternalCompliance")}
+          icon={<BarChart3 className="h-4 w-4" />}
+          height="md"
+          className="xl:col-span-1"
+          ariaLabel={t("charts.externalInternalCompliance")}
+        >
+          <ExternalInternalChart
+            externalScore={avgExternalScore}
+            internalScore={avgInternalScore}
+            emptyStateProps={emptyStateProps}
+            t={t}
+          />
+        </ChartCard>
+        <ChartCard
+          title={t("charts.sectionRadarExternal")}
+          info={t("info.sectionRadarExternal")}
+          icon={<Radar className="h-4 w-4" />}
+          height="md"
+          ariaLabel={t("charts.sectionRadarExternal")}
+        >
+          <SectionRadarChart
+            sectionAverages={sectionAverages}
+            side="external"
+            seriesName={t("overview.external")}
+            emptyStateProps={emptyStateProps}
+            t={t}
+          />
+        </ChartCard>
+        <ChartCard
+          title={t("charts.sectionRadarInternal")}
+          info={t("info.sectionRadarInternal")}
+          icon={<Radar className="h-4 w-4" />}
+          height="md"
+          ariaLabel={t("charts.sectionRadarInternal")}
+        >
+          <SectionRadarChart
+            sectionAverages={sectionAverages}
+            side="internal"
+            seriesName={t("overview.internal")}
+            emptyStateProps={emptyStateProps}
+            t={t}
+          />
         </ChartCard>
       </section>
 
@@ -660,5 +736,84 @@ function DonutChart({ data, labelKey, valueKey, emptyTitle, emptySubtitle, block
         />
       )}
     </div>
+  );
+}
+
+function ExternalInternalChart({
+  externalScore,
+  internalScore,
+  emptyStateProps,
+  t,
+}: {
+  externalScore: number;
+  internalScore: number;
+  emptyStateProps: EmptyChartStateProps;
+  t: (key: string) => string;
+}) {
+  const { colors } = useChartTheme();
+  const option = useMemo(
+    () =>
+      buildExternalInternalComparisonOption({
+        externalScore,
+        internalScore,
+        colors,
+        externalLabel: t("overview.external"),
+        internalLabel: t("overview.internal"),
+      }),
+    [colors, externalScore, internalScore, t],
+  );
+
+  if (externalScore === 0 && internalScore === 0) {
+    return <EmptyChartState {...emptyStateProps} />;
+  }
+
+  return (
+    <>
+      <EChartsChart option={option} />
+      <ChartDataTable
+        caption={t("charts.externalInternalCompliance")}
+        headers={[t("charts.chartDataTableLabel"), t("charts.chartDataTableScore")]}
+        rows={[
+          [t("overview.external"), externalScore],
+          [t("overview.internal"), internalScore],
+        ]}
+      />
+    </>
+  );
+}
+
+function SectionRadarChart({
+  sectionAverages,
+  side,
+  seriesName,
+  emptyStateProps,
+  t,
+}: {
+  sectionAverages: DashboardData["sectionAverages"];
+  side: "external" | "internal";
+  seriesName: string;
+  emptyStateProps: EmptyChartStateProps;
+  t: (key: string) => string;
+}) {
+  const { colors } = useChartTheme();
+  const radarData = useMemo(
+    () => buildNetworkRadarFromAverages(sectionAverages, side, t, seriesName),
+    [sectionAverages, side, seriesName, t],
+  );
+  const option = useMemo(() => buildSectionRadarOption({ data: radarData, colors }), [radarData, colors]);
+
+  if (sectionAverages.length === 0) {
+    return <EmptyChartState {...emptyStateProps} />;
+  }
+
+  return (
+    <>
+      <EChartsChart option={option} />
+      <ChartDataTable
+        caption={side === "external" ? t("charts.sectionRadarExternal") : t("charts.sectionRadarInternal")}
+        headers={[t("charts.chartDataTableSection"), t("charts.chartDataTableScore")]}
+        rows={radarData.indicators.map((indicator, index) => [indicator.name, radarData.series[0]?.values[index] ?? 0])}
+      />
+    </>
   );
 }

@@ -11,8 +11,13 @@ import { Button } from "@/components/ui/button";
 import { getAdaptiveVerticalBarLayout } from "@/components/charts/chart-card";
 import { EChartsChart } from "@/components/charts/echarts-chart";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import { buildHorizontalGroupedBarOption } from "@/lib/chart-options";
+import { buildExternalInternalComparisonOption, buildHorizontalGroupedBarOption, buildSectionRadarOption } from "@/lib/chart-options";
+import { buildSectionRadarData } from "@/lib/chart-data/section-radar";
+import type { SectionRadarData } from "@/lib/chart-data/section-radar";
+import type { AppRole } from "@/lib/access-control";
+import { PrintReportButton } from "./print-report-button";
 import { resolveMixedColor } from "@/lib/chart-theme";
+import type { AppLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import type { DashboardData, FacilitySummary, RuleStatus, SubcategoryChecklist } from "@/lib/kobo";
 import { translateSectionLabel } from "@/lib/section-labels";
@@ -27,9 +32,20 @@ type Props = {
   onSelect: (id: number) => void;
   t: (key: string, values?: Record<string, string | number>) => string;
   sectionAverages: DashboardData["sectionAverages"];
+  networkStats?: DashboardData["stats"];
   readOnlySelection?: boolean;
   isProducerView?: boolean;
+  role?: AppRole;
+  locale?: AppLocale;
 };
+
+function buildRadarTableRows(data: SectionRadarData): (string | number)[][] {
+  return data.indicators.map((indicator, index) => [
+    indicator.name,
+    data.series[0]?.values[index] ?? 0,
+    data.series[1]?.values[index] ?? 0,
+  ]);
+}
 
 export function FacilitiesView({
   facilities,
@@ -37,8 +53,11 @@ export function FacilitiesView({
   onSelect,
   t,
   sectionAverages,
+  networkStats,
   readOnlySelection = false,
   isProducerView = false,
+  role = "admin",
+  locale = "en",
 }: Props) {
   const { colors } = useChartTheme();
   const peerAverage = useMemo(() => {
@@ -102,6 +121,50 @@ export function FacilitiesView({
     });
   }, [benchmarkData, colors, t]);
 
+  const externalInternalOption = useMemo(() => {
+    if (!currentFacility) return undefined;
+    return buildExternalInternalComparisonOption({
+      externalScore: currentFacility.externalScore,
+      internalScore: currentFacility.internalScore,
+      colors,
+      externalLabel: t("overview.external"),
+      internalLabel: t("overview.internal"),
+    });
+  }, [colors, currentFacility, t]);
+
+  const externalRadarData = useMemo(() => {
+    if (!currentFacility) return undefined;
+    return buildSectionRadarData(
+      [
+        { name: currentFacility.name, sectionScores: currentFacility.sectionScores, side: "external" },
+        { name: t("facilities.networkAverage"), sectionScores: sectionAverages.map((item) => ({ section: item.section, side: item.side, score: item.score, positives: 0, total: 0 })), side: "external" },
+      ],
+      "external",
+      t,
+    );
+  }, [currentFacility, sectionAverages, t]);
+
+  const internalRadarData = useMemo(() => {
+    if (!currentFacility) return undefined;
+    return buildSectionRadarData(
+      [
+        { name: currentFacility.name, sectionScores: currentFacility.sectionScores, side: "internal" },
+        { name: t("facilities.networkAverage"), sectionScores: sectionAverages.map((item) => ({ section: item.section, side: item.side, score: item.score, positives: 0, total: 0 })), side: "internal" },
+      ],
+      "internal",
+      t,
+    );
+  }, [currentFacility, sectionAverages, t]);
+
+  const externalRadarOption = useMemo(
+    () => (externalRadarData ? buildSectionRadarOption({ data: externalRadarData, colors }) : undefined),
+    [colors, externalRadarData],
+  );
+  const internalRadarOption = useMemo(
+    () => (internalRadarData ? buildSectionRadarOption({ data: internalRadarData, colors }) : undefined),
+    [colors, internalRadarData],
+  );
+
   if (!currentFacility) return null;
 
   return (
@@ -122,7 +185,7 @@ export function FacilitiesView({
           <InfoTitle title={t("facilities.information")} info={t("info.facilityDiagnostics")} />
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3 flex-1">
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">{currentFacility.name}</h2>
@@ -172,8 +235,68 @@ export function FacilitiesView({
               )}
             </div>
           </div>
+
+          {role !== "public" ? (
+            <PrintReportButton
+              facility={currentFacility}
+              networkStats={networkStats}
+              sectionAverages={sectionAverages}
+              locale={locale}
+              t={t}
+            />
+          ) : null}
         </CardContent>
       </Card>
+
+      {/* External vs Internal + Radar */}
+      <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
+        <Card className="card-flat">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("facilities.externalInternalComparison")} info={t("info.facilityExternalInternal")} />
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <EChartsChart option={externalInternalOption} />
+            <ChartDataTable
+              caption={t("facilities.externalInternalComparison")}
+              headers={[t("charts.chartDataTableLabel"), t("charts.chartDataTableScore")]}
+              rows={[
+                [t("overview.external"), currentFacility.externalScore],
+                [t("overview.internal"), currentFacility.internalScore],
+              ]}
+            />
+          </CardContent>
+        </Card>
+        <Card className="card-flat">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("charts.sectionRadarExternal")} info={t("info.sectionRadarExternal")} />
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <EChartsChart option={externalRadarOption} />
+            {externalRadarData ? (
+              <ChartDataTable
+                caption={t("charts.sectionRadarExternal")}
+                headers={[t("charts.chartDataTableSection"), t("table.facility"), t("facilities.networkAverage")]}
+                rows={buildRadarTableRows(externalRadarData)}
+              />
+            ) : null}
+          </CardContent>
+        </Card>
+        <Card className="card-flat">
+          <CardHeader className="pb-2">
+            <InfoTitle title={t("charts.sectionRadarInternal")} info={t("info.sectionRadarInternal")} />
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <EChartsChart option={internalRadarOption} />
+            {internalRadarData ? (
+              <ChartDataTable
+                caption={t("charts.sectionRadarInternal")}
+                headers={[t("charts.chartDataTableSection"), t("table.facility"), t("facilities.networkAverage")]}
+                rows={buildRadarTableRows(internalRadarData)}
+              />
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Core Insights */}
       <div className="grid gap-6 lg:grid-cols-3">

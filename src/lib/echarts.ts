@@ -1,9 +1,10 @@
 import * as echarts from "echarts/core";
-import { BarChart, HeatmapChart, PieChart } from "echarts/charts";
+import { BarChart, HeatmapChart, PieChart, RadarChart } from "echarts/charts";
 import {
   GraphicComponent,
   GridComponent,
   LegendComponent,
+  RadarComponent,
   TitleComponent,
   TooltipComponent,
   VisualMapComponent,
@@ -14,12 +15,14 @@ echarts.use([
   BarChart,
   PieChart,
   HeatmapChart,
+  RadarChart,
   TitleComponent,
   TooltipComponent,
   GridComponent,
   VisualMapComponent,
   LegendComponent,
   GraphicComponent,
+  RadarComponent,
   CanvasRenderer,
 ]);
 

@@ -27,17 +27,17 @@
     "facilitiesSelect": "Velg anlegg"
   },
   "sections": {
-    "environment": "Miljø",
-    "introduction": "Introduksjon",
+    "environment": "Miljø og omgivelser",
+    "introduction": "Introduksjon av levende dyr",
     "water": "Vann",
     "fomites": "Fomitter",
-    "biovectors": "Biovektorer",
-    "personnel": "Personell",
-    "management": "Drift",
-    "health": "Helse",
-    "vmp": "VMP",
+    "biovectors": "Vektorer",
+    "personnel": "Personell og besøkende",
+    "management": "Produksjon og anlegg",
+    "health": "Helse og velferd",
+    "vmp": "Veterinærmedisinske produkter",
     "equipment": "Utstyr",
-    "sop": "SOP"
+    "sop": "Registre og SOP-er"
   },
   "datasource": {
     "title": "Datakilde",
@@ -58,7 +58,8 @@
   "producer": {
     "myFacility": "Mitt anlegg",
     "myFacilityShort": "Anlegg",
-    "globalOverview": "Global oversikt"
+    "globalOverview": "Global oversikt",
+    "summary": "Sammendrag"
   },
   "theme": {
     "toggle": "Bytt tema",
@@ -111,6 +112,8 @@
     "mapCoverageSubtitle": "Koordinater rapportert av anlegg",
     "practiceCoverage": "Dekning av praksiser (nøkkelpraksiser for biosikkerhet)",
     "externalInternalCompliance": "Ekstern vs intern etterlevelse",
+    "sectionRadarExternal": "Radar for ekstern biosikkerhet",
+    "sectionRadarInternal": "Radar for intern biosikkerhet",
     "scoreDistribution": "Poengfordeling",
     "sectionDetail": "Detalj per seksjon",
     "highRiskFactors": "Faktorer med høy risiko",
@@ -147,7 +150,17 @@
     "zoomOut": "Zoom ut",
     "noGeo": "Ingen anlegg med geolokasjonsdata",
     "markerAria": "Anlegg {name}. Risikonivå: {risk}. Poeng: {score}.",
-    "clusterAria": "Gruppe med {count} anlegg. Klikk for å zoome inn og se individuelle markører."
+    "clusterAria": "Gruppe med {count} anlegg. Klikk for å zoome inn og se individuelle markører.",
+    "cityClusterAria": "Gruppe med {cities} byer og {count} anlegg. Klikk for å zoome inn og se bymarkører.",
+    "cityMarkerAria": "{city}. {count} anlegg.",
+    "cityPopupTitle": "Oversikt per by",
+    "facilityCount": "{count, plural, one {# anlegg} other {# anlegg}}",
+    "zoomLimitNotice": "Kartzoom er begrenset for å beskytte anleggenes personvern.",
+    "cityLegend": "Markører viser byer og antall anlegg",
+    "areaLegend": "Markører viser geografiske områder og antall anlegg",
+    "ownFacilityLegend": "Ditt anlegg (eksakt plassering)",
+    "ownFacilityAria": "Ditt anlegg {name}. Risikonivå: {risk}. Poeng: {score}.",
+    "producerZoomLimitNotice": "Kartzoom er begrenset for å beskytte andre anlegg. Ditt anlegg vises på eksakt plassering."
   },
   "coverage": {
     "quarantine": "Karantene ved ankomst",
@@ -182,7 +195,44 @@
       "show": "Vis velgeren",
       "hide": "Skjul velgeren",
       "selected": "Valgt anlegg"
+    },
+    "printReport": "Skriv ut rapport",
+    "downloadReport": "Last ned PDF",
+    "externalInternalComparison": "Ekstern vs intern poengsum",
+    "actionPlan": "Handlingsplan",
+    "noActionItems": "Ingen prioriterte tiltak identifisert.",
+    "topPriorities": "Topprioriteter",
+    "riskSummary": "Risikosammendrag",
+    "peerComparison": "Din poengsum er {score}/100 vs nettverksgjennomsnitt {peerAverage} for {species} i {region}.",
+    "scoreHero": {
+      "below50": "Poeng {score}/100 — betydelig forbedring nødvendig.",
+      "below70": "Poeng {score}/100 — rom for forbedring.",
+      "good": "Poeng {score}/100 — god biosikkerhetsprestasjon."
+    },
+    "scoreSummary": {
+      "title": "Poengsammendrag"
     }
+  },
+  "report": {
+    "title": "Biosikkerhetsvurderingsrapport",
+    "generatedOn": "Generert",
+    "scores": "Poeng",
+    "overallScore": "Samlet poengsum",
+    "externalScore": "Ekstern biosikkerhet",
+    "internalScore": "Intern biosikkerhet",
+    "responses": "Svar fra undersøkelsen",
+    "recommendations": "Anbefalinger",
+    "charts": "Diagrammer",
+    "noRecommendations": "Ingen anbefalinger for dette anlegget."
+  },
+  "surveyInvite": {
+    "title": "Er du en akvakulturprodusent?",
+    "description": "Delta i vår biosikkerhetsundersøkelse og få en gratis vurdering av anleggets biosikkerhetspraksis.",
+    "benefit1": "Gratis personlig biosikkerhetspoeng for ditt anlegg",
+    "benefit2": "Handlingsbare anbefalinger for å forbedre praksisen din",
+    "benefit3": "Sammenlign resultatene dine med nettverksgjennomsnittet",
+    "participate": "Ta undersøkelsen",
+    "dismiss": "Ikke nå"
   },
   "comparative": {
     "subtitle": "Sammenlign anlegg på tvers av produksjonssystem, arter, lokasjon og risikoprofiler.",
@@ -224,6 +274,9 @@
     "sops": "Rapportert dekning av SOP-er.",
     "facilityDiagnostics": "Kjerneinformasjon for valgt anlegg.",
     "facilityBenchmark": "Anleggets poeng sammenlignet med nettverksgjennomsnittet per underkategori.",
+    "sectionRadarExternal": "Gjennomsnittspoeng på tvers av eksterne biosikkerhetsunderkategorier.",
+    "sectionRadarInternal": "Gjennomsnittspoeng på tvers av interne biosikkerhetsunderkategorier.",
+    "facilityExternalInternal": "Sammenligning av eksterne og interne biosikkerhetspoeng for valgt anlegg.",
     "animalHealthMonitoring": "Overvåkingsfrekvens for atferd, obduksjon og diagnostikk.",
     "subcategoryChecklist": "Spørsmål per underkategori med etterlevelsesstatus.",
     "comparativeCharts": "Gjennomsnittsscore gruppert etter valgt kategori.",

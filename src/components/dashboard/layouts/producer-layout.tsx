@@ -93,11 +93,14 @@ export function ProducerLayout({
             onSelect={setSelectedFacility}
             readOnlySelection
             isProducerView
+            role="producer"
+            locale={locale}
+            networkStats={data.stats}
             t={t}
             sectionAverages={data.sectionAverages}
           />
         )}
-        {activeTab === "overview" && <OverviewClient data={data} t={t} locale={locale} />}
+        {activeTab === "overview" && <OverviewClient data={data} t={t} locale={locale} role="producer" />}
         {activeTab === "summary" && currentFacilityForRole && (
           <SummaryView
             facility={currentFacilityForRole}

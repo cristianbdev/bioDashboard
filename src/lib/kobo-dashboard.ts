@@ -9,6 +9,11 @@ import {
 } from "@/lib/access-control";
 import type { DashboardData, KoboApiResponse, KoboAssetResponse } from "@/lib/kobo";
 import { transformKoboData } from "@/lib/kobo";
+import {
+  aggregateFacilitiesForRestrictedMap,
+  resolveProducerMapFacility,
+  sanitizeFacilitiesForRestrictedRole,
+} from "@/lib/map-privacy";
 import { resolveProducerFacilities, type ProducerFacilityErrorCode } from "@/lib/producer-facilities";
 import type { QuantificationCatalog } from "@/lib/risk-quantification";
 import scoreModel from "@/data/score-model.json";
@@ -75,6 +80,14 @@ async function fetchKoboAsset(uid: string, token: string) {
   return (await response.json()) as KoboAssetResponse;
 }
 
+function extractSurveyUrl(asset: KoboAssetResponse): string | undefined {
+  const links = asset.deployment__links;
+  if (links?.single_url) return links.single_url;
+  if (links?.url) return links.url;
+  const fallback = process.env.NEXT_PUBLIC_KOBO_SURVEY_URL;
+  return fallback && fallback.length > 0 ? fallback : undefined;
+}
+
 function average(values: number[]): number {
   if (values.length === 0) return 0;
   return Math.round(values.reduce((total, value) => total + value, 0) / values.length);
@@ -104,6 +117,8 @@ export function sanitizeDataByRole(
   data: DashboardData,
   role: AppRole,
   scopedFacilities: DashboardData["facilities"],
+  networkFacilities: DashboardData["facilities"],
+  producerFacilityId?: number,
 ): DashboardData {
   const scopedData: DashboardData = {
     ...data,
@@ -118,8 +133,16 @@ export function sanitizeDataByRole(
     return scopedData;
   }
 
-  return {
-    ...scopedData,
+  const { points: restrictedMapPoints, facilityAreaKeys } = aggregateFacilitiesForRestrictedMap(
+    networkFacilities,
+    role === "producer" ? producerFacilityId : undefined,
+  );
+  const sanitizedScopedFacilities = sanitizeFacilitiesForRestrictedRole(scopedFacilities, facilityAreaKeys);
+  const sanitizedNetworkFacilities = sanitizeFacilitiesForRestrictedRole(networkFacilities, facilityAreaKeys);
+
+  const sharedRestrictedFields = {
+    locations: [] as DashboardData["locations"],
+    restrictedMapPoints,
     comparatives: {
       bySpecies: [],
       bySystem: [],
@@ -136,6 +159,24 @@ export function sanitizeDataByRole(
       ...scopedData.scoringMethodology,
       questionRules: [],
     },
+  };
+
+  if (role === "producer") {
+    return {
+      ...scopedData,
+      facilities: sanitizedScopedFacilities,
+      overviewFacilities: sanitizedNetworkFacilities,
+      producerMapFacility: resolveProducerMapFacility(networkFacilities, producerFacilityId),
+      stats: data.stats,
+      ...sharedRestrictedFields,
+    };
+  }
+
+  return {
+    ...scopedData,
+    facilities: sanitizedNetworkFacilities,
+    stats: data.stats,
+    ...sharedRestrictedFields,
   };
 }
 
@@ -210,9 +251,13 @@ export async function fetchDashboardForUid(uid: string, access?: AccessContext):
   try {
     const token = getKoboToken();
     const [raw, asset] = await Promise.all([fetchKoboData(uid, token), fetchKoboAsset(uid, token)]);
-    const dashboardData = transformKoboData(raw, asset, SCORE_CATALOG);
+    const dashboardData: DashboardData = {
+      ...transformKoboData(raw, asset, SCORE_CATALOG),
+      surveyUrl: extractSurveyUrl(asset),
+    };
 
     let scopedFacilities = dashboardData.facilities;
+    const networkFacilities = dashboardData.facilities;
 
     if (context.role === "producer") {
       const producerResolution = resolveProducerFacilities(dashboardData.facilities, context.facilityId);
@@ -222,7 +267,13 @@ export async function fetchDashboardForUid(uid: string, access?: AccessContext):
       scopedFacilities = producerResolution.facilities;
     }
 
-    const scopedData = sanitizeDataByRole(dashboardData, context.role, scopedFacilities);
+    const scopedData = sanitizeDataByRole(
+      dashboardData,
+      context.role,
+      scopedFacilities,
+      networkFacilities,
+      context.facilityId,
+    );
     return { ok: true, data: scopedData, role: context.role };
   } catch (error: unknown) {
     const code = (error instanceof Error ? error.message : "unexpected") as KoboDashboardErrorCode;
